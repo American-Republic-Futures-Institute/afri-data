@@ -38,6 +38,11 @@ def fixture_response(changes=None) -> bytes:
     return json.dumps(result,sort_keys=True).encode()
 
 
+def validate_publication_after_stage(root, original):
+    stage(root, original)
+    return validate_publication(root)["releases"]
+
+
 class SpendingTests(unittest.TestCase):
     def setUp(self):
         tmp=tempfile.TemporaryDirectory()
@@ -125,6 +130,19 @@ class SpendingTests(unittest.TestCase):
         manifest_path.write_text(json.dumps(manifest))
         with self.assertRaisesRegex(ValueError,"excluded or unattributed obligations"):
             validate_publication(self.root)
+
+    def test_null_unattributed_display_name_is_preserved_not_imputed(self):
+        def missing_label(data):
+            for row in data["results"]:
+                if row["shape_code"] == "":
+                    row["display_name"]=None
+        raw=fixture_response(missing_label)
+        result=exclusion_report(raw)
+        unattributed=[r for r in result["exclusions"]
+                      if r["sourceShapeCode"]==""][0]
+        self.assertIsNone(unattributed["sourceName"])
+        self.assertEqual(len(project(raw)),52)
+        self.assertEqual(validate_publication_after_stage(self.root, raw),2)
 
     def test_unattributed_bucket_must_be_single_and_explicit(self):
         def extra(data):

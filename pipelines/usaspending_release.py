@@ -142,7 +142,10 @@ def exclusion_report(original: bytes) -> dict:
         if not value.is_finite() or abs(value)>Decimal("1e17"):
             raise ValueError("Invalid excluded geographic amount")
         name=row.get("display_name")
-        if not isinstance(name,str) or len(name)>120:
+        # The official API's unassigned geography may have a null name.
+        # Preserve that exact null or empty string; never manufacture a
+        # human-readable jurisdiction or force unattributed dollars into a state.
+        if name is not None and (not isinstance(name,str) or len(name)>120):
             raise ValueError("Invalid excluded geographic label")
         omitted.append({
             "sourceShapeCode":code,
