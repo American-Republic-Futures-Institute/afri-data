@@ -1,0 +1,21 @@
+{
+  "id": "county-modeled-obesity-prevalence",
+  "datasetId": "cdc-places-2025-county-obesity",
+  "title": "Adult obesity crude prevalence, CDC PLACES model estimate (2023 reference)",
+  "sourceVariable": "obesity_crudeprev; interval obesity_crude95ci",
+  "unit": "percent",
+  "kind": "modeled",
+  "method": "Project the published PLACES 2025 GIS-friendly county obesity crude prevalence and its corresponding reported 95% model confidence interval, without adjustment, imputation or aggregation.",
+  "geography": "county",
+  "display": {
+    "defaultChart": "choropleth",
+    "scale": "sequential",
+    "missingValueStyle": "distinct",
+    "format": "percent-1"
+  },
+  "warnings": [
+    "Model-based estimates, not direct county observation.",
+    "Do not use for causal estimates of local intervention effectiveness.",
+    "Obesity measure refers to 2023 BRFSS input period despite 2025 dataset release."
+  ]
+}
