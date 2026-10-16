@@ -1,12 +1,12 @@
 {
   "id": "bls-laus-state-unemployment-2025",
   "publisherId": "bls",
-  "title": "BLS LAUS not seasonally adjusted 2025 state annual-average unemployment rate",
+  "title": "BLS LAUS 2025 unadjusted unemployment rates; 11-month annual average except 12-month Puerto Rico",
   "kind": "raw-statistical",
   "stage": "integration-ready",
   "geography": "state",
   "sourceUrl": "https://download.bls.gov/pub/time.series/la/la.data.2.AllStatesU",
-  "methodologyUrl": "https://www.bls.gov/lau/",
+  "methodologyUrl": "https://www.bls.gov/lau/launews1.htm",
   "temporalCoverage": {
     "vintage": 2025,
     "startYear": 2025,
@@ -20,9 +20,12 @@
     "footnote_codes",
     "area_code",
     "measure_code",
-    "seasonal"
+    "seasonal",
+    "footnote_code",
+    "footnote_text"
   ],
   "limitations": [
+    "BLS official footnote G: because no October 2025 Current Population Survey data were collected, the 50 states and DC have 11-month 2025 averages, not strictly comparable with prior annual averages; Puerto Rico has a 12-month average.",
     "BLS rates are estimated from statistical and administrative inputs; not a headcount from an unemployment benefits register.",
     "Annual-average period M13 of unadjusted LAUS series; these are not seasonally adjusted monthly rates.",
     "Source files are periodically revised, including historical years. Each distinct set of source fingerprints creates a new release.",
