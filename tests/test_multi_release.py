@@ -1,5 +1,6 @@
 """D-01 multi-release registry tests; synthetic data never enters publication."""
 import hashlib
+import gzip
 import json
 import tempfile
 import unittest
@@ -19,14 +20,21 @@ def attach_test_release(root):
                                           "unit":"persons","status":"available"}]}
     data = (json.dumps(obj, sort_keys=True)+"\n").encode()
     (folder/"observations.json").write_bytes(data)
+    original = b"Synthetic fixture original government-like response only"
+    compressed = gzip.compress(original, mtime=0)
+    (folder / "source.gz").write_bytes(compressed)
     manifest = {"schemaVersion":"1.0.0","releaseId":rid,
                 "datasetId":"census-state-population-v2025",
                 "createdAt":"2026-10-16T00:00:00Z","status":"published",
                 "sourceFiles":[{"role":"source","url":"https://www2.census.gov/test-only",
-                                "sha256":"a"*64,"bytes":42}],
+                                "sha256":hashlib.sha256(original).hexdigest(),"bytes":len(original),
+                                "archiveAsset":"sourceGzip"}],
                 "assets":{"observations":{"path":"observations.json",
                   "sha256":hashlib.sha256(data).hexdigest(),"bytes":len(data),
-                  "contentType":"application/json","rows":1}},
+                  "contentType":"application/json","rows":1},
+                          "sourceGzip":{"path":"source.gz",
+                            "sha256":hashlib.sha256(compressed).hexdigest(),
+                            "bytes":len(compressed),"contentType":"application/gzip"}},
                 "geography":{"level":"state","vintage":2025,"joinKey":"geoid","features":1},
                 "temporalCoverage":{"firstYear":2025,"lastYear":2025,"vintage":2025},
                 "method":"Synthetic test-only structural data; not government evidence."}
