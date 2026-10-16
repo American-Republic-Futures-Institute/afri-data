@@ -1,0 +1,53 @@
+geoid,locationBasis,name,postalCode,referencePeriod,reportedAmount,spendingLevel,statistic,status,unit,value,year
+01,primary_place_of_performance,Alabama,AL,FY2025 (2024-10-01 to 2025-09-30),71575080909.3,transactions,reported_award_transaction_obligations,available,USD,71575080909.3,2025
+02,primary_place_of_performance,Alaska,AK,FY2025 (2024-10-01 to 2025-09-30),18453376673.03,transactions,reported_award_transaction_obligations,available,USD,18453376673.03,2025
+04,primary_place_of_performance,Arizona,AZ,FY2025 (2024-10-01 to 2025-09-30),112169995726.68,transactions,reported_award_transaction_obligations,available,USD,112169995726.68,2025
+05,primary_place_of_performance,Arkansas,AR,FY2025 (2024-10-01 to 2025-09-30),34951163092.54,transactions,reported_award_transaction_obligations,available,USD,34951163092.54,2025
+06,primary_place_of_performance,California,CA,FY2025 (2024-10-01 to 2025-09-30),485753833812.53,transactions,reported_award_transaction_obligations,available,USD,485753833812.53,2025
+08,primary_place_of_performance,Colorado,CO,FY2025 (2024-10-01 to 2025-09-30),69780550616.7,transactions,reported_award_transaction_obligations,available,USD,69780550616.7,2025
+09,primary_place_of_performance,Connecticut,CT,FY2025 (2024-10-01 to 2025-09-30),153620401559.38,transactions,reported_award_transaction_obligations,available,USD,153620401559.38,2025
+10,primary_place_of_performance,Delaware,DE,FY2025 (2024-10-01 to 2025-09-30),12239407837.51,transactions,reported_award_transaction_obligations,available,USD,12239407837.51,2025
+11,primary_place_of_performance,District Of Columbia,DC,FY2025 (2024-10-01 to 2025-09-30),48914494855.77,transactions,reported_award_transaction_obligations,available,USD,48914494855.77,2025
+12,primary_place_of_performance,Florida,FL,FY2025 (2024-10-01 to 2025-09-30),325029077701.11,transactions,reported_award_transaction_obligations,available,USD,325029077701.11,2025
+13,primary_place_of_performance,Georgia,GA,FY2025 (2024-10-01 to 2025-09-30),105885538281.49,transactions,reported_award_transaction_obligations,available,USD,105885538281.49,2025
+15,primary_place_of_performance,Hawaii,HI,FY2025 (2024-10-01 to 2025-09-30),22657202045.76,transactions,reported_award_transaction_obligations,available,USD,22657202045.76,2025
+16,primary_place_of_performance,Idaho,ID,FY2025 (2024-10-01 to 2025-09-30),22876992774.94,transactions,reported_award_transaction_obligations,available,USD,22876992774.94,2025
+17,primary_place_of_performance,Illinois,IL,FY2025 (2024-10-01 to 2025-09-30),134622980406.35,transactions,reported_award_transaction_obligations,available,USD,134622980406.35,2025
+18,primary_place_of_performance,Indiana,IN,FY2025 (2024-10-01 to 2025-09-30),207079308671.12,transactions,reported_award_transaction_obligations,available,USD,207079308671.12,2025
+19,primary_place_of_performance,Iowa,IA,FY2025 (2024-10-01 to 2025-09-30),36522691538.03,transactions,reported_award_transaction_obligations,available,USD,36522691538.03,2025
+20,primary_place_of_performance,Kansas,KS,FY2025 (2024-10-01 to 2025-09-30),31038738771.23,transactions,reported_award_transaction_obligations,available,USD,31038738771.23,2025
+21,primary_place_of_performance,Kentucky,KY,FY2025 (2024-10-01 to 2025-09-30),173400310719.15,transactions,reported_award_transaction_obligations,available,USD,173400310719.15,2025
+22,primary_place_of_performance,Louisiana,LA,FY2025 (2024-10-01 to 2025-09-30),59825907472.83,transactions,reported_award_transaction_obligations,available,USD,59825907472.83,2025
+23,primary_place_of_performance,Maine,ME,FY2025 (2024-10-01 to 2025-09-30),22026207895.7,transactions,reported_award_transaction_obligations,available,USD,22026207895.7,2025
+24,primary_place_of_performance,Maryland,MD,FY2025 (2024-10-01 to 2025-09-30),105670411892.76,transactions,reported_award_transaction_obligations,available,USD,105670411892.76,2025
+25,primary_place_of_performance,Massachusetts,MA,FY2025 (2024-10-01 to 2025-09-30),103280765947.59,transactions,reported_award_transaction_obligations,available,USD,103280765947.59,2025
+26,primary_place_of_performance,Michigan,MI,FY2025 (2024-10-01 to 2025-09-30),126369230455.72,transactions,reported_award_transaction_obligations,available,USD,126369230455.72,2025
+27,primary_place_of_performance,Minnesota,MN,FY2025 (2024-10-01 to 2025-09-30),242136788046.38,transactions,reported_award_transaction_obligations,available,USD,242136788046.38,2025
+28,primary_place_of_performance,Mississippi,MS,FY2025 (2024-10-01 to 2025-09-30),38566942516.13,transactions,reported_award_transaction_obligations,available,USD,38566942516.13,2025
+29,primary_place_of_performance,Missouri,MO,FY2025 (2024-10-01 to 2025-09-30),93760507731.34,transactions,reported_award_transaction_obligations,available,USD,93760507731.34,2025
+30,primary_place_of_performance,Montana,MT,FY2025 (2024-10-01 to 2025-09-30),15364272000.87,transactions,reported_award_transaction_obligations,available,USD,15364272000.87,2025
+31,primary_place_of_performance,Nebraska,NE,FY2025 (2024-10-01 to 2025-09-30),27755596994.52,transactions,reported_award_transaction_obligations,available,USD,27755596994.52,2025
+32,primary_place_of_performance,Nevada,NV,FY2025 (2024-10-01 to 2025-09-30),33976563688.62,transactions,reported_award_transaction_obligations,available,USD,33976563688.62,2025
+33,primary_place_of_performance,New Hampshire,NH,FY2025 (2024-10-01 to 2025-09-30),17022910449.39,transactions,reported_award_transaction_obligations,available,USD,17022910449.39,2025
+34,primary_place_of_performance,New Jersey,NJ,FY2025 (2024-10-01 to 2025-09-30),96555586613.49,transactions,reported_award_transaction_obligations,available,USD,96555586613.49,2025
+35,primary_place_of_performance,New Mexico,NM,FY2025 (2024-10-01 to 2025-09-30),41469475825.72,transactions,reported_award_transaction_obligations,available,USD,41469475825.72,2025
+36,primary_place_of_performance,New York,NY,FY2025 (2024-10-01 to 2025-09-30),262211223505.63,transactions,reported_award_transaction_obligations,available,USD,262211223505.63,2025
+37,primary_place_of_performance,North Carolina,NC,FY2025 (2024-10-01 to 2025-09-30),129484336714.67,transactions,reported_award_transaction_obligations,available,USD,129484336714.67,2025
+38,primary_place_of_performance,North Dakota,ND,FY2025 (2024-10-01 to 2025-09-30),98424126311.83,transactions,reported_award_transaction_obligations,available,USD,98424126311.83,2025
+39,primary_place_of_performance,Ohio,OH,FY2025 (2024-10-01 to 2025-09-30),129082609689.61,transactions,reported_award_transaction_obligations,available,USD,129082609689.61,2025
+40,primary_place_of_performance,Oklahoma,OK,FY2025 (2024-10-01 to 2025-09-30),50262668897.81,transactions,reported_award_transaction_obligations,available,USD,50262668897.81,2025
+41,primary_place_of_performance,Oregon,OR,FY2025 (2024-10-01 to 2025-09-30),57230318799.76,transactions,reported_award_transaction_obligations,available,USD,57230318799.76,2025
+42,primary_place_of_performance,Pennsylvania,PA,FY2025 (2024-10-01 to 2025-09-30),281567345906.49,transactions,reported_award_transaction_obligations,available,USD,281567345906.49,2025
+44,primary_place_of_performance,Rhode Island,RI,FY2025 (2024-10-01 to 2025-09-30),15141669485.13,transactions,reported_award_transaction_obligations,available,USD,15141669485.13,2025
+45,primary_place_of_performance,South Carolina,SC,FY2025 (2024-10-01 to 2025-09-30),137140539004.57,transactions,reported_award_transaction_obligations,available,USD,137140539004.57,2025
+46,primary_place_of_performance,South Dakota,SD,FY2025 (2024-10-01 to 2025-09-30),11500887933.41,transactions,reported_award_transaction_obligations,available,USD,11500887933.41,2025
+47,primary_place_of_performance,Tennessee,TN,FY2025 (2024-10-01 to 2025-09-30),121384851773.59,transactions,reported_award_transaction_obligations,available,USD,121384851773.59,2025
+48,primary_place_of_performance,Texas,TX,FY2025 (2024-10-01 to 2025-09-30),311535142109.88,transactions,reported_award_transaction_obligations,available,USD,311535142109.88,2025
+49,primary_place_of_performance,Utah,UT,FY2025 (2024-10-01 to 2025-09-30),29111712945.24,transactions,reported_award_transaction_obligations,available,USD,29111712945.24,2025
+50,primary_place_of_performance,Vermont,VT,FY2025 (2024-10-01 to 2025-09-30),8870818376.86,transactions,reported_award_transaction_obligations,available,USD,8870818376.86,2025
+51,primary_place_of_performance,Virginia,VA,FY2025 (2024-10-01 to 2025-09-30),214177740142.03,transactions,reported_award_transaction_obligations,available,USD,214177740142.03,2025
+53,primary_place_of_performance,Washington,WA,FY2025 (2024-10-01 to 2025-09-30),89548658707.35,transactions,reported_award_transaction_obligations,available,USD,89548658707.35,2025
+54,primary_place_of_performance,West Virginia,WV,FY2025 (2024-10-01 to 2025-09-30),23841439179.6,transactions,reported_award_transaction_obligations,available,USD,23841439179.6,2025
+55,primary_place_of_performance,Wisconsin,WI,FY2025 (2024-10-01 to 2025-09-30),112955972920.65,transactions,reported_award_transaction_obligations,available,USD,112955972920.65,2025
+56,primary_place_of_performance,Wyoming,WY,FY2025 (2024-10-01 to 2025-09-30),6992304208.9,transactions,reported_award_transaction_obligations,available,USD,6992304208.9,2025
+72,primary_place_of_performance,Puerto Rico,PR,FY2025 (2024-10-01 to 2025-09-30),38433551211.26,transactions,reported_award_transaction_obligations,available,USD,38433551211.26,2025
