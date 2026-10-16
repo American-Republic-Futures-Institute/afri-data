@@ -55,7 +55,7 @@ def stage(root: Path, original: bytes) -> dict:
                 "margin of error, source suppression codes, and separate "
                 "published statistical status. Reference period is 2020–2024, "
                 "with dollar values expressed in inflation-adjusted 2024 USD."),
-        warnings=("These are model-assisted five-year ACS survey estimates, "
+        warnings=("These are five-year ACS survey estimates, "
                   "not a single-calendar-year income census. 2020–2024 "
                   "pooled periods, median income MOE and response suppression "
                   "require explicit display. Do not use absent values as zero."),
