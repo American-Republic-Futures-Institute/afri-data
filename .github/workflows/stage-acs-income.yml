@@ -1,0 +1,57 @@
+name: Stage Census ACS five-year income evidence (manual approval)
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: acs-2024-state-income-review
+  cancel-in-progress: false
+jobs:
+  stage-evidence:
+    if: github.repository == 'American-Republic-Futures-Institute/afri-data'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Confirm Census API key is configured (never print its value)
+        shell: bash
+        run: |
+          if [ -z "$CENSUS_API_KEY" ]; then
+            echo "::error::Set GitHub Actions secret CENSUS_API_KEY before this manual source acquisition."
+            exit 1
+          fi
+      - name: Install pinned evidence dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Acquire official Census ACS source and stage evidence
+        run: python -m pipelines.census_acs_release
+      - name: Replay source and validate all releases
+        run: |
+          python -m tools.validate
+          python -m unittest discover -s tests -v
+      - name: Stage only to a source-review branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add publication/
+          if git diff --cached --quiet; then
+            echo "This verified source is already approved and unchanged."
+            exit 0
+          fi
+          RELEASE="$(python -c 'import json; d=json.load(open("publication/index.json"));print(next(x["releaseId"] for x in d["releases"] if x["indicatorId"]=="state-median-household-income"))')"
+          BRANCH="data/$RELEASE"
+          if git ls-remote --heads origin "$BRANCH" | grep -q .; then
+            echo "::notice::Review branch already exists: $BRANCH"
+            exit 0
+          fi
+          git switch -c "$BRANCH"
+          git commit -m "data: stage source-verified 2024 ACS income evidence for review"
+          git push origin "$BRANCH"
+          echo "::notice::Open a source-review PR: https://github.com/American-Republic-Futures-Institute/afri-data/compare/main...$BRANCH?expand=1"
