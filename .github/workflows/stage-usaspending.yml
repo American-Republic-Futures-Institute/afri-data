@@ -1,0 +1,64 @@
+name: Stage official USAspending FY2025 obligations for review
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/stage-usaspending.yml
+      - pipelines/source_io.py
+      - pipelines/evidence_publish.py
+      - pipelines/usaspending_release.py
+      - catalog/datasets/usaspending-state-fy2025-obligations.json
+      - catalog/indicators/state-federal-award-obligations.json
+      - tools/validate.py
+permissions:
+  contents: write
+concurrency:
+  group: treasury-obligations-2025-source-review
+  cancel-in-progress: false
+jobs:
+  stage-evidence:
+    if: github.repository == 'American-Republic-Futures-Institute/afri-data'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install pinned dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Verify publisher catalog before acquisition
+        run: python -m tools.validate --catalog-only
+      - name: Obtain official Treasury POST aggregation and stage release
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pipelines.usaspending_release > /tmp/usaspending-evidence.json
+          echo "RELEASE_ID=$(python -c 'import json; x=json.load(open("/tmp/usaspending-evidence.json"));print(x["releaseId"])')" >> "$GITHUB_ENV"
+      - name: Check source archives and replay all published releases
+        run: |
+          python -m tools.validate
+          python -m unittest discover -s tests -v
+      - name: Stage evidence on a new human-reviewed branch only
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${RELEASE_ID:-}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add publication/
+          if git diff --cached --quiet; then
+            echo "No differences from already published evidence."
+            exit 0
+          fi
+          BRANCH="data/$RELEASE_ID"
+          if git ls-remote --heads origin "$BRANCH" | grep -q .; then
+            echo "::notice::A source review branch already exists; inspect before replacing: $BRANCH"
+            exit 0
+          fi
+          git checkout -b "$BRANCH"
+          git commit -m "data: stage verified Treasury FY2025 obligations for source review"
+          git push origin "$BRANCH"
+          echo "::notice::Open a source-review PR: https://github.com/American-Republic-Futures-Institute/afri-data/compare/main...$BRANCH?expand=1"

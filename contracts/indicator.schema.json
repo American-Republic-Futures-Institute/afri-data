@@ -37,7 +37,8 @@
         "original-publisher-estimate",
         "derived",
         "index",
-        "modeled"
+        "modeled",
+        "published-administrative-aggregate"
       ]
     },
     "method": {
