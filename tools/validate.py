@@ -344,6 +344,13 @@ def validate_publication(root=ROOT):
             fail("Duplicate or invalid release")
         seen.add(entry["releaseId"])
         metrics = validate_generic_release(root, entry, datasets, indicators)
+        if entry.get("indicatorId") == "state-median-household-income":
+            from pipelines.census_acs_release import project as project_acs_income
+            import gzip
+            folder = checked_path(root, entry["releaseId"], "manifest.json").parent
+            original = gzip.decompress((folder / "originalData.gz").read_bytes())
+            if load_json(folder / "observations.json")["observations"] != project_acs_income(original):
+                fail("Published ACS observations are not reproducible from originals")
         # Replay the publisher-specific projection from archived original bytes.
         # Hash-consistent edited values are not authentic government evidence.
         if entry.get("indicatorId") == "state-unemployment-rate":
