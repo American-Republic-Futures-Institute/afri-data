@@ -37,17 +37,18 @@ class AdapterTests(unittest.TestCase):
         self.assertEqual(rows[0]["geoid"],"01")
         self.assertEqual(rows[0]["value"],3.8)
         self.assertEqual(rows[0]["seasonalAdjustment"],"not_seasonally_adjusted")
+        self.assertEqual(rows[0]["footnoteCodes"],[])
 
     def test_laus_duplicate_annual_series_rejected(self):
-        raw=("series_id\tyear\tperiod\tvalue\n"
-             "LAUST010000000000003\t2025\tM13\t3.8\n"
-             "LAUST010000000000003\t2025\tM13\t3.9\n").encode()
+        raw=("series_id\tyear\tperiod\tvalue\tfootnote_codes\n"
+             "LAUST010000000000003\t2025\tM13\t3.8\tG\n"
+             "LAUST010000000000003\t2025\tM13\t3.9\tG\n").encode()
         with self.assertRaisesRegex(ValueError,"Duplicate"):
             parse_laus_state_annual(raw,2025)
 
     def test_laus_invalid_rate_and_year_rejected(self):
-        raw=("series_id\tyear\tperiod\tvalue\n"
-             "LAUST010000000000003\t2025\tM13\t105\n").encode()
+        raw=("series_id\tyear\tperiod\tvalue\tfootnote_codes\n"
+             "LAUST010000000000003\t2025\tM13\t105\tG\n").encode()
         with self.assertRaisesRegex(ValueError,"range"):
             parse_laus_state_annual(raw,2025)
         with self.assertRaisesRegex(ValueError,"Invalid LAUS publication year"):

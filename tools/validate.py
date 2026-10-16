@@ -379,7 +379,8 @@ def validate_publication(root=ROOT):
             folder = checked_path(root, entry["releaseId"], "manifest.json").parent
             source_bytes = [
                 gzip.decompress((folder / name).read_bytes())
-                for name in ("originalData.gz", "originalSeries.gz", "originalAreas.gz")
+                for name in ("originalData.gz", "originalSeries.gz", "originalAreas.gz",
+                             "originalFootnotes.gz")
             ]
             expected = parse_authoritative_annual(*source_bytes)
             projected = load_json(folder / "observations.json")["observations"]
