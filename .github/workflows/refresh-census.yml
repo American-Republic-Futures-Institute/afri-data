@@ -33,7 +33,7 @@ jobs:
       - name: Verify catalog before fetch
         run: python tools/validate.py --catalog-only
       - name: Retrieve primary Census originals and generate evidence
-        run: python pipelines/census_state_population.py
+        run: python -m pipelines.census_state_population
       - name: Verify asset checksums, table fidelity and geometry joins
         run: python tools/validate.py
       - name: Stage a reviewable release PR (never modify main directly)
