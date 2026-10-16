@@ -12,6 +12,8 @@ jobs:
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -22,6 +24,9 @@ jobs:
         run: python tools/validate.py --catalog-only
       - name: Run offline conversion, geography and security regressions
         run: python -m unittest discover -s tests -v
+      - name: Refuse removal or modification of approved evidence across pull requests
+        if: github.event_name == 'pull_request'
+        run: python -m tools.release_transition --base origin/main
       - name: Verify published evidence if present
         shell: bash
         run: |
