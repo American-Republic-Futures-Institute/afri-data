@@ -42,17 +42,34 @@ def archive_members(raw: bytes) -> dict[str, bytes]:
             if not 3<=len(infos)<=12 or sum(x.file_size for x in infos)>30_000_000:
                 raise ValueError("County cartographic source archive has unsafe size/count")
             members={}
+            seen=set()
+            prefix="cb_2023_us_county_20m."
+            shape_extensions=frozenset(("shp","shx","dbf","prj","cpg"))
+            # Census places explanatory FGDC/ISO metadata XML next to SHP
+            # components in its official downloads. Preserve all of those
+            # original bytes inside the ZIP, but parse only shapefile data.
+            metadata_extensions=frozenset((
+                "shp.iso.xml","shp.ea.iso.xml","shp.xml",
+            ))
             for item in infos:
                 name=Path(item.filename).name
-                if (item.is_dir() or name!=item.filename
-                        or not re.fullmatch(r"cb_2023_us_county_20m\.(shp|shx|dbf|prj|cpg)",name)):
+                if item.is_dir() or name != item.filename or not name.startswith(prefix):
                     raise ValueError("Unexpected county source archive member")
-                extension=Path(name).suffix
-                if extension in members:
+                suffix=name[len(prefix):]
+                if suffix not in shape_extensions | metadata_extensions:
+                    # Filename is attacker-controlled; never echo arbitrary
+                    # text into validation logs. Fail closed on schema drift.
+                    raise ValueError("Unexpected county source archive member")
+                if name in seen:
                     raise ValueError("Duplicate Census county archive member")
+                seen.add(name)
                 if item.file_size>25_000_000 or item.flag_bits & 1:
                     raise ValueError("Unsafe/encrypted county archive member")
-                members[extension]=z.read(item)
+                if suffix in metadata_extensions:
+                    # Archive retained byte-for-byte in original.zip. No XML
+                    # parsing or XML-derived data enters geometry projection.
+                    continue
+                members["."+suffix]=z.read(item)
             if not {".shp",".shx",".dbf"}.issubset(members):
                 raise ValueError("Incomplete Census county shapefile components")
             return members

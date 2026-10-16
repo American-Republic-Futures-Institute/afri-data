@@ -17,7 +17,7 @@ from pipelines.census_county_geography import (
 from tools.validate_geography import validate_geography
 
 
-def fake_shapefile_zip(*, duplicate=False, invalid_coord=False) -> bytes:
+def fake_shapefile_zip(*, duplicate=False, invalid_coord=False, metadata=False) -> bytes:
     """3143 clearly synthetic polygons. Never publish these as Census data."""
     shp,shx,dbf=io.BytesIO(),io.BytesIO(),io.BytesIO()
     w=shapefile.Writer(shp=shp,shx=shx,dbf=dbf,shapeType=shapefile.POLYGON)
@@ -43,6 +43,10 @@ def fake_shapefile_zip(*, duplicate=False, invalid_coord=False) -> bytes:
     with zipfile.ZipFile(data,"w",zipfile.ZIP_DEFLATED) as archive:
         for ext,payload in (("shp",shp),("shx",shx),("dbf",dbf)):
             archive.writestr("cb_2023_us_county_20m."+ext,payload.getvalue())
+        if metadata:
+            archive.writestr("cb_2023_us_county_20m.shp.iso.xml",b"<metadata/>")
+            archive.writestr("cb_2023_us_county_20m.shp.ea.iso.xml",b"<metadata/>")
+            archive.writestr("cb_2023_us_county_20m.shp.xml",b"<metadata/>")
     return data.getvalue()
 
 
@@ -85,6 +89,40 @@ class CountyGeographyTests(unittest.TestCase):
                 z.writestr("../cb_2023_us_county_20m."+ext,b"malicious")
         with self.assertRaisesRegex(ValueError,"Unexpected county source archive member"):
             archive_members(b.getvalue())
+
+
+    def test_official_shapefile_iso_metadata_is_allowed_but_not_executed(self):
+        """FGDC/ISO sidecars are inert and remain in the original source ZIP."""
+        original=fake_shapefile_zip(metadata=True)
+        members=archive_members(original)
+        self.assertEqual(set(members),{".shp",".shx",".dbf"})
+        output=parse_county_geometries(original)
+        self.assertEqual(len(output["features"]),EXPECTED)
+        saved=stage(self.root,original)
+        result=validate_geography(self.root)
+        self.assertEqual(result["countyFeatures"],EXPECTED)
+        folder=self.root/"publication/geographies/releases"/saved["releaseId"]
+        self.assertEqual((folder/"original.zip").read_bytes(),original)
+
+    def test_unrecognized_xml_sidecar_fails_closed(self):
+        original=fake_shapefile_zip()
+        out=io.BytesIO()
+        with zipfile.ZipFile(io.BytesIO(original)) as source, zipfile.ZipFile(out,"w") as target:
+            for name in source.namelist():
+                target.writestr(name,source.read(name))
+            target.writestr("cb_2023_us_county_20m.unapproved.xml",b"<x/>")
+        with self.assertRaisesRegex(ValueError,"Unexpected county source archive member"):
+            archive_members(out.getvalue())
+
+    def test_duplicate_iso_metadata_sidecar_rejected(self):
+        original=fake_shapefile_zip(metadata=True)
+        out=io.BytesIO()
+        with zipfile.ZipFile(io.BytesIO(original)) as source, zipfile.ZipFile(out,"w") as target:
+            for name in source.namelist():
+                target.writestr(name,source.read(name))
+            target.writestr("cb_2023_us_county_20m.shp.iso.xml",b"<duplicate/>")
+        with self.assertRaisesRegex(ValueError,"Duplicate Census county archive member"):
+            archive_members(out.getvalue())
 
     def test_reject_duplicate_fips(self):
         with self.assertRaisesRegex(ValueError,"Duplicate county FIPS"):
