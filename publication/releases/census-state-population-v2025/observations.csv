@@ -1,0 +1,313 @@
+fips,name,year,value,unit,measure,statistic,vintage
+01,Alabama,2020,5032962,persons,resident_population_estimate,published_estimate,2025
+02,Alaska,2020,732906,persons,resident_population_estimate,published_estimate,2025
+04,Arizona,2020,7186647,persons,resident_population_estimate,published_estimate,2025
+05,Arkansas,2020,3014399,persons,resident_population_estimate,published_estimate,2025
+06,California,2020,39527808,persons,resident_population_estimate,published_estimate,2025
+08,Colorado,2020,5786873,persons,resident_population_estimate,published_estimate,2025
+09,Connecticut,2020,3579643,persons,resident_population_estimate,published_estimate,2025
+10,Delaware,2020,991890,persons,resident_population_estimate,published_estimate,2025
+11,District of Columbia,2020,670958,persons,resident_population_estimate,published_estimate,2025
+12,Florida,2020,21591325,persons,resident_population_estimate,published_estimate,2025
+13,Georgia,2020,10732595,persons,resident_population_estimate,published_estimate,2025
+15,Hawaii,2020,1451130,persons,resident_population_estimate,published_estimate,2025
+16,Idaho,2020,1849328,persons,resident_population_estimate,published_estimate,2025
+17,Illinois,2020,12795348,persons,resident_population_estimate,published_estimate,2025
+18,Indiana,2020,6790290,persons,resident_population_estimate,published_estimate,2025
+19,Iowa,2020,3191081,persons,resident_population_estimate,published_estimate,2025
+20,Kansas,2020,2938274,persons,resident_population_estimate,published_estimate,2025
+21,Kentucky,2020,4508271,persons,resident_population_estimate,published_estimate,2025
+22,Louisiana,2020,4652145,persons,resident_population_estimate,published_estimate,2025
+23,Maine,2020,1364546,persons,resident_population_estimate,published_estimate,2025
+24,Maryland,2020,6178387,persons,resident_population_estimate,published_estimate,2025
+25,Massachusetts,2020,6985320,persons,resident_population_estimate,published_estimate,2025
+26,Michigan,2020,10072294,persons,resident_population_estimate,published_estimate,2025
+27,Minnesota,2020,5710562,persons,resident_population_estimate,published_estimate,2025
+28,Mississippi,2020,2958385,persons,resident_population_estimate,published_estimate,2025
+29,Missouri,2020,6155074,persons,resident_population_estimate,published_estimate,2025
+30,Montana,2020,1087156,persons,resident_population_estimate,published_estimate,2025
+31,Nebraska,2020,1963318,persons,resident_population_estimate,published_estimate,2025
+32,Nevada,2020,3116851,persons,resident_population_estimate,published_estimate,2025
+33,New Hampshire,2020,1378752,persons,resident_population_estimate,published_estimate,2025
+34,New Jersey,2020,9270476,persons,resident_population_estimate,published_estimate,2025
+35,New Mexico,2020,2118446,persons,resident_population_estimate,published_estimate,2025
+36,New York,2020,20122262,persons,resident_population_estimate,published_estimate,2025
+37,North Carolina,2020,10450215,persons,resident_population_estimate,published_estimate,2025
+38,North Dakota,2020,779612,persons,resident_population_estimate,published_estimate,2025
+39,Ohio,2020,11798534,persons,resident_population_estimate,published_estimate,2025
+40,Oklahoma,2020,3965243,persons,resident_population_estimate,published_estimate,2025
+41,Oregon,2020,4243544,persons,resident_population_estimate,published_estimate,2025
+42,Pennsylvania,2020,12995576,persons,resident_population_estimate,published_estimate,2025
+44,Rhode Island,2020,1096487,persons,resident_population_estimate,published_estimate,2025
+45,South Carolina,2020,5131992,persons,resident_population_estimate,published_estimate,2025
+46,South Dakota,2020,887808,persons,resident_population_estimate,published_estimate,2025
+47,Tennessee,2020,6927736,persons,resident_population_estimate,published_estimate,2025
+48,Texas,2020,29237895,persons,resident_population_estimate,published_estimate,2025
+49,Utah,2020,3283970,persons,resident_population_estimate,published_estimate,2025
+50,Vermont,2020,642965,persons,resident_population_estimate,published_estimate,2025
+51,Virginia,2020,8637303,persons,resident_population_estimate,published_estimate,2025
+53,Washington,2020,7726812,persons,resident_population_estimate,published_estimate,2025
+54,West Virginia,2020,1791670,persons,resident_population_estimate,published_estimate,2025
+55,Wisconsin,2020,5897371,persons,resident_population_estimate,published_estimate,2025
+56,Wyoming,2020,577669,persons,resident_population_estimate,published_estimate,2025
+72,Puerto Rico,2020,3281591,persons,resident_population_estimate,published_estimate,2025
+01,Alabama,2021,5050058,persons,resident_population_estimate,published_estimate,2025
+02,Alaska,2021,734590,persons,resident_population_estimate,published_estimate,2025
+04,Arizona,2021,7274022,persons,resident_population_estimate,published_estimate,2025
+05,Arkansas,2021,3027127,persons,resident_population_estimate,published_estimate,2025
+06,California,2021,39152927,persons,resident_population_estimate,published_estimate,2025
+08,Colorado,2021,5814368,persons,resident_population_estimate,published_estimate,2025
+09,Connecticut,2021,3607765,persons,resident_population_estimate,published_estimate,2025
+10,Delaware,2021,1005130,persons,resident_population_estimate,published_estimate,2025
+11,District of Columbia,2021,669637,persons,resident_population_estimate,published_estimate,2025
+12,Florida,2021,21836698,persons,resident_population_estimate,published_estimate,2025
+13,Georgia,2021,10793038,persons,resident_population_estimate,published_estimate,2025
+15,Hawaii,2021,1446909,persons,resident_population_estimate,published_estimate,2025
+16,Idaho,2021,1904855,persons,resident_population_estimate,published_estimate,2025
+17,Illinois,2021,12703354,persons,resident_population_estimate,published_estimate,2025
+18,Indiana,2021,6814223,persons,resident_population_estimate,published_estimate,2025
+19,Iowa,2021,3199037,persons,resident_population_estimate,published_estimate,2025
+20,Kansas,2021,2938966,persons,resident_population_estimate,published_estimate,2025
+21,Kentucky,2021,4508348,persons,resident_population_estimate,published_estimate,2025
+22,Louisiana,2021,4628595,persons,resident_population_estimate,published_estimate,2025
+23,Maine,2021,1379009,persons,resident_population_estimate,published_estimate,2025
+24,Maryland,2021,6176035,persons,resident_population_estimate,published_estimate,2025
+25,Massachusetts,2021,6996721,persons,resident_population_estimate,published_estimate,2025
+26,Michigan,2021,10042362,persons,resident_population_estimate,published_estimate,2025
+27,Minnesota,2021,5714055,persons,resident_population_estimate,published_estimate,2025
+28,Mississippi,2021,2947603,persons,resident_population_estimate,published_estimate,2025
+29,Missouri,2021,6172551,persons,resident_population_estimate,published_estimate,2025
+30,Montana,2021,1106416,persons,resident_population_estimate,published_estimate,2025
+31,Nebraska,2021,1964697,persons,resident_population_estimate,published_estimate,2025
+32,Nevada,2021,3148472,persons,resident_population_estimate,published_estimate,2025
+33,New Hampshire,2021,1387907,persons,resident_population_estimate,published_estimate,2025
+34,New Jersey,2021,9266509,persons,resident_population_estimate,published_estimate,2025
+35,New Mexico,2021,2117300,persons,resident_population_estimate,published_estimate,2025
+36,New York,2021,19835345,persons,resident_population_estimate,published_estimate,2025
+37,North Carolina,2021,10565503,persons,resident_population_estimate,published_estimate,2025
+38,North Dakota,2021,777977,persons,resident_population_estimate,published_estimate,2025
+39,Ohio,2021,11761443,persons,resident_population_estimate,published_estimate,2025
+40,Oklahoma,2021,3992760,persons,resident_population_estimate,published_estimate,2025
+41,Oregon,2021,4254691,persons,resident_population_estimate,published_estimate,2025
+42,Pennsylvania,2021,13016628,persons,resident_population_estimate,published_estimate,2025
+44,Rhode Island,2021,1097381,persons,resident_population_estimate,published_estimate,2025
+45,South Carolina,2021,5194346,persons,resident_population_estimate,published_estimate,2025
+46,South Dakota,2021,896303,persons,resident_population_estimate,published_estimate,2025
+47,Tennessee,2021,6966687,persons,resident_population_estimate,published_estimate,2025
+48,Texas,2021,29572672,persons,resident_population_estimate,published_estimate,2025
+49,Utah,2021,3339874,persons,resident_population_estimate,published_estimate,2025
+50,Vermont,2021,647238,persons,resident_population_estimate,published_estimate,2025
+51,Virginia,2021,8660007,persons,resident_population_estimate,published_estimate,2025
+53,Washington,2021,7744316,persons,resident_population_estimate,published_estimate,2025
+54,West Virginia,2021,1785921,persons,resident_population_estimate,published_estimate,2025
+55,Wisconsin,2021,5882128,persons,resident_population_estimate,published_estimate,2025
+56,Wyoming,2021,579662,persons,resident_population_estimate,published_estimate,2025
+72,Puerto Rico,2021,3262731,persons,resident_population_estimate,published_estimate,2025
+01,Alabama,2022,5076868,persons,resident_population_estimate,published_estimate,2025
+02,Alaska,2022,733659,persons,resident_population_estimate,published_estimate,2025
+04,Arizona,2022,7370065,persons,resident_population_estimate,published_estimate,2025
+05,Arkansas,2022,3047429,persons,resident_population_estimate,published_estimate,2025
+06,California,2022,39125347,persons,resident_population_estimate,published_estimate,2025
+08,Colorado,2022,5853355,persons,resident_population_estimate,published_estimate,2025
+09,Connecticut,2022,3618707,persons,resident_population_estimate,published_estimate,2025
+10,Delaware,2022,1020279,persons,resident_population_estimate,published_estimate,2025
+11,District of Columbia,2022,674501,persons,resident_population_estimate,published_estimate,2025
+12,Florida,2022,22413989,persons,resident_population_estimate,published_estimate,2025
+13,Georgia,2022,10929992,persons,resident_population_estimate,published_estimate,2025
+15,Hawaii,2022,1437812,persons,resident_population_estimate,published_estimate,2025
+16,Idaho,2022,1942951,persons,resident_population_estimate,published_estimate,2025
+17,Illinois,2022,12609577,persons,resident_population_estimate,published_estimate,2025
+18,Indiana,2022,6841491,persons,resident_population_estimate,published_estimate,2025
+19,Iowa,2022,3201890,persons,resident_population_estimate,published_estimate,2025
+20,Kansas,2022,2938034,persons,resident_population_estimate,published_estimate,2025
+21,Kentucky,2022,4521238,persons,resident_population_estimate,published_estimate,2025
+22,Louisiana,2022,4600892,persons,resident_population_estimate,published_estimate,2025
+23,Maine,2022,1391585,persons,resident_population_estimate,published_estimate,2025
+24,Maryland,2022,6183257,persons,resident_population_estimate,published_estimate,2025
+25,Massachusetts,2022,7025465,persons,resident_population_estimate,published_estimate,2025
+26,Michigan,2022,10043906,persons,resident_population_estimate,published_estimate,2025
+27,Minnesota,2022,5727565,persons,resident_population_estimate,published_estimate,2025
+28,Mississippi,2022,2941237,persons,resident_population_estimate,published_estimate,2025
+29,Missouri,2022,6179285,persons,resident_population_estimate,published_estimate,2025
+30,Montana,2022,1121533,persons,resident_population_estimate,published_estimate,2025
+31,Nebraska,2022,1972595,persons,resident_population_estimate,published_estimate,2025
+32,Nevada,2022,3177672,persons,resident_population_estimate,published_estimate,2025
+33,New Hampshire,2022,1396647,persons,resident_population_estimate,published_estimate,2025
+34,New Jersey,2022,9298402,persons,resident_population_estimate,published_estimate,2025
+35,New Mexico,2022,2112859,persons,resident_population_estimate,published_estimate,2025
+36,New York,2022,19713025,persons,resident_population_estimate,published_estimate,2025
+37,North Carolina,2022,10705768,persons,resident_population_estimate,published_estimate,2025
+38,North Dakota,2022,780191,persons,resident_population_estimate,published_estimate,2025
+39,Ohio,2022,11764950,persons,resident_population_estimate,published_estimate,2025
+40,Oklahoma,2022,4025327,persons,resident_population_estimate,published_estimate,2025
+41,Oregon,2022,4245964,persons,resident_population_estimate,published_estimate,2025
+42,Pennsylvania,2022,12984655,persons,resident_population_estimate,published_estimate,2025
+44,Rhode Island,2022,1098275,persons,resident_population_estimate,published_estimate,2025
+45,South Carolina,2022,5288957,persons,resident_population_estimate,published_estimate,2025
+46,South Dakota,2022,909156,persons,resident_population_estimate,published_estimate,2025
+47,Tennessee,2022,7063325,persons,resident_population_estimate,published_estimate,2025
+48,Texas,2022,30118002,persons,resident_population_estimate,published_estimate,2025
+49,Utah,2022,3393928,persons,resident_population_estimate,published_estimate,2025
+50,Vermont,2022,647614,persons,resident_population_estimate,published_estimate,2025
+51,Virginia,2022,8681038,persons,resident_population_estimate,published_estimate,2025
+53,Washington,2022,7786828,persons,resident_population_estimate,published_estimate,2025
+54,West Virginia,2022,1774003,persons,resident_population_estimate,published_estimate,2025
+55,Wisconsin,2022,5903472,persons,resident_population_estimate,published_estimate,2025
+56,Wyoming,2022,581742,persons,resident_population_estimate,published_estimate,2025
+72,Puerto Rico,2022,3220148,persons,resident_population_estimate,published_estimate,2025
+01,Alabama,2023,5117850,persons,resident_population_estimate,published_estimate,2025
+02,Alaska,2023,734654,persons,resident_population_estimate,published_estimate,2025
+04,Arizona,2023,7452073,persons,resident_population_estimate,published_estimate,2025
+05,Arkansas,2023,3069856,persons,resident_population_estimate,published_estimate,2025
+06,California,2023,39181667,persons,resident_population_estimate,published_estimate,2025
+08,Colorado,2023,5912240,persons,resident_population_estimate,published_estimate,2025
+09,Connecticut,2023,3641369,persons,resident_population_estimate,published_estimate,2025
+10,Delaware,2023,1035354,persons,resident_population_estimate,published_estimate,2025
+11,District of Columbia,2023,682559,persons,resident_population_estimate,published_estimate,2025
+12,Florida,2023,22929248,persons,resident_population_estimate,published_estimate,2025
+13,Georgia,2023,11063669,persons,resident_population_estimate,published_estimate,2025
+15,Hawaii,2023,1434950,persons,resident_population_estimate,published_estimate,2025
+16,Idaho,2023,1970497,persons,resident_population_estimate,published_estimate,2025
+17,Illinois,2023,12633389,persons,resident_population_estimate,published_estimate,2025
+18,Indiana,2023,6881373,persons,resident_population_estimate,published_estimate,2025
+19,Iowa,2023,3214739,persons,resident_population_estimate,published_estimate,2025
+20,Kansas,2023,2949749,persons,resident_population_estimate,published_estimate,2025
+21,Kentucky,2023,4549953,persons,resident_population_estimate,published_estimate,2025
+22,Louisiana,2023,4598777,persons,resident_population_estimate,published_estimate,2025
+23,Maine,2023,1401992,persons,resident_population_estimate,published_estimate,2025
+24,Maryland,2023,6204927,persons,resident_population_estimate,published_estimate,2025
+25,Massachusetts,2023,7073479,persons,resident_population_estimate,published_estimate,2025
+26,Michigan,2023,10062124,persons,resident_population_estimate,published_estimate,2025
+27,Minnesota,2023,5752998,persons,resident_population_estimate,published_estimate,2025
+28,Mississippi,2023,2942470,persons,resident_population_estimate,published_estimate,2025
+29,Missouri,2023,6205956,persons,resident_population_estimate,published_estimate,2025
+30,Montana,2023,1130612,persons,resident_population_estimate,published_estimate,2025
+31,Nebraska,2023,1988172,persons,resident_population_estimate,published_estimate,2025
+32,Nevada,2023,3211077,persons,resident_population_estimate,published_estimate,2025
+33,New Hampshire,2023,1401530,persons,resident_population_estimate,published_estimate,2025
+34,New Jersey,2023,9395315,persons,resident_population_estimate,published_estimate,2025
+35,New Mexico,2023,2119349,persons,resident_population_estimate,published_estimate,2025
+36,New York,2023,19786543,persons,resident_population_estimate,published_estimate,2025
+37,North Carolina,2023,10871849,persons,resident_population_estimate,published_estimate,2025
+38,North Dakota,2023,787071,persons,resident_population_estimate,published_estimate,2025
+39,Ohio,2023,11808390,persons,resident_population_estimate,published_estimate,2025
+40,Oklahoma,2023,4062716,persons,resident_population_estimate,published_estimate,2025
+41,Oregon,2023,4250392,persons,resident_population_estimate,published_estimate,2025
+42,Pennsylvania,2023,13009406,persons,resident_population_estimate,published_estimate,2025
+44,Rhode Island,2023,1101183,persons,resident_population_estimate,published_estimate,2025
+45,South Carolina,2023,5390798,persons,resident_population_estimate,published_estimate,2025
+46,South Dakota,2023,917739,persons,resident_population_estimate,published_estimate,2025
+47,Tennessee,2023,7153029,persons,resident_population_estimate,published_estimate,2025
+48,Texas,2023,30719247,persons,resident_population_estimate,published_estimate,2025
+49,Utah,2023,3449259,persons,resident_population_estimate,published_estimate,2025
+50,Vermont,2023,647722,persons,resident_population_estimate,published_estimate,2025
+51,Virginia,2023,8732034,persons,resident_population_estimate,published_estimate,2025
+53,Washington,2023,7838655,persons,resident_population_estimate,published_estimate,2025
+54,West Virginia,2023,1770036,persons,resident_population_estimate,published_estimate,2025
+55,Wisconsin,2023,5930350,persons,resident_population_estimate,published_estimate,2025
+56,Wyoming,2023,584666,persons,resident_population_estimate,published_estimate,2025
+72,Puerto Rico,2023,3203794,persons,resident_population_estimate,published_estimate,2025
+01,Alabama,2024,5163055,persons,resident_population_estimate,published_estimate,2025
+02,Alaska,2024,736537,persons,resident_population_estimate,published_estimate,2025
+04,Arizona,2024,7556424,persons,resident_population_estimate,published_estimate,2025
+05,Arkansas,2024,3096080,persons,resident_population_estimate,published_estimate,2025
+06,California,2024,39364774,persons,resident_population_estimate,published_estimate,2025
+08,Colorado,2024,5988502,persons,resident_population_estimate,published_estimate,2025
+09,Connecticut,2024,3674449,persons,resident_population_estimate,published_estimate,2025
+10,Delaware,2024,1050123,persons,resident_population_estimate,published_estimate,2025
+11,District of Columbia,2024,691310,persons,resident_population_estimate,published_estimate,2025
+12,Florida,2024,23265838,persons,resident_population_estimate,published_estimate,2025
+13,Georgia,2024,11204208,persons,resident_population_estimate,published_estimate,2025
+15,Hawaii,2024,1434952,persons,resident_population_estimate,published_estimate,2025
+16,Idaho,2024,2000872,persons,resident_population_estimate,published_estimate,2025
+17,Illinois,2024,12703033,persons,resident_population_estimate,published_estimate,2025
+18,Indiana,2024,6934754,persons,resident_population_estimate,published_estimate,2025
+19,Iowa,2024,3230454,persons,resident_population_estimate,published_estimate,2025
+20,Kansas,2024,2965252,persons,resident_population_estimate,published_estimate,2025
+21,Kentucky,2024,4584046,persons,resident_population_estimate,published_estimate,2025
+22,Louisiana,2024,4614878,persons,resident_population_estimate,published_estimate,2025
+23,Maine,2024,1408438,persons,resident_population_estimate,published_estimate,2025
+24,Maryland,2024,6245314,persons,resident_population_estimate,published_estimate,2025
+25,Massachusetts,2024,7138560,persons,resident_population_estimate,published_estimate,2025
+26,Michigan,2024,10099962,persons,resident_population_estimate,published_estimate,2025
+27,Minnesota,2024,5797405,persons,resident_population_estimate,published_estimate,2025
+28,Mississippi,2024,2950172,persons,resident_population_estimate,published_estimate,2025
+29,Missouri,2024,6243544,persons,resident_population_estimate,published_estimate,2025
+30,Montana,2024,1137557,persons,resident_population_estimate,published_estimate,2025
+31,Nebraska,2024,2005591,persons,resident_population_estimate,published_estimate,2025
+32,Nevada,2024,3253543,persons,resident_population_estimate,published_estimate,2025
+33,New Hampshire,2024,1408518,persons,resident_population_estimate,published_estimate,2025
+34,New Jersey,2024,9506354,persons,resident_population_estimate,published_estimate,2025
+35,New Mexico,2024,2126774,persons,resident_population_estimate,published_estimate,2025
+36,New York,2024,20001419,persons,resident_population_estimate,published_estimate,2025
+37,North Carolina,2024,11052061,persons,resident_population_estimate,published_estimate,2025
+38,North Dakota,2024,793387,persons,resident_population_estimate,published_estimate,2025
+39,Ohio,2024,11860621,persons,resident_population_estimate,published_estimate,2025
+40,Oklahoma,2024,4097758,persons,resident_population_estimate,published_estimate,2025
+41,Oregon,2024,4265324,persons,resident_population_estimate,published_estimate,2025
+42,Pennsylvania,2024,13045848,persons,resident_population_estimate,published_estimate,2025
+44,Rhode Island,2024,1110415,persons,resident_population_estimate,published_estimate,2025
+45,South Carolina,2024,5490316,persons,resident_population_estimate,published_estimate,2025
+46,South Dakota,2024,927110,persons,resident_population_estimate,published_estimate,2025
+47,Tennessee,2024,7251291,persons,resident_population_estimate,published_estimate,2025
+48,Texas,2024,31318578,persons,resident_population_estimate,published_estimate,2025
+49,Utah,2024,3502983,persons,resident_population_estimate,published_estimate,2025
+50,Vermont,2024,646521,persons,resident_population_estimate,published_estimate,2025
+51,Virginia,2024,8819642,persons,resident_population_estimate,published_estimate,2025
+53,Washington,2024,7927958,persons,resident_population_estimate,published_estimate,2025
+54,West Virginia,2024,1767402,persons,resident_population_estimate,published_estimate,2025
+55,Wisconsin,2024,5957168,persons,resident_population_estimate,published_estimate,2025
+56,Wyoming,2024,586722,persons,resident_population_estimate,published_estimate,2025
+72,Puerto Rico,2024,3202521,persons,resident_population_estimate,published_estimate,2025
+01,Alabama,2025,5193088,persons,resident_population_estimate,published_estimate,2025
+02,Alaska,2025,737270,persons,resident_population_estimate,published_estimate,2025
+04,Arizona,2025,7623818,persons,resident_population_estimate,published_estimate,2025
+05,Arkansas,2025,3114791,persons,resident_population_estimate,published_estimate,2025
+06,California,2025,39355309,persons,resident_population_estimate,published_estimate,2025
+08,Colorado,2025,6012561,persons,resident_population_estimate,published_estimate,2025
+09,Connecticut,2025,3688496,persons,resident_population_estimate,published_estimate,2025
+10,Delaware,2025,1059952,persons,resident_population_estimate,published_estimate,2025
+11,District of Columbia,2025,693645,persons,resident_population_estimate,published_estimate,2025
+12,Florida,2025,23462518,persons,resident_population_estimate,published_estimate,2025
+13,Georgia,2025,11302748,persons,resident_population_estimate,published_estimate,2025
+15,Hawaii,2025,1432820,persons,resident_population_estimate,published_estimate,2025
+16,Idaho,2025,2029733,persons,resident_population_estimate,published_estimate,2025
+17,Illinois,2025,12719141,persons,resident_population_estimate,published_estimate,2025
+18,Indiana,2025,6973333,persons,resident_population_estimate,published_estimate,2025
+19,Iowa,2025,3238387,persons,resident_population_estimate,published_estimate,2025
+20,Kansas,2025,2977220,persons,resident_population_estimate,published_estimate,2025
+21,Kentucky,2025,4606864,persons,resident_population_estimate,published_estimate,2025
+22,Louisiana,2025,4618189,persons,resident_population_estimate,published_estimate,2025
+23,Maine,2025,1414874,persons,resident_population_estimate,published_estimate,2025
+24,Maryland,2025,6265347,persons,resident_population_estimate,published_estimate,2025
+25,Massachusetts,2025,7154084,persons,resident_population_estimate,published_estimate,2025
+26,Michigan,2025,10127884,persons,resident_population_estimate,published_estimate,2025
+27,Minnesota,2025,5830405,persons,resident_population_estimate,published_estimate,2025
+28,Mississippi,2025,2954160,persons,resident_population_estimate,published_estimate,2025
+29,Missouri,2025,6270541,persons,resident_population_estimate,published_estimate,2025
+30,Montana,2025,1144694,persons,resident_population_estimate,published_estimate,2025
+31,Nebraska,2025,2018006,persons,resident_population_estimate,published_estimate,2025
+32,Nevada,2025,3282188,persons,resident_population_estimate,published_estimate,2025
+33,New Hampshire,2025,1415342,persons,resident_population_estimate,published_estimate,2025
+34,New Jersey,2025,9548215,persons,resident_population_estimate,published_estimate,2025
+35,New Mexico,2025,2125498,persons,resident_population_estimate,published_estimate,2025
+36,New York,2025,20002427,persons,resident_population_estimate,published_estimate,2025
+37,North Carolina,2025,11197968,persons,resident_population_estimate,published_estimate,2025
+38,North Dakota,2025,799358,persons,resident_population_estimate,published_estimate,2025
+39,Ohio,2025,11900510,persons,resident_population_estimate,published_estimate,2025
+40,Oklahoma,2025,4123288,persons,resident_population_estimate,published_estimate,2025
+41,Oregon,2025,4273586,persons,resident_population_estimate,published_estimate,2025
+42,Pennsylvania,2025,13059432,persons,resident_population_estimate,published_estimate,2025
+44,Rhode Island,2025,1114521,persons,resident_population_estimate,published_estimate,2025
+45,South Carolina,2025,5570274,persons,resident_population_estimate,published_estimate,2025
+46,South Dakota,2025,935094,persons,resident_population_estimate,published_estimate,2025
+47,Tennessee,2025,7315076,persons,resident_population_estimate,published_estimate,2025
+48,Texas,2025,31709821,persons,resident_population_estimate,published_estimate,2025
+49,Utah,2025,3538904,persons,resident_population_estimate,published_estimate,2025
+50,Vermont,2025,644663,persons,resident_population_estimate,published_estimate,2025
+51,Virginia,2025,8880107,persons,resident_population_estimate,published_estimate,2025
+53,Washington,2025,8001020,persons,resident_population_estimate,published_estimate,2025
+54,West Virginia,2025,1766147,persons,resident_population_estimate,published_estimate,2025
+55,Wisconsin,2025,5972787,persons,resident_population_estimate,published_estimate,2025
+56,Wyoming,2025,588753,persons,resident_population_estimate,published_estimate,2025
+72,Puerto Rico,2025,3184835,persons,resident_population_estimate,published_estimate,2025
