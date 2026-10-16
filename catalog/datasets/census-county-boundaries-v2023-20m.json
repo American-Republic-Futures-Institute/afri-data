@@ -22,9 +22,10 @@
   "limitations": [
     "2023 Census generalized cartographic boundaries, not surveyed cadastral or legally definitive boundaries.",
     "2023 Census county geography includes Connecticut planning regions, which may not correspond to earlier statistical releases.",
-    "Published comparable layer covers all 3,143 county and equivalent geographic identifiers in the 50 states and District of Columbia; other island areas and Puerto Rico are intentionally out of this first county view.",
+    "Published comparable layer covers all 3,144 county and equivalent geographic identifiers in the 50 states and District of Columbia; other island areas and Puerto Rico are intentionally out of this first county view.",
     "Shape coordinates are preserved directly from source; the geographic datum is not independently transformed and should not be used for parcel-level measurements.",
-    "Statistical sources with different geographic vintages require explicit GEOID reconciliation before joint analysis."
+    "Statistical sources with different geographic vintages require explicit GEOID reconciliation before joint analysis.",
+    "2025 CDC PLACES candidate observations contain 3,143 county GEOIDs and omit Texas Loving County FIPS 48301 present in this independently published 2023 Census county geometry. Retain all 3,144 Census polygons; consumer must explicitly display the unmatched CDC county as no data."
   ],
   "licenseStatus": "us-federal-public-domain"
 }
