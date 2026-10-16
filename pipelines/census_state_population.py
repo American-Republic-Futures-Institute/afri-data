@@ -248,7 +248,8 @@ def build_release(root: Path, csv_bytes: bytes, zip_bytes: bytes,
         }]
     }
     (root / "publication").mkdir(parents=True, exist_ok=True)
-    (root / "publication/index.json").write_bytes(pretty_json(index))
+    from tools.release_registry import upsert_release_entry
+    upsert_release_entry(root, index["releases"][0])
     return manifest
 
 
@@ -272,6 +273,9 @@ def main():
     # Build and check in a private staging area so failures do not touch output.
     with tempfile.TemporaryDirectory() as temp:
         stage = Path(temp)
+        prior = args.out_root / 'publication'
+        if prior.is_dir():
+            shutil.copytree(prior, stage / 'publication', dirs_exist_ok=True)
         manifest = build_release(stage, raw_csv, raw_zip, urls, args.created_at)
         # Validate before publishing (run in-process, no external service).
         import sys
