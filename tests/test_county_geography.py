@@ -18,7 +18,7 @@ from tools.validate_geography import validate_geography
 
 
 def fake_shapefile_zip(*, duplicate=False, invalid_coord=False, metadata=False) -> bytes:
-    """3143 clearly synthetic polygons. Never publish these as Census data."""
+    """3144 clearly synthetic polygons. Never publish these as Census data."""
     shp,shx,dbf=io.BytesIO(),io.BytesIO(),io.BytesIO()
     w=shapefile.Writer(shp=shp,shx=shx,dbf=dbf,shapeType=shapefile.POLYGON)
     w.field("STATEFP","C",2)
@@ -63,9 +63,9 @@ class CountyGeographyTests(unittest.TestCase):
     def test_full_county_coverage_without_any_measured_statistics(self):
         geo=parse_county_geometries(self.original)
         self.assertEqual(geo["type"],"FeatureCollection")
-        self.assertEqual(len(geo["features"]),3143)
+        self.assertEqual(len(geo["features"]),3144)
         self.assertEqual(geo["metadata"]["vintage"],2023)
-        self.assertEqual(len({f["properties"]["GEOID"] for f in geo["features"]}),3143)
+        self.assertEqual(len({f["properties"]["GEOID"] for f in geo["features"]}),3144)
         self.assertNotIn("observations",geo)
         self.assertNotIn("value",geo["features"][0]["properties"])
 
@@ -75,7 +75,7 @@ class CountyGeographyTests(unittest.TestCase):
         self.assertEqual((folder/"original.zip").read_bytes(),self.original)
         self.assertEqual(result["sourceSha256"],sha256(self.original).hexdigest())
         self.assertEqual(validate_geography(self.root),
-                         {"geographyReleases":1,"countyFeatures":3143})
+                         {"geographyReleases":1,"countyFeatures":3144})
         self.assertFalse((self.root/"publication/index.json").exists())
 
     def test_corrupt_source_zip_rejected(self):
