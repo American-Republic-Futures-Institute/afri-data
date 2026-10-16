@@ -81,6 +81,8 @@ def check_geography_transition(before:dict|None, after:dict|None,
                                new_blobs:dict[str,str])->dict:
     """Additive-only history for independent county reference geometries."""
     if before is None and after is None:
+        if old_blobs or new_blobs:
+            raise ValueError("Unindexed geography blobs cannot exist without an approved registry")
         return {"previousGeographies":0,"proposedGeographies":0,"newGeographies":[]}
     if before is not None and before.get("publicationStatus")!="published":
         raise ValueError("Invalid historical approved geography status")
