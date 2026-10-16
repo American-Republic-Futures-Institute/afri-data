@@ -406,6 +406,8 @@ def main():
         result.update(validate_catalog())
     if not args.catalog_only:
         result.update(validate_publication())
+        from tools.validate_geography import validate_geography
+        result.update(validate_geography())
     print(json.dumps(result, sort_keys=True))
 
 
