@@ -1,0 +1,34 @@
+{
+  "id": "usaspending-state-fy2025-obligations",
+  "publisherId": "usaspending",
+  "title": "USAspending FY2025 geographic federal award transaction obligation aggregates",
+  "kind": "administrative",
+  "stage": "integration-ready",
+  "geography": "state",
+  "sourceUrl": "https://api.usaspending.gov/api/v2/search/spending_by_geography/",
+  "methodologyUrl": "https://www.usaspending.gov/about-the-data",
+  "temporalCoverage": {
+    "vintage": 2025,
+    "startYear": 2025,
+    "endYear": 2025
+  },
+  "sourceVariables": [
+    "shape_code",
+    "display_name",
+    "aggregated_amount",
+    "scope",
+    "geo_layer",
+    "spending_level",
+    "time_period"
+  ],
+  "limitations": [
+    "Aggregated federal award transaction obligations over FY2025 (October 1 2024 through September 30 2025), not federal cash outlays or program impacts.",
+    "Place of performance, not recipient headquarters or where economic benefits ultimately accrue.",
+    "Negative transaction adjustments and deobligations can yield negative published aggregates; values are never clipped to zero.",
+    "USAspending coverage is subject to agency reporting delays, corrections, exclusions and revisions.",
+    "Missing geography is unavailable and never interpreted as a zero-dollar obligation.",
+    "Territorial and unknown geography codes are retained only in raw evidence; publish 52 Census reference geographies where source reports them.",
+    "The official FY2025 geography API returns one unassigned record with empty shape_code and four territories beyond the 52-state reference layer. Exact excluded source amounts must be preserved in a replay-verified geography-exclusions.json; the mapped total is not a nationwide total."
+  ],
+  "licenseStatus": "us-federal-public-domain"
+}

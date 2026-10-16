@@ -361,6 +361,16 @@ def validate_publication(root=ROOT):
             original = gzip.decompress((folder / "originalData.gz").read_bytes())
             if load_json(folder / "observations.json")["observations"] != parse_places(original):
                 fail("Published CDC PLACES observations are not reproducible from originals")
+        if entry.get("indicatorId") == "state-federal-award-obligations":
+            from pipelines.usaspending_release import project as project_spending, exclusion_report
+            import gzip
+            folder = checked_path(root, entry["releaseId"], "manifest.json").parent
+            original = gzip.decompress((folder / "originalData.gz").read_bytes())
+            request = gzip.decompress((folder / "requestBody.gz").read_bytes())
+            if load_json(folder / "observations.json")["observations"] != project_spending(original,request):
+                fail("USAspending obligations are not reproducible from original response and POST")
+            if load_json(folder / "geography-exclusions.json") != exclusion_report(original):
+                fail("USAspending excluded or unattributed obligations were changed")
         # Replay the publisher-specific projection from archived original bytes.
         # Hash-consistent edited values are not authentic government evidence.
         if entry.get("indicatorId") == "state-unemployment-rate":
@@ -369,7 +379,8 @@ def validate_publication(root=ROOT):
             folder = checked_path(root, entry["releaseId"], "manifest.json").parent
             source_bytes = [
                 gzip.decompress((folder / name).read_bytes())
-                for name in ("originalData.gz", "originalSeries.gz", "originalAreas.gz")
+                for name in ("originalData.gz", "originalSeries.gz", "originalAreas.gz",
+                             "originalFootnotes.gz")
             ]
             expected = parse_authoritative_annual(*source_bytes)
             projected = load_json(folder / "observations.json")["observations"]
@@ -396,6 +407,12 @@ def main():
         result.update(validate_catalog())
     if not args.catalog_only:
         result.update(validate_publication())
+        from tools.validate_geography import validate_geography
+        result.update(validate_geography())
+        # Only when both independent, reviewed releases exist does the
+        # cross-publisher GEOID reconciliation become an acceptance gate.
+        from tools.cdc_county_join import validate_published_county_join
+        result.update(validate_published_county_join(ROOT))
     print(json.dumps(result, sort_keys=True))
 
 

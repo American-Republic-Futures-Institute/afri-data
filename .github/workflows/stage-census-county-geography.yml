@@ -1,0 +1,61 @@
+name: Stage official Census 2023 county geography (review only)
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/stage-census-county-geography.yml
+      - pipelines/census_county_geography.py
+      - tools/validate_geography.py
+      - catalog/datasets/census-county-boundaries-v2023-20m.json
+permissions:
+  contents: write
+concurrency:
+  group: census-2023-county-boundary-review
+  cancel-in-progress: false
+jobs:
+  stage:
+    if: github.repository == 'American-Republic-Futures-Institute/afri-data'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install pinned shapefile and verification dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Acquire Census original zip and stage geography
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pipelines.census_county_geography > /tmp/arfi-county-evidence.json
+          echo "RELEASE_ID=$(python -c 'import json; x=json.load(open("/tmp/arfi-county-evidence.json"));print(x["releaseId"])')" >> "$GITHUB_ENV"
+      - name: Validate all existing evidence and county source geometry replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m tools.validate
+          python -m unittest discover -s tests -v
+      - name: Push source review branch only
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$RELEASE_ID"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add publication/geographies/
+          if git diff --cached --quiet; then
+            echo "No county geography changes to review."
+            exit 0
+          fi
+          BRANCH="geo/$RELEASE_ID"
+          if git ls-remote --heads origin "$BRANCH" | grep -q .; then
+            echo "::notice::Existing geography review branch: $BRANCH"
+            exit 0
+          fi
+          git switch -c "$BRANCH"
+          git commit -m "data(geo): stage original Census 2023 county boundaries for review"
+          git push origin "$BRANCH"
+          echo "::notice::Open an independent Census geography source review PR: https://github.com/American-Republic-Futures-Institute/afri-data/compare/main...$BRANCH?expand=1"

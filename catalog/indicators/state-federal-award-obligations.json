@@ -1,0 +1,22 @@
+{
+  "id": "state-federal-award-obligations",
+  "datasetId": "usaspending-state-fy2025-obligations",
+  "title": "Federal award transaction obligations by primary place of performance, FY2025",
+  "sourceVariable": "aggregated_amount (USAspending geography API; transactions)",
+  "unit": "USD",
+  "kind": "published-administrative-aggregate",
+  "method": "Preserve USAspending API's published sum of federal action obligations, scoped to primary place of performance by state, filtered to FY2025 transaction action date and spending_level transactions. Preserve negative adjustments and exact source amount string; no per-capita transformations or derived causal outcomes.",
+  "geography": "state",
+  "display": {
+    "defaultChart": "choropleth",
+    "scale": "diverging",
+    "missingValueStyle": "distinct",
+    "format": "usd"
+  },
+  "warnings": [
+    "Obligations are not federal outlays, expenditures, grant effectiveness, or economic benefits delivered.",
+    "Place of performance does not necessarily identify where a transaction's benefits accrue.",
+    "Transactions may be revised by agencies after the reported fiscal year.",
+    "Mapped state totals omit four nonreference territories and one source record with blank geographic code; view the separately verified exclusion ledger before interpreting aggregates."
+  ]
+}
