@@ -10,7 +10,7 @@ from unittest.mock import patch
 
 from pipelines.usaspending_release import (
     ENDPOINT, REQUEST, REQUEST_BYTES, USPS_TO_FIPS,
-    EXCLUDED_TERRITORIES, project, stage,
+    EXCLUDED_TERRITORIES, project, stage, exclusion_report,
 )
 from pipelines.source_io import post_official_json
 from pipelines.census_state_population import build_release
@@ -25,6 +25,13 @@ def fixture_response(changes=None) -> bytes:
          "population":None,"per_capita":None}
         for i,code in enumerate(sorted(USPS_TO_FIPS))
     ]
+    results.extend(
+        {"shape_code":code,"display_name":"Synthetic territory "+code,
+         "aggregated_amount":44.12}
+        for code in sorted(EXCLUDED_TERRITORIES)
+    )
+    results.append({"shape_code":"","display_name":"Unattributed synthetic geography",
+                    "aggregated_amount":-101.25})
     result={"scope":"place_of_performance","geo_layer":"state",
             "spending_level":"transactions","results":results,"messages":[]}
     if changes:changes(result)
@@ -63,9 +70,8 @@ class SpendingTests(unittest.TestCase):
 
     def test_unreported_state_not_assumed_to_be_zero(self):
         def drop(data):data["results"]=[r for r in data["results"] if r["shape_code"]!="PR"]
-        records=project(fixture_response(drop))
-        self.assertEqual(len(records),51)
-        self.assertNotIn("72",{r["geoid"] for r in records})
+        with self.assertRaisesRegex(ValueError,"lacks one or more 52"):
+            project(fixture_response(drop))
 
     def test_foreign_or_unknown_geographic_code_rejected(self):
         def extra(data):data["results"].append({"shape_code":"ZZ",
@@ -74,11 +80,17 @@ class SpendingTests(unittest.TestCase):
             project(fixture_response(extra))
 
     def test_excluded_territory_must_not_be_misassigned(self):
-        def extra(data):data["results"].append({"shape_code":"VI",
-            "display_name":"Test USVI","aggregated_amount":83})
-        records=project(fixture_response(extra))
+        records=project(fixture_response())
         self.assertEqual(len(records),52)
         self.assertNotIn("VI",{x["postalCode"] for x in records})
+        report=exclusion_report(fixture_response())
+        self.assertEqual(report["unmappedAndTerritoryCount"],5)
+        self.assertEqual({r["sourceShapeCode"] for r in report["exclusions"]},
+                         EXCLUDED_TERRITORIES | {""})
+        self.assertEqual(report["referenceGeographies"],52)
+        self.assertTrue(any(r["reason"]=="unattributed_blank_geography_code"
+                            and r["reportedAmount"]=="-101.25"
+                            for r in report["exclusions"]))
 
     def test_reject_wrong_spending_level_or_scope(self):
         for field,value in (("scope","recipient_location"),("spending_level","awards")):
@@ -96,6 +108,30 @@ class SpendingTests(unittest.TestCase):
         self.assertEqual(counts["releases"],2)
         self.assertEqual(counts["observations"],364)
         self.assertTrue((self.root/"publication/releases/census-state-population-v2025/manifest.json").exists())
+
+    def test_exclusion_report_is_immutable_and_source_replayed(self):
+        release=stage(self.root,fixture_response())["releaseId"]
+        folder=self.root/"publication/releases"/release
+        report=json.loads((folder/"geography-exclusions.json").read_text())
+        self.assertEqual(len(report["exclusions"]),5)
+        manifest_path=folder/"manifest.json"
+        manifest=json.loads(manifest_path.read_text())
+        self.assertEqual(manifest["assets"]["geographyExclusions"]["rows"],5)
+        report["exclusions"][0]["reportedAmount"]="99999.1"
+        raw=(json.dumps(report,ensure_ascii=False,sort_keys=True,separators=(",",":"))+"\n").encode()
+        (folder/"geography-exclusions.json").write_bytes(raw)
+        manifest["assets"]["geographyExclusions"]["sha256"]=hashlib.sha256(raw).hexdigest()
+        manifest["assets"]["geographyExclusions"]["bytes"]=len(raw)
+        manifest_path.write_text(json.dumps(manifest))
+        with self.assertRaisesRegex(ValueError,"excluded or unattributed obligations"):
+            validate_publication(self.root)
+
+    def test_unattributed_bucket_must_be_single_and_explicit(self):
+        def extra(data):
+            data["results"].append({"shape_code":"",
+                "display_name":"duplicate unattributed","aggregated_amount":123})
+        with self.assertRaisesRegex(ValueError,"Duplicate unmapped"):
+            project(fixture_response(extra))
 
     def test_changed_request_body_rejected_even_if_source_hashes_updated(self):
         with self.assertRaisesRegex(ValueError,"approved filters"):
