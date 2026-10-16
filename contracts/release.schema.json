@@ -34,7 +34,7 @@
     },
     "sourceFiles": {
       "type": "array",
-      "minItems": 2,
+      "minItems": 1,
       "items": {
         "type": "object",
         "required": [
@@ -64,7 +64,7 @@
     },
     "assets": {
       "type": "object",
-      "minProperties": 3,
+      "minProperties": 1,
       "additionalProperties": {
         "type": "object",
         "required": [
@@ -105,17 +105,26 @@
       ],
       "properties": {
         "level": {
-          "const": "state"
+          "enum": [
+            "nation",
+            "state",
+            "county",
+            "tract",
+            "place",
+            "point",
+            "mixed"
+          ]
         },
         "vintage": {
           "type": "integer"
         },
         "joinKey": {
-          "const": "GEOID"
+          "type": "string",
+          "minLength": 1
         },
         "features": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 0
         }
       }
     },
