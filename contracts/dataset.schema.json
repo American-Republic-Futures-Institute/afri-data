@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ARFI evidence dataset",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "publisherId",
+    "title",
+    "kind",
+    "stage",
+    "geography",
+    "sourceUrl",
+    "methodologyUrl",
+    "temporalCoverage",
+    "sourceVariables",
+    "limitations",
+    "licenseStatus"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "publisherId": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 10
+    },
+    "kind": {
+      "enum": [
+        "raw-statistical",
+        "boundary",
+        "survey",
+        "administrative",
+        "modeled-estimate",
+        "secondary"
+      ]
+    },
+    "stage": {
+      "enum": [
+        "registered",
+        "integration-ready",
+        "published",
+        "quarantined"
+      ]
+    },
+    "geography": {
+      "enum": [
+        "nation",
+        "state",
+        "county",
+        "tract",
+        "place",
+        "point",
+        "mixed"
+      ]
+    },
+    "sourceUrl": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https://"
+    },
+    "methodologyUrl": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https://"
+    },
+    "temporalCoverage": {
+      "type": "object",
+      "required": [
+        "vintage",
+        "startYear",
+        "endYear"
+      ],
+      "properties": {
+        "vintage": {
+          "type": "integer"
+        },
+        "startYear": {
+          "type": "integer"
+        },
+        "endYear": {
+          "type": "integer"
+        }
+      }
+    },
+    "sourceVariables": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "licenseStatus": {
+      "enum": [
+        "us-federal-public-domain",
+        "review-required",
+        "license-approved"
+      ]
+    },
+    "outputPath": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "notes": {
+      "type": "string"
+    }
+  }
+}

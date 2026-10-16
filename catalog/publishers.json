@@ -1,0 +1,609 @@
+{
+  "schemaVersion": "1.0.0",
+  "policy": "Registry presence is not endorsement, verification of neutrality, or permission to redistribute any individual dataset.",
+  "publishers": [
+    {
+      "id": "us-census",
+      "name": "U.S. Census Bureau",
+      "category": "us-federal",
+      "homepage": "https://www.census.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "bls",
+      "name": "U.S. Bureau of Labor Statistics",
+      "category": "us-federal",
+      "homepage": "https://www.bls.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "bea",
+      "name": "U.S. Bureau of Economic Analysis",
+      "category": "us-federal",
+      "homepage": "https://www.bea.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "federal-reserve",
+      "name": "Federal Reserve Board",
+      "category": "us-federal",
+      "homepage": "https://www.federalreserve.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "verified-per-dataset",
+      "status": "registered"
+    },
+    {
+      "id": "treasury",
+      "name": "U.S. Treasury",
+      "category": "us-federal",
+      "homepage": "https://home.treasury.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "usaspending",
+      "name": "USAspending / Treasury DATA Act",
+      "category": "us-federal",
+      "homepage": "https://www.usaspending.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "irs",
+      "name": "Internal Revenue Service",
+      "category": "us-federal",
+      "homepage": "https://www.irs.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "cbo",
+      "name": "Congressional Budget Office",
+      "category": "us-federal",
+      "homepage": "https://www.cbo.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "omb",
+      "name": "Office of Management and Budget",
+      "category": "us-federal",
+      "homepage": "https://www.whitehouse.gov/omb",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "gao",
+      "name": "Government Accountability Office",
+      "category": "us-federal",
+      "homepage": "https://www.gao.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "cdc",
+      "name": "Centers for Disease Control and Prevention",
+      "category": "us-federal",
+      "homepage": "https://www.cdc.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "cms",
+      "name": "Centers for Medicare & Medicaid Services",
+      "category": "us-federal",
+      "homepage": "https://www.cms.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "ahrq",
+      "name": "Agency for Healthcare Research and Quality",
+      "category": "us-federal",
+      "homepage": "https://www.ahrq.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "hrsa",
+      "name": "Health Resources and Services Administration",
+      "category": "us-federal",
+      "homepage": "https://www.hrsa.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "samhsa",
+      "name": "Substance Abuse and Mental Health Services Administration",
+      "category": "us-federal",
+      "homepage": "https://www.samhsa.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "nih",
+      "name": "National Institutes of Health",
+      "category": "us-federal",
+      "homepage": "https://www.nih.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "nces",
+      "name": "National Center for Education Statistics",
+      "category": "us-federal",
+      "homepage": "https://nces.ed.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "education",
+      "name": "U.S. Department of Education",
+      "category": "us-federal",
+      "homepage": "https://www.ed.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "hud",
+      "name": "U.S. Department of Housing and Urban Development",
+      "category": "us-federal",
+      "homepage": "https://www.hud.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "fhfa",
+      "name": "Federal Housing Finance Agency",
+      "category": "us-federal",
+      "homepage": "https://www.fhfa.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "cfpb",
+      "name": "Consumer Financial Protection Bureau",
+      "category": "us-federal",
+      "homepage": "https://www.consumerfinance.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "fdic",
+      "name": "Federal Deposit Insurance Corporation",
+      "category": "us-federal",
+      "homepage": "https://www.fdic.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "eia",
+      "name": "U.S. Energy Information Administration",
+      "category": "us-federal",
+      "homepage": "https://www.eia.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "epa",
+      "name": "Environmental Protection Agency",
+      "category": "us-federal",
+      "homepage": "https://www.epa.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "noaa",
+      "name": "National Oceanic and Atmospheric Administration",
+      "category": "us-federal",
+      "homepage": "https://www.noaa.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "usgs",
+      "name": "U.S. Geological Survey",
+      "category": "us-federal",
+      "homepage": "https://www.usgs.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "nasa",
+      "name": "National Aeronautics and Space Administration",
+      "category": "us-federal",
+      "homepage": "https://www.nasa.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "fema",
+      "name": "Federal Emergency Management Agency",
+      "category": "us-federal",
+      "homepage": "https://www.fema.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "dot",
+      "name": "U.S. Department of Transportation",
+      "category": "us-federal",
+      "homepage": "https://www.transportation.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "bts",
+      "name": "Bureau of Transportation Statistics",
+      "category": "us-federal",
+      "homepage": "https://www.bts.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "fhwa",
+      "name": "Federal Highway Administration",
+      "category": "us-federal",
+      "homepage": "https://www.fhwa.dot.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "nhtsa",
+      "name": "National Highway Traffic Safety Administration",
+      "category": "us-federal",
+      "homepage": "https://www.nhtsa.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "fcc",
+      "name": "Federal Communications Commission",
+      "category": "us-federal",
+      "homepage": "https://www.fcc.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "ntia",
+      "name": "National Telecommunications and Information Administration",
+      "category": "us-federal",
+      "homepage": "https://www.ntia.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "usda-nass",
+      "name": "USDA National Agricultural Statistics Service",
+      "category": "us-federal",
+      "homepage": "https://www.nass.usda.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "usda-ers",
+      "name": "USDA Economic Research Service",
+      "category": "us-federal",
+      "homepage": "https://www.ers.usda.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "usda-fns",
+      "name": "USDA Food and Nutrition Service",
+      "category": "us-federal",
+      "homepage": "https://www.fns.usda.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "fbi",
+      "name": "Federal Bureau of Investigation",
+      "category": "us-federal",
+      "homepage": "https://www.fbi.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "bjs",
+      "name": "Bureau of Justice Statistics",
+      "category": "us-federal",
+      "homepage": "https://bjs.ojp.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "doj",
+      "name": "U.S. Department of Justice",
+      "category": "us-federal",
+      "homepage": "https://www.justice.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "eac",
+      "name": "U.S. Election Assistance Commission",
+      "category": "us-federal",
+      "homepage": "https://www.eac.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "fec",
+      "name": "Federal Election Commission",
+      "category": "us-federal",
+      "homepage": "https://www.fec.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "congress",
+      "name": "U.S. Congress / Library of Congress",
+      "category": "us-federal",
+      "homepage": "https://www.congress.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "gpo",
+      "name": "U.S. Government Publishing Office",
+      "category": "us-federal",
+      "homepage": "https://www.govinfo.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "va",
+      "name": "U.S. Department of Veterans Affairs",
+      "category": "us-federal",
+      "homepage": "https://www.va.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "dhs",
+      "name": "U.S. Department of Homeland Security",
+      "category": "us-federal",
+      "homepage": "https://www.dhs.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "nsf",
+      "name": "National Science Foundation",
+      "category": "us-federal",
+      "homepage": "https://www.nsf.gov",
+      "trustModel": "primary-publisher",
+      "reuseReview": "public-domain-federal",
+      "status": "registered"
+    },
+    {
+      "id": "gsa",
+      "name": "U.S. General Services Administration / Data.gov",
+      "category": "us-federal",
+      "homepage": "https://data.gov",
+      "trustModel": "secondary-aggregator",
+      "reuseReview": "verified-per-dataset",
+      "status": "registered"
+    },
+    {
+      "id": "urban",
+      "name": "Urban Institute",
+      "category": "nonprofit",
+      "homepage": "https://www.urban.org",
+      "trustModel": "independent-research",
+      "reuseReview": "license-review-required",
+      "status": "registered"
+    },
+    {
+      "id": "pew",
+      "name": "Pew Research Center",
+      "category": "nonprofit",
+      "homepage": "https://www.pewresearch.org",
+      "trustModel": "independent-research",
+      "reuseReview": "license-review-required",
+      "status": "registered"
+    },
+    {
+      "id": "opportunity-insights",
+      "name": "Opportunity Insights",
+      "category": "academic",
+      "homepage": "https://opportunityinsights.org",
+      "trustModel": "independent-research",
+      "reuseReview": "license-review-required",
+      "status": "registered"
+    },
+    {
+      "id": "norc",
+      "name": "NORC at the University of Chicago",
+      "category": "academic",
+      "homepage": "https://www.norc.org",
+      "trustModel": "independent-research",
+      "reuseReview": "license-review-required",
+      "status": "registered"
+    },
+    {
+      "id": "ipums",
+      "name": "IPUMS / University of Minnesota",
+      "category": "academic",
+      "homepage": "https://www.ipums.org",
+      "trustModel": "secondary-aggregator",
+      "reuseReview": "license-review-required",
+      "status": "registered"
+    },
+    {
+      "id": "icpsr",
+      "name": "ICPSR / University of Michigan",
+      "category": "academic",
+      "homepage": "https://www.icpsr.umich.edu",
+      "trustModel": "secondary-aggregator",
+      "reuseReview": "license-review-required",
+      "status": "registered"
+    },
+    {
+      "id": "kff",
+      "name": "KFF",
+      "category": "nonprofit",
+      "homepage": "https://www.kff.org",
+      "trustModel": "independent-research",
+      "reuseReview": "license-review-required",
+      "status": "registered"
+    },
+    {
+      "id": "county-health-rankings",
+      "name": "County Health Rankings & Roadmaps",
+      "category": "nonprofit",
+      "homepage": "https://www.countyhealthrankings.org",
+      "trustModel": "secondary-aggregator",
+      "reuseReview": "license-review-required",
+      "status": "registered"
+    },
+    {
+      "id": "feeding-america",
+      "name": "Feeding America",
+      "category": "nonprofit",
+      "homepage": "https://www.feedingamerica.org",
+      "trustModel": "independent-research",
+      "reuseReview": "license-review-required",
+      "status": "registered"
+    },
+    {
+      "id": "epi",
+      "name": "Economic Policy Institute",
+      "category": "nonprofit",
+      "homepage": "https://www.epi.org",
+      "trustModel": "independent-research",
+      "reuseReview": "license-review-required",
+      "status": "registered"
+    },
+    {
+      "id": "tax-foundation",
+      "name": "Tax Foundation",
+      "category": "nonprofit",
+      "homepage": "https://taxfoundation.org",
+      "trustModel": "independent-research",
+      "reuseReview": "license-review-required",
+      "status": "registered"
+    },
+    {
+      "id": "brookings",
+      "name": "Brookings Institution",
+      "category": "nonprofit",
+      "homepage": "https://www.brookings.edu",
+      "trustModel": "independent-research",
+      "reuseReview": "license-review-required",
+      "status": "registered"
+    },
+    {
+      "id": "rand",
+      "name": "RAND Corporation",
+      "category": "nonprofit",
+      "homepage": "https://www.rand.org",
+      "trustModel": "independent-research",
+      "reuseReview": "license-review-required",
+      "status": "registered"
+    },
+    {
+      "id": "bipartisan-policy",
+      "name": "Bipartisan Policy Center",
+      "category": "nonprofit",
+      "homepage": "https://bipartisanpolicy.org",
+      "trustModel": "independent-research",
+      "reuseReview": "license-review-required",
+      "status": "registered"
+    },
+    {
+      "id": "vdem",
+      "name": "V-Dem Institute",
+      "category": "academic",
+      "homepage": "https://www.v-dem.net",
+      "trustModel": "independent-research",
+      "reuseReview": "license-review-required",
+      "status": "registered"
+    },
+    {
+      "id": "world-bank",
+      "name": "World Bank",
+      "category": "international",
+      "homepage": "https://www.worldbank.org",
+      "trustModel": "primary-publisher",
+      "reuseReview": "verified-per-dataset",
+      "status": "registered"
+    },
+    {
+      "id": "oecd",
+      "name": "OECD",
+      "category": "international",
+      "homepage": "https://www.oecd.org",
+      "trustModel": "primary-publisher",
+      "reuseReview": "verified-per-dataset",
+      "status": "registered"
+    },
+    {
+      "id": "our-world-in-data",
+      "name": "Our World in Data",
+      "category": "nonprofit",
+      "homepage": "https://ourworldindata.org",
+      "trustModel": "secondary-aggregator",
+      "reuseReview": "license-review-required",
+      "status": "registered"
+    },
+    {
+      "id": "openstreetmap",
+      "name": "OpenStreetMap contributors",
+      "category": "other",
+      "homepage": "https://www.openstreetmap.org",
+      "trustModel": "geographic-reference",
+      "reuseReview": "license-review-required",
+      "status": "registered"
+    }
+  ]
+}

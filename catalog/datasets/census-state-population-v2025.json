@@ -1,0 +1,34 @@
+{
+  "id": "census-state-population-v2025",
+  "publisherId": "us-census",
+  "title": "Annual resident population estimates, states, DC and Puerto Rico (Vintage 2025)",
+  "kind": "raw-statistical",
+  "stage": "integration-ready",
+  "geography": "state",
+  "sourceUrl": "https://www2.census.gov/programs-surveys/popest/datasets/2020-2025/state/totals/NST-EST2025-ALLDATA.csv",
+  "methodologyUrl": "https://www.census.gov/data/tables/time-series/demo/popest/2020s-state-total.html",
+  "temporalCoverage": {
+    "vintage": 2025,
+    "startYear": 2020,
+    "endYear": 2025
+  },
+  "sourceVariables": [
+    "SUMLEV",
+    "STATE",
+    "NAME",
+    "POPESTIMATE2020",
+    "POPESTIMATE2021",
+    "POPESTIMATE2022",
+    "POPESTIMATE2023",
+    "POPESTIMATE2024",
+    "POPESTIMATE2025"
+  ],
+  "limitations": [
+    "Published Census Bureau population estimates are not exact enumeration counts.",
+    "Vintage 2025 supersedes prior vintages for comparable time series; revisions should not be silently merged across vintages.",
+    "Counts are totals, not population-normalized rates; raw-count choropleths can be misleading when comparing states.",
+    "No 2020 Decennial Census rate is inferred from these estimates."
+  ],
+  "licenseStatus": "us-federal-public-domain",
+  "outputPath": "publication/releases/census-state-population-v2025/manifest.json"
+}

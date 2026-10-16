@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+out/
+.cache/
+coverage/
+
+# No private, proprietary or restricted source records in git
+raw-downloads/
+secrets/

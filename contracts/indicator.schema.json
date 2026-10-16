@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ARFI visualization indicator",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "datasetId",
+    "title",
+    "sourceVariable",
+    "unit",
+    "kind",
+    "method",
+    "geography",
+    "display",
+    "warnings"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "datasetId": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "sourceVariable": {
+      "type": "string"
+    },
+    "unit": {
+      "type": "string"
+    },
+    "kind": {
+      "enum": [
+        "original-publisher-estimate",
+        "derived",
+        "index",
+        "modeled"
+      ]
+    },
+    "method": {
+      "type": "string"
+    },
+    "geography": {
+      "enum": [
+        "state",
+        "county",
+        "tract",
+        "nation",
+        "mixed"
+      ]
+    },
+    "display": {
+      "type": "object",
+      "required": [
+        "defaultChart",
+        "scale",
+        "missingValueStyle"
+      ],
+      "properties": {
+        "defaultChart": {
+          "enum": [
+            "choropleth",
+            "line",
+            "bar",
+            "table",
+            "scatter"
+          ]
+        },
+        "scale": {
+          "enum": [
+            "sequential",
+            "diverging",
+            "categorical"
+          ]
+        },
+        "missingValueStyle": {
+          "const": "distinct"
+        },
+        "format": {
+          "type": "string"
+        }
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

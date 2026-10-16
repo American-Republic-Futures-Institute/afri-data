@@ -1,0 +1,1307 @@
+{
+  "schemaVersion": "1.0.0",
+  "scope": "DISCOVERY CANDIDATES ONLY: registration does not indicate validation, publication, data neutrality, redistribution approval, or a usable API.",
+  "reviewPolicy": "Promote an individual program to a validated dataset catalog record only after checking primary data URLs, geographic and temporal coverage, methodology, provenance, usage terms and source integrity.",
+  "programs": [
+    {
+      "id": "census-acs",
+      "publisherId": "us-census",
+      "title": "American Community Survey",
+      "domain": "demography",
+      "url": "https://www.census.gov/programs-surveys/acs",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "census-decennial",
+      "publisherId": "us-census",
+      "title": "Decennial Census",
+      "domain": "demography",
+      "url": "https://www.census.gov/programs-surveys/decennial-census.html",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "census-popest",
+      "publisherId": "us-census",
+      "title": "Population Estimates Program",
+      "domain": "demography",
+      "url": "https://www.census.gov/programs-surveys/popest.html",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "census-geography",
+      "publisherId": "us-census",
+      "title": "TIGER Line geographic products",
+      "domain": "geography",
+      "url": "https://www.census.gov/geographies/mapping-files/time-series/geo/tiger-line-file.html",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "census-cartographic",
+      "publisherId": "us-census",
+      "title": "Cartographic Boundary Files",
+      "domain": "geography",
+      "url": "https://www.census.gov/geographies/mapping-files/2025/geo/carto-boundary-file.html",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "census-cps",
+      "publisherId": "us-census",
+      "title": "Current Population Survey",
+      "domain": "labor",
+      "url": "https://www.census.gov/programs-surveys/cps.html",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "census-sipp",
+      "publisherId": "us-census",
+      "title": "Survey of Income and Program Participation",
+      "domain": "economy",
+      "url": "https://www.census.gov/programs-surveys/sipp.html",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "census-lehd",
+      "publisherId": "us-census",
+      "title": "Longitudinal Employer Household Dynamics",
+      "domain": "labor",
+      "url": "https://lehd.ces.census.gov/data/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "census-cbp",
+      "publisherId": "us-census",
+      "title": "County Business Patterns",
+      "domain": "economy",
+      "url": "https://www.census.gov/programs-surveys/cbp.html",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "census-nonemployer",
+      "publisherId": "us-census",
+      "title": "Nonemployer Statistics",
+      "domain": "economy",
+      "url": "https://www.census.gov/programs-surveys/nonemployer-statistics.html",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "census-housing-survey",
+      "publisherId": "us-census",
+      "title": "American Housing Survey",
+      "domain": "housing",
+      "url": "https://www.census.gov/programs-surveys/ahs.html",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "census-state-finance",
+      "publisherId": "us-census",
+      "title": "State and Local Government Finances",
+      "domain": "governance",
+      "url": "https://www.census.gov/programs-surveys/gov-finances.html",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "bls-lau",
+      "publisherId": "bls",
+      "title": "Local Area Unemployment Statistics",
+      "domain": "labor",
+      "url": "https://www.bls.gov/lau/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "bls-qcew",
+      "publisherId": "bls",
+      "title": "Quarterly Census of Employment and Wages",
+      "domain": "labor",
+      "url": "https://www.bls.gov/cew/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "bls-jolts",
+      "publisherId": "bls",
+      "title": "Job Openings and Labor Turnover",
+      "domain": "labor",
+      "url": "https://www.bls.gov/jlt/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "bls-oews",
+      "publisherId": "bls",
+      "title": "Occupational Employment and Wage Statistics",
+      "domain": "labor",
+      "url": "https://www.bls.gov/oes/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "bls-cpi",
+      "publisherId": "bls",
+      "title": "Consumer Price Index",
+      "domain": "economy",
+      "url": "https://www.bls.gov/cpi/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "bls-ppi",
+      "publisherId": "bls",
+      "title": "Producer Price Index",
+      "domain": "economy",
+      "url": "https://www.bls.gov/ppi/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "bls-eci",
+      "publisherId": "bls",
+      "title": "Employment Cost Index",
+      "domain": "labor",
+      "url": "https://www.bls.gov/eci/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "bls-projections",
+      "publisherId": "bls",
+      "title": "Employment Projections",
+      "domain": "labor",
+      "url": "https://www.bls.gov/emp/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "bea-gdp",
+      "publisherId": "bea",
+      "title": "Gross Domestic Product",
+      "domain": "economy",
+      "url": "https://www.bea.gov/data/gdp/gross-domestic-product",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "bea-regional-gdp",
+      "publisherId": "bea",
+      "title": "GDP by County and Metropolitan Area",
+      "domain": "economy",
+      "url": "https://www.bea.gov/data/gdp/gdp-county-and-metropolitan-area",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "bea-income",
+      "publisherId": "bea",
+      "title": "Regional Personal Income",
+      "domain": "economy",
+      "url": "https://www.bea.gov/data/income-saving/personal-income-county-metro-and-other-areas",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "bea-trade",
+      "publisherId": "bea",
+      "title": "International Trade and Investment",
+      "domain": "economy",
+      "url": "https://www.bea.gov/data/intl-trade-investment",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "fed-scf",
+      "publisherId": "federal-reserve",
+      "title": "Survey of Consumer Finances",
+      "domain": "economy",
+      "url": "https://www.federalreserve.gov/econres/scfindex.htm",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "fed-z1",
+      "publisherId": "federal-reserve",
+      "title": "Financial Accounts of the United States",
+      "domain": "economy",
+      "url": "https://www.federalreserve.gov/releases/z1/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "fed-g17",
+      "publisherId": "federal-reserve",
+      "title": "Industrial Production and Capacity Utilization",
+      "domain": "economy",
+      "url": "https://www.federalreserve.gov/releases/g17/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "treasury-fiscaldata",
+      "publisherId": "treasury",
+      "title": "FiscalData datasets",
+      "domain": "finance",
+      "url": "https://fiscaldata.treasury.gov/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "treasury-td",
+      "publisherId": "treasury",
+      "title": "TreasuryDirect government securities",
+      "domain": "finance",
+      "url": "https://www.treasurydirect.gov/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "usaspending-awards",
+      "publisherId": "usaspending",
+      "title": "Federal Award Geographic Spending",
+      "domain": "finance",
+      "url": "https://www.usaspending.gov/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "irs-soi",
+      "publisherId": "irs",
+      "title": "IRS Statistics of Income",
+      "domain": "finance",
+      "url": "https://www.irs.gov/statistics",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "cbo-budget",
+      "publisherId": "cbo",
+      "title": "Congressional Budget and Economic Data",
+      "domain": "finance",
+      "url": "https://www.cbo.gov/data",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "omb-budget",
+      "publisherId": "omb",
+      "title": "OMB Federal Budget Publications",
+      "domain": "finance",
+      "url": "https://www.whitehouse.gov/omb/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "gao-reports",
+      "publisherId": "gao",
+      "title": "GAO Oversight and Recommendations",
+      "domain": "governance",
+      "url": "https://www.gao.gov/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "fdic-reports",
+      "publisherId": "fdic",
+      "title": "FDIC Financial Institution Data",
+      "domain": "finance",
+      "url": "https://www.fdic.gov/analysis",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "cfpb-complaints",
+      "publisherId": "cfpb",
+      "title": "Consumer Complaint Database",
+      "domain": "finance",
+      "url": "https://www.consumerfinance.gov/data-research/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "cdc-places",
+      "publisherId": "cdc",
+      "title": "CDC PLACES Small Area Health Estimates",
+      "domain": "health",
+      "url": "https://www.cdc.gov/places/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "cdc-wonder",
+      "publisherId": "cdc",
+      "title": "CDC WONDER",
+      "domain": "health",
+      "url": "https://wonder.cdc.gov/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "cdc-brfss",
+      "publisherId": "cdc",
+      "title": "Behavioral Risk Factor Surveillance",
+      "domain": "health",
+      "url": "https://www.cdc.gov/brfss/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "cdc-nhanes",
+      "publisherId": "cdc",
+      "title": "National Health and Nutrition Examination Survey",
+      "domain": "health",
+      "url": "https://www.cdc.gov/nchs/nhanes/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "cdc-nhis",
+      "publisherId": "cdc",
+      "title": "National Health Interview Survey",
+      "domain": "health",
+      "url": "https://www.cdc.gov/nchs/nhis/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "cdc-vitals",
+      "publisherId": "cdc",
+      "title": "National Vital Statistics System",
+      "domain": "health",
+      "url": "https://www.cdc.gov/nchs/nvss/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "cdc-chronic",
+      "publisherId": "cdc",
+      "title": "Chronic Disease Indicators",
+      "domain": "health",
+      "url": "https://www.cdc.gov/cdi/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "cms-program-data",
+      "publisherId": "cms",
+      "title": "CMS Data",
+      "domain": "health",
+      "url": "https://data.cms.gov/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "cms-providers",
+      "publisherId": "cms",
+      "title": "CMS Provider Data",
+      "domain": "health",
+      "url": "https://data.cms.gov/provider-data/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "cms-medicaid",
+      "publisherId": "cms",
+      "title": "Medicaid and CHIP Data",
+      "domain": "health",
+      "url": "https://data.medicaid.gov/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "cms-open-payments",
+      "publisherId": "cms",
+      "title": "Open Payments",
+      "domain": "health",
+      "url": "https://openpaymentsdata.cms.gov/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "ahrq-hcup",
+      "publisherId": "ahrq",
+      "title": "Healthcare Cost and Utilization Project",
+      "domain": "health",
+      "url": "https://hcup-us.ahrq.gov/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "ahrq-research",
+      "publisherId": "ahrq",
+      "title": "AHRQ Health Quality Research Data",
+      "domain": "health",
+      "url": "https://www.ahrq.gov/data/index.html",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "hrsa-map",
+      "publisherId": "hrsa",
+      "title": "HRSA Public Health Geospatial Data",
+      "domain": "health",
+      "url": "https://data.hrsa.gov/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "samhsa-data",
+      "publisherId": "samhsa",
+      "title": "SAMHSA Behavioral Health Data",
+      "domain": "health",
+      "url": "https://www.samhsa.gov/data/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "nih-clinical-trials",
+      "publisherId": "nih",
+      "title": "ClinicalTrials.gov Research Data",
+      "domain": "health",
+      "url": "https://clinicaltrials.gov/data-api/api",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "nces-ccd",
+      "publisherId": "nces",
+      "title": "Common Core of Data Schools and Districts",
+      "domain": "education",
+      "url": "https://nces.ed.gov/ccd/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "nces-ipeds",
+      "publisherId": "nces",
+      "title": "Integrated Postsecondary Education Data System",
+      "domain": "education",
+      "url": "https://nces.ed.gov/ipeds/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "nces-naep",
+      "publisherId": "nces",
+      "title": "National Assessment of Educational Progress",
+      "domain": "education",
+      "url": "https://www.nationsreportcard.gov/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "nces-edge",
+      "publisherId": "nces",
+      "title": "Education Demographic and Geographic Estimates",
+      "domain": "education",
+      "url": "https://nces.ed.gov/Programs/Edge/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "education-college-scorecard",
+      "publisherId": "education",
+      "title": "College Scorecard",
+      "domain": "education",
+      "url": "https://collegescorecard.ed.gov/data/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "education-civil-rights",
+      "publisherId": "education",
+      "title": "Civil Rights Data Collection",
+      "domain": "education",
+      "url": "https://ocrdata.ed.gov/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "hud-housing-affordability",
+      "publisherId": "hud",
+      "title": "Comprehensive Housing Affordability Strategy",
+      "domain": "housing",
+      "url": "https://www.huduser.gov/portal/datasets/cp.html",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "hud-fair-market-rents",
+      "publisherId": "hud",
+      "title": "HUD Fair Market Rents",
+      "domain": "housing",
+      "url": "https://www.huduser.gov/portal/datasets/fmr.html",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "hud-homelessness",
+      "publisherId": "hud",
+      "title": "Annual Homelessness Assessment",
+      "domain": "housing",
+      "url": "https://www.huduser.gov/portal/datasets/ahar.html",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "fhfa-house-price",
+      "publisherId": "fhfa",
+      "title": "House Price Index",
+      "domain": "housing",
+      "url": "https://www.fhfa.gov/data/hpi",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "cfpb-hmda",
+      "publisherId": "cfpb",
+      "title": "Home Mortgage Disclosure Act",
+      "domain": "housing",
+      "url": "https://www.consumerfinance.gov/data-research/hmda/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "eia-electricity",
+      "publisherId": "eia",
+      "title": "EIA Electricity and Grid Data",
+      "domain": "energy",
+      "url": "https://www.eia.gov/electricity/data.php",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "eia-state-energy",
+      "publisherId": "eia",
+      "title": "State Energy Profiles",
+      "domain": "energy",
+      "url": "https://www.eia.gov/state/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "eia-open-data",
+      "publisherId": "eia",
+      "title": "Energy Information Administration API",
+      "domain": "energy",
+      "url": "https://www.eia.gov/opendata/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "epa-tri",
+      "publisherId": "epa",
+      "title": "Toxics Release Inventory",
+      "domain": "environment",
+      "url": "https://www.epa.gov/toxics-release-inventory-tri-program",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "epa-echo",
+      "publisherId": "epa",
+      "title": "Environmental Compliance History Online",
+      "domain": "environment",
+      "url": "https://echo.epa.gov/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "epa-air",
+      "publisherId": "epa",
+      "title": "Air Trends",
+      "domain": "environment",
+      "url": "https://www.epa.gov/air-trends",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "epa-water",
+      "publisherId": "epa",
+      "title": "EPA Water Data",
+      "domain": "environment",
+      "url": "https://www.epa.gov/waterdata",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "noaa-ncei",
+      "publisherId": "noaa",
+      "title": "NOAA National Centers for Environmental Information",
+      "domain": "environment",
+      "url": "https://www.ncei.noaa.gov/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "noaa-climate-data",
+      "publisherId": "noaa",
+      "title": "Climate Data Online",
+      "domain": "environment",
+      "url": "https://www.ncei.noaa.gov/cdo-web/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "noaa-tides",
+      "publisherId": "noaa",
+      "title": "NOAA Tides and Currents",
+      "domain": "environment",
+      "url": "https://tidesandcurrents.noaa.gov/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "noaa-coastal",
+      "publisherId": "noaa",
+      "title": "NOAA Digital Coast",
+      "domain": "environment",
+      "url": "https://coast.noaa.gov/digitalcoast/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "usgs-water",
+      "publisherId": "usgs",
+      "title": "USGS Water Data",
+      "domain": "environment",
+      "url": "https://waterdata.usgs.gov/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "usgs-minerals",
+      "publisherId": "usgs",
+      "title": "National Minerals Information Center",
+      "domain": "environment",
+      "url": "https://www.usgs.gov/centers/national-minerals-information-center",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "usgs-earthquakes",
+      "publisherId": "usgs",
+      "title": "Earthquake Hazards",
+      "domain": "environment",
+      "url": "https://www.usgs.gov/programs/earthquake-hazards",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "nasa-earthdata",
+      "publisherId": "nasa",
+      "title": "NASA Earthdata Catalog",
+      "domain": "environment",
+      "url": "https://www.earthdata.nasa.gov/data/catalog",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "nasa-firms",
+      "publisherId": "nasa",
+      "title": "NASA Fire Information Resource Management",
+      "domain": "environment",
+      "url": "https://firms.modaps.eosdis.nasa.gov/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "fema-open",
+      "publisherId": "fema",
+      "title": "OpenFEMA",
+      "domain": "resilience",
+      "url": "https://www.fema.gov/about/openfema",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "fema-risk",
+      "publisherId": "fema",
+      "title": "National Risk Index",
+      "domain": "resilience",
+      "url": "https://hazards.fema.gov/nri/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "fema-flood",
+      "publisherId": "fema",
+      "title": "Flood Map Service Center",
+      "domain": "resilience",
+      "url": "https://msc.fema.gov/portal/home",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "bts-ntad",
+      "publisherId": "bts",
+      "title": "National Transportation Atlas Database",
+      "domain": "infrastructure",
+      "url": "https://www.bts.gov/geospatial",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "bts-stats",
+      "publisherId": "bts",
+      "title": "Bureau of Transportation Statistics",
+      "domain": "infrastructure",
+      "url": "https://www.bts.gov/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "fhwa-bridge",
+      "publisherId": "fhwa",
+      "title": "National Bridge Inventory",
+      "domain": "infrastructure",
+      "url": "https://www.fhwa.dot.gov/bridge/nbi.cfm",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "fhwa-hpms",
+      "publisherId": "fhwa",
+      "title": "Highway Performance Monitoring System",
+      "domain": "infrastructure",
+      "url": "https://www.fhwa.dot.gov/policyinformation/hpms.cfm",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "nhtsa-crash",
+      "publisherId": "nhtsa",
+      "title": "Fatality Analysis Reporting System",
+      "domain": "infrastructure",
+      "url": "https://www.nhtsa.gov/research-data/fatality-analysis-reporting-system-fars",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "dot-open",
+      "publisherId": "dot",
+      "title": "DOT Open Data",
+      "domain": "infrastructure",
+      "url": "https://data.transportation.gov/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "fcc-broadband",
+      "publisherId": "fcc",
+      "title": "National Broadband Map",
+      "domain": "connectivity",
+      "url": "https://broadbandmap.fcc.gov/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "ntia-broadband",
+      "publisherId": "ntia",
+      "title": "NTIA Broadband Program Data",
+      "domain": "connectivity",
+      "url": "https://www.ntia.gov/data",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "nass-quickstats",
+      "publisherId": "usda-nass",
+      "title": "NASS Quick Stats",
+      "domain": "agriculture",
+      "url": "https://quickstats.nass.usda.gov/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "nass-agcensus",
+      "publisherId": "usda-nass",
+      "title": "Census of Agriculture",
+      "domain": "agriculture",
+      "url": "https://www.nass.usda.gov/Publications/AgCensus/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "ers-food-access",
+      "publisherId": "usda-ers",
+      "title": "Food Access Research Atlas",
+      "domain": "agriculture",
+      "url": "https://www.ers.usda.gov/data-products/food-access-research-atlas/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "ers-food-env",
+      "publisherId": "usda-ers",
+      "title": "Food Environment Atlas",
+      "domain": "agriculture",
+      "url": "https://www.ers.usda.gov/data-products/food-environment-atlas",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "ers-rural",
+      "publisherId": "usda-ers",
+      "title": "Rural Economy and Population",
+      "domain": "agriculture",
+      "url": "https://www.ers.usda.gov/topics/rural-economy-population",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "usda-assistance",
+      "publisherId": "usda-fns",
+      "title": "USDA Food Nutrition Program Data",
+      "domain": "agriculture",
+      "url": "https://www.fns.usda.gov/pd/overview",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "fbi-crime",
+      "publisherId": "fbi",
+      "title": "Crime Data Explorer",
+      "domain": "justice",
+      "url": "https://cde.ucr.cjis.gov/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "bjs-ncvs",
+      "publisherId": "bjs",
+      "title": "National Crime Victimization Survey",
+      "domain": "justice",
+      "url": "https://bjs.ojp.gov/data-collection/ncvs",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "bjs-nibrs",
+      "publisherId": "bjs",
+      "title": "NIBRS National Estimates",
+      "domain": "justice",
+      "url": "https://bjs.ojp.gov/national-incident-based-reporting-system-nibrs-national-estimates-api",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "bjs-corrections",
+      "publisherId": "bjs",
+      "title": "Corrections Data",
+      "domain": "justice",
+      "url": "https://bjs.ojp.gov/topics/corrections",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "doj-civil-rights",
+      "publisherId": "doj",
+      "title": "Civil Rights Division",
+      "domain": "justice",
+      "url": "https://www.justice.gov/crt",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "eac-election-survey",
+      "publisherId": "eac",
+      "title": "Election Administration and Voting Survey",
+      "domain": "governance",
+      "url": "https://www.eac.gov/research-and-data",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "fec-finance",
+      "publisherId": "fec",
+      "title": "Federal Election Campaign Finance Data",
+      "domain": "governance",
+      "url": "https://www.fec.gov/data/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "congress-bills",
+      "publisherId": "congress",
+      "title": "Congress.gov Bills and Legislative Activity",
+      "domain": "governance",
+      "url": "https://www.congress.gov/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "gpo-govinfo",
+      "publisherId": "gpo",
+      "title": "GovInfo Official Publications",
+      "domain": "governance",
+      "url": "https://www.govinfo.gov/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "va-veteran-pop",
+      "publisherId": "va",
+      "title": "National Center for Veterans Analysis and Statistics",
+      "domain": "resilience",
+      "url": "https://www.va.gov/vetdata/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "va-open-data",
+      "publisherId": "va",
+      "title": "VA Open Data",
+      "domain": "resilience",
+      "url": "https://www.data.va.gov/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "dhs-immigration",
+      "publisherId": "dhs",
+      "title": "DHS Immigration Statistics",
+      "domain": "governance",
+      "url": "https://www.dhs.gov/immigration-statistics",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "nsf-science-statistics",
+      "publisherId": "nsf",
+      "title": "National Center for Science and Engineering Statistics",
+      "domain": "science",
+      "url": "https://ncses.nsf.gov/surveys",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "datagov-catalog",
+      "publisherId": "gsa",
+      "title": "Data.gov Federal and Subnational Discovery Catalog",
+      "domain": "discovery",
+      "url": "https://catalog.data.gov/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "urban-data",
+      "publisherId": "urban",
+      "title": "Urban Institute Data Catalog",
+      "domain": "research",
+      "url": "https://datacatalog.urban.org/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "urban-education",
+      "publisherId": "urban",
+      "title": "Urban Education Data Portal",
+      "domain": "education",
+      "url": "https://educationdata.urban.org/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "pew-survey",
+      "publisherId": "pew",
+      "title": "Pew Research Data",
+      "domain": "research",
+      "url": "https://www.pewresearch.org/datasets/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "opportunity-mobility",
+      "publisherId": "opportunity-insights",
+      "title": "Opportunity Insights Research Data",
+      "domain": "research",
+      "url": "https://opportunityinsights.org/data/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "norc-gss",
+      "publisherId": "norc",
+      "title": "General Social Survey",
+      "domain": "research",
+      "url": "https://gss.norc.org/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "ipums-integrated",
+      "publisherId": "ipums",
+      "title": "IPUMS Harmonized Census and Survey Microdata",
+      "domain": "research",
+      "url": "https://www.ipums.org/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "icpsr-archive",
+      "publisherId": "icpsr",
+      "title": "ICPSR Research Data Archive",
+      "domain": "research",
+      "url": "https://www.icpsr.umich.edu/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "kff-health-policy",
+      "publisherId": "kff",
+      "title": "KFF Health Research Data",
+      "domain": "health",
+      "url": "https://www.kff.org/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "chr-counties",
+      "publisherId": "county-health-rankings",
+      "title": "County Health Rankings",
+      "domain": "health",
+      "url": "https://www.countyhealthrankings.org/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "feeding-america-gap",
+      "publisherId": "feeding-america",
+      "title": "Map the Meal Gap",
+      "domain": "agriculture",
+      "url": "https://www.feedingamerica.org/research/map-the-meal-gap",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "epi-wages",
+      "publisherId": "epi",
+      "title": "Economic Policy Institute Data",
+      "domain": "labor",
+      "url": "https://www.epi.org/data/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "tax-foundation-rates",
+      "publisherId": "tax-foundation",
+      "title": "Tax Foundation Federal State Local Tax Data",
+      "domain": "finance",
+      "url": "https://taxfoundation.org/data/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "brookings-research",
+      "publisherId": "brookings",
+      "title": "Brookings Research Outputs",
+      "domain": "research",
+      "url": "https://www.brookings.edu/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "rand-public-research",
+      "publisherId": "rand",
+      "title": "RAND Public Research Outputs",
+      "domain": "research",
+      "url": "https://www.rand.org/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "bpc-research",
+      "publisherId": "bipartisan-policy",
+      "title": "Bipartisan Policy Center Research",
+      "domain": "research",
+      "url": "https://bipartisanpolicy.org/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "vdem-democracy",
+      "publisherId": "vdem",
+      "title": "V-Dem Democracy Data",
+      "domain": "governance",
+      "url": "https://www.v-dem.net/data/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "worldbank-indicators",
+      "publisherId": "world-bank",
+      "title": "World Bank Open Data",
+      "domain": "international",
+      "url": "https://data.worldbank.org/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "oecd-indicators",
+      "publisherId": "oecd",
+      "title": "OECD Data",
+      "domain": "international",
+      "url": "https://data.oecd.org/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "owid-explorer",
+      "publisherId": "our-world-in-data",
+      "title": "Our World in Data Series Explorer",
+      "domain": "international",
+      "url": "https://ourworldindata.org/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
+      "id": "osm-mapping",
+      "publisherId": "openstreetmap",
+      "title": "OpenStreetMap Geographic Reference",
+      "domain": "geography",
+      "url": "https://www.openstreetmap.org/",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    }
+  ]
+}

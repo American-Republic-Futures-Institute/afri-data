@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ARFI Public Data Observatory — Census State Population</title>
+  <style>
+    :root{color-scheme:light;--navy:#0b2e50;--gold:#b28c45;--ink:#14202e;--paper:#f6f5f1;--line:#dddad2}
+    *{box-sizing:border-box}
+    body{margin:0;color:var(--ink);background:var(--paper);font:15px/1.6 system-ui,-apple-system,sans-serif}
+    header{padding:24px clamp(18px,4vw,64px);background:var(--navy);color:white}
+    h1{font:400 clamp(24px,3vw,36px)/1.2 Georgia,serif;margin:0 0 4px}
+    header p{margin:0;color:#dbe6ec;font-size:13px}
+    main{max-width:1450px;margin:auto;padding:24px clamp(18px,3vw,46px)}
+    h2{font:400 25px/1.35 Georgia,serif}
+    .toolbar{display:flex;align-items:end;gap:16px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:18px}
+    label{display:flex;flex-direction:column;gap:5px;font-weight:600;font-size:13px}
+    select{background:white;color:var(--ink);border:1px solid #8896a2;padding:9px 13px;min-height:42px}
+    .muted{font-size:12px;color:#566472}
+    .layout{display:grid;grid-template-columns:minmax(0,2fr) minmax(260px,1fr);gap:24px;margin-top:20px}
+    section{border:1px solid var(--line);background:white;padding:18px 20px}
+    .chart{height:min(63vh,610px);min-height:370px;width:100%}
+    #trend{height:265px;width:100%}
+    #status{min-height:35px;color:#4c5968}
+    .linkbox{border-top:1px solid var(--line);margin-top:18px;padding-top:12px;display:flex;gap:12px;flex-wrap:wrap;font-size:13px}
+    a{color:#0b4a70;text-underline-offset:3px}
+    table{border-collapse:collapse;width:100%;background:white;font-size:13px}
+    caption{text-align:left;font-weight:600;padding:12px 4px}
+    th,td{border-bottom:1px solid #e6e9eb;text-align:left;padding:8px 10px}
+    td:last-child{text-align:right;font-variant-numeric:tabular-nums}
+    button{background:transparent;color:inherit;text-align:left;border:0;text-decoration:underline;cursor:pointer;font:inherit;padding:0}
+    button:hover,button:focus-visible{color:#0c638e}
+    .table-wrap{max-height:360px;overflow:auto}
+    .sr-only{position:absolute;clip:rect(0,0,0,0);width:1px;height:1px;overflow:hidden}
+    @media(max-width:850px){.layout{grid-template-columns:minmax(0,1fr)}}
+  </style>
+  <!-- Demonstration-only CDN dependency. Production ARFI website should bundle ECharts locally. -->
+  <script defer src="https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js"></script>
+</head>
+<body>
+<header>
+  <h1>ARFI Public Data Observatory</h1>
+  <p>Example view · Federal source-backed evidence · Census Bureau state population estimates</p>
+</header>
+<main>
+  <div class="toolbar">
+    <label>Reference year
+      <select id="year">
+        <option>2020</option><option>2021</option><option>2022</option>
+        <option>2023</option><option>2024</option><option selected>2025</option>
+      </select>
+    </label>
+    <label>Focus jurisdiction
+      <select id="place"><option value="">Select a state to compare years</option></select>
+    </label>
+    <div class="muted">Values are original Census resident population estimates, not normalized rates or a measure of performance.</div>
+  </div>
+  <p id="status" role="status" aria-live="polite">Loading approved evidence…</p>
+  <div class="layout">
+    <section>
+      <h2>Resident population by state</h2>
+      <div id="map" class="chart" role="img" aria-label="Interactive geographic choropleth; see the complete accessible table below"></div>
+      <p class="muted">Generalized 1:20,000,000 cartographic boundaries; includes 50 states, District of Columbia and Puerto Rico.</p>
+    </section>
+    <section>
+      <h2 id="selected">Select a state</h2>
+      <p id="selected-number" aria-live="polite"></p>
+      <div id="trend" role="img" aria-label="Historical population estimates for the selected state"></div>
+      <p class="muted">July 1 published estimates · Census Vintage 2025. Prior population estimate vintages are not substituted.</p>
+    </section>
+  </div>
+  <section style="margin-top:24px">
+    <h2>Accessible data table</h2>
+    <div class="table-wrap">
+      <table id="numbers">
+        <caption>State population estimates for the selected year</caption>
+        <thead><tr><th scope="col">Jurisdiction</th><th scope="col">State GEOID</th><th scope="col">Population estimate</th></tr></thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+  </section>
+  <div class="linkbox" id="source">
+    <strong>Source and methodological record:</strong>
+    <a target="_blank" rel="noopener noreferrer" href="../catalog/datasets/census-state-population-v2025.json">Dataset catalog</a>
+    <a target="_blank" rel="noopener noreferrer" href="https://www.census.gov/data/tables/time-series/demo/popest/2020s-state-total.html">Census methodology</a>
+    <a target="_blank" rel="noopener noreferrer" href="../publication/releases/census-state-population-v2025/observations.csv">Download published CSV</a>
+    <a target="_blank" rel="noopener noreferrer" href="../publication/releases/census-state-population-v2025/manifest.json">Inspect source integrity manifest</a>
+  </div>
+</main>
+<script>
+"use strict";
+window.addEventListener("load",async()=>{
+  const base="../publication/releases/census-state-population-v2025/";
+  const $=id=>document.getElementById(id);
+  const fmt=new Intl.NumberFormat("en-US",{maximumFractionDigits:0});
+  function notice(message){$("status").textContent=message;}
+  async function verified(asset,manifest){
+    if(!crypto.subtle)throw Error("Secure context required for source-hash verification");
+    const response=await fetch(base+manifest.assets[asset].path,{cache:"no-store"});
+    if(!response.ok)throw Error("Could not load approved "+asset);
+    const bytes=await response.arrayBuffer();
+    const actual=Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256",bytes))).map(v=>v.toString(16).padStart(2,"0")).join("");
+    if(actual!==manifest.assets[asset].sha256)throw Error("Source-integrity check failed: "+asset);
+    return JSON.parse(new TextDecoder().decode(bytes));
+  }
+  try{
+    if(typeof echarts==="undefined")throw Error("Chart library unavailable. Use the source CSV or table after serving from a local HTTP server.");
+    const response=await fetch(base+"manifest.json");
+    if(!response.ok)throw Error("Review-gated Census publication not available yet");
+    const manifest=await response.json();
+    if(manifest.datasetId!=="census-state-population-v2025")throw Error("Unapproved dataset identifier");
+    const [data,geodata]=await Promise.all([verified("observations",manifest),verified("geometry",manifest)]);
+    const observations=data.observations;
+    const byYear=new Map(),byState=new Map();
+    for(const row of observations){
+      if(!byYear.has(row.year))byYear.set(row.year,[]);
+      byYear.get(row.year).push(row);
+      if(!byState.has(row.fips))byState.set(row.fips,[]);
+      byState.get(row.fips).push(row);
+    }
+    // ECharts expects a lowercase 'name' metadata key. This is only a
+    // visualization-layer alias; the original uppercase NAME is untouched.
+    for(const feature of geodata.features)feature.properties.name=feature.properties.NAME;
+    echarts.registerMap("arfistates",geodata);
+    const map=echarts.init($("map"),null,{renderer:"svg"});
+    const trend=echarts.init($("trend"),null,{renderer:"svg"});
+    const chooser=$("place");
+    const ordered=[...byState].sort((a,b)=>a[1][0].name.localeCompare(b[1][0].name));
+    for(const [fips,records] of ordered){
+      const option=document.createElement("option");
+      option.value=fips;option.textContent=records[0].name;chooser.append(option);
+    }
+    function showTrend(){
+      const rows=byState.get(chooser.value)||[];
+      $("selected").textContent=rows.length?rows[0].name:"Select a jurisdiction";
+      $("selected-number").textContent=rows.length?
+        fmt.format(rows.find(r=>r.year===Number($("year").value)).value)+" residents (estimate)":"";
+      trend.setOption({
+        animation:false,tooltip:{trigger:"axis"},
+        xAxis:{type:"category",data:rows.map(r=>String(r.year))},
+        yAxis:{type:"value",axisLabel:{formatter:value=>fmt.format(value)}},
+        grid:{left:80,right:16,top:28,bottom:44},
+        series:[{type:"line",smooth:false,data:rows.map(r=>r.value),lineStyle:{color:"#0b2e50",width:3},itemStyle:{color:"#b28c45"},symbolSize:8}]
+      },true);
+    }
+    function renderYear(){
+      const year=Number($("year").value);
+      const rows=byYear.get(year)||[];
+      const byName=rows.map(r=>({name:r.name,value:r.value,fips:r.fips}));
+      const vals=rows.map(r=>r.value);
+      map.setOption({
+        backgroundColor:"transparent",
+        tooltip:{trigger:"item",formatter:p=>{
+          const entry=rows.find(x=>x.name===p.name);
+          // Names originate from a federal source but still escape HTML.
+          const title=String(p.name||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+          return title+"<br>"+(entry?fmt.format(entry.value)+" people · "+year:"No published estimate");
+        }},
+        visualMap:{min:Math.min(...vals),max:Math.max(...vals),calculable:true,
+          orient:"horizontal",left:"center",bottom:0,
+          inRange:{color:["#e3edf2","#91b3c4","#376f8d","#0b2e50"]},
+          text:["More residents","Fewer residents"]},
+        series:[{type:"map",map:"arfistates",name:"Population estimate",data:byName,
+          roam:true,selectedMode:"single",emphasis:{itemStyle:{areaColor:"#b28c45"}},
+          itemStyle:{borderColor:"#fff",borderWidth:.7},
+          label:{show:false}}]
+      },true);
+      const tbody=$("table-body");tbody.replaceChildren();
+      for(const row of rows.slice().sort((a,b)=>b.value-a.value)){
+        const tr=document.createElement("tr");
+        const td=document.createElement("td"),btn=document.createElement("button");
+        btn.type="button";btn.textContent=row.name;
+        btn.addEventListener("click",()=>{chooser.value=row.fips;showTrend();});
+        td.append(btn);tr.append(td);
+        for(const value of [row.fips,fmt.format(row.value)]){
+          const cell=document.createElement("td");cell.textContent=value;tr.append(cell);
+        }
+        tbody.append(tr);
+      }
+      showTrend();
+      notice(rows.length+" source-verified state, DC and Puerto Rico estimates for July "+year+" · original Census Vintage 2025 source");
+    }
+    map.on("click",p=>{const selected=geodata.features.find(f=>f.properties.NAME===p.name);if(selected){chooser.value=selected.properties.GEOID;showTrend();}});
+    chooser.addEventListener("change",showTrend);
+    $("year").addEventListener("change",renderYear);
+    addEventListener("resize",()=>{map.resize();trend.resize();});
+    renderYear();
+  }catch(error){
+    notice("The approved source cannot be displayed: "+error.message+" Open the source catalog and confirm the publication review PR is merged.");
+    console.error(error);
+  }
+});
+</script>
+</body>
+</html>

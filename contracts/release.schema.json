@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ARFI immutable evidence release",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "releaseId",
+    "datasetId",
+    "createdAt",
+    "sourceFiles",
+    "assets",
+    "geography",
+    "temporalCoverage",
+    "method",
+    "status"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0.0"
+    },
+    "releaseId": {
+      "type": "string"
+    },
+    "datasetId": {
+      "type": "string"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "const": "published"
+    },
+    "sourceFiles": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "required": [
+          "role",
+          "url",
+          "sha256",
+          "bytes"
+        ],
+        "properties": {
+          "role": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
+    },
+    "assets": {
+      "type": "object",
+      "minProperties": 3,
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "path",
+          "sha256",
+          "bytes",
+          "contentType"
+        ],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "contentType": {
+            "type": "string"
+          },
+          "rows": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
+    },
+    "geography": {
+      "type": "object",
+      "required": [
+        "level",
+        "vintage",
+        "joinKey",
+        "features"
+      ],
+      "properties": {
+        "level": {
+          "const": "state"
+        },
+        "vintage": {
+          "type": "integer"
+        },
+        "joinKey": {
+          "const": "GEOID"
+        },
+        "features": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "temporalCoverage": {
+      "type": "object",
+      "required": [
+        "firstYear",
+        "lastYear",
+        "vintage"
+      ],
+      "properties": {
+        "firstYear": {
+          "type": "integer"
+        },
+        "lastYear": {
+          "type": "integer"
+        },
+        "vintage": {
+          "type": "integer"
+        }
+      }
+    },
+    "method": {
+      "type": "string",
+      "minLength": 10
+    }
+  }
+}

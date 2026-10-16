@@ -1,0 +1,61 @@
+name: Refresh Census resident population
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '18 10 15 * *'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/refresh-census.yml'
+      - 'pipelines/census_state_population.py'
+      - 'catalog/datasets/census-state-population-v2025.json'
+      - 'catalog/datasets/census-state-boundaries-v2025.json'
+      - 'tools/validate.py'
+permissions:
+  contents: write
+  pull-requests: write
+concurrency:
+  group: census-v2025-refresh
+  cancel-in-progress: false
+jobs:
+  stage-verified-evidence:
+    if: github.repository == 'American-Republic-Futures-Institute/afri-data'
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install pinned build dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Verify catalog before fetch
+        run: python tools/validate.py --catalog-only
+      - name: Retrieve primary Census originals and generate evidence
+        run: python pipelines/census_state_population.py
+      - name: Verify asset checksums, table fidelity and geometry joins
+        run: python tools/validate.py
+      - name: Stage a reviewable release PR (never modify main directly)
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          add-paths: publication/
+          commit-message: 'data: stage Census Vintage 2025 state population release'
+          branch: data/census-state-population-v2025
+          delete-branch: false
+          title: 'data: review Census Vintage 2025 population evidence'
+          body: |
+            Generated from the original U.S. Census Bureau Vintage 2025
+            state population ALLDATA CSV and official 2025 state cartographic ZIP.
+            Includes source-file SHA-256 digests and unchanged source table bytes.
+
+            Geography: 50 states, District of Columbia, Puerto Rico.
+            Years: 2020-2025. Values: published resident population estimates.
+
+            Required reviewer gates:
+            - Verify original official URLs and vintage.
+            - Check all 52 state FIPS and 312 observations.
+            - Inspect generalized geometry and original CSV hashes.
+            - Confirm the documented interpretation and no fabricated values.
+            - Check CI and any source-revision implications.

@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ARFI source publisher",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "name",
+    "category",
+    "homepage",
+    "trustModel",
+    "reuseReview",
+    "status"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 3
+    },
+    "category": {
+      "enum": [
+        "us-federal",
+        "state-local-tribal",
+        "academic",
+        "nonprofit",
+        "international",
+        "other"
+      ]
+    },
+    "homepage": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https://"
+    },
+    "trustModel": {
+      "enum": [
+        "primary-publisher",
+        "independent-research",
+        "secondary-aggregator",
+        "geographic-reference"
+      ]
+    },
+    "reuseReview": {
+      "enum": [
+        "public-domain-federal",
+        "license-review-required",
+        "verified-per-dataset"
+      ]
+    },
+    "status": {
+      "enum": [
+        "registered",
+        "reviewed",
+        "paused"
+      ]
+    },
+    "notes": {
+      "type": "string"
+    }
+  }
+}

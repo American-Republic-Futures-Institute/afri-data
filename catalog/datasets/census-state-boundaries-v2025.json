@@ -1,0 +1,28 @@
+{
+  "id": "census-state-boundaries-v2025",
+  "publisherId": "us-census",
+  "title": "2025 Census cartographic state and equivalent boundaries at 1:20 million scale",
+  "kind": "boundary",
+  "stage": "integration-ready",
+  "geography": "state",
+  "sourceUrl": "https://www2.census.gov/geo/tiger/GENZ2025/shp/cb_2025_us_state_20m.zip",
+  "methodologyUrl": "https://www.census.gov/geographies/mapping-files/2025/geo/carto-boundary-file.html",
+  "temporalCoverage": {
+    "vintage": 2025,
+    "startYear": 2025,
+    "endYear": 2025
+  },
+  "sourceVariables": [
+    "GEOID",
+    "NAME",
+    "STATEFP",
+    "geometry"
+  ],
+  "limitations": [
+    "Generalized cartographic polygons for thematic maps; not legal boundary or parcel evidence.",
+    "Boundary vintage differs from some underlying statistical vintages and may not be suitable for historical spatial joins.",
+    "Mapping coverage is limited to geographical identifiers present in the population source; no invented values for other Island Areas."
+  ],
+  "licenseStatus": "us-federal-public-domain",
+  "outputPath": "publication/releases/census-state-population-v2025/states.geojson"
+}
