@@ -27,7 +27,8 @@
     "Negative transaction adjustments and deobligations can yield negative published aggregates; values are never clipped to zero.",
     "USAspending coverage is subject to agency reporting delays, corrections, exclusions and revisions.",
     "Missing geography is unavailable and never interpreted as a zero-dollar obligation.",
-    "Territorial and unknown geography codes are retained only in raw evidence; publish 52 Census reference geographies where source reports them."
+    "Territorial and unknown geography codes are retained only in raw evidence; publish 52 Census reference geographies where source reports them.",
+    "The official FY2025 geography API returns one unassigned record with empty shape_code and four territories beyond the 52-state reference layer. Exact excluded source amounts must be preserved in a replay-verified geography-exclusions.json; the mapped total is not a nationwide total."
   ],
   "licenseStatus": "us-federal-public-domain"
 }

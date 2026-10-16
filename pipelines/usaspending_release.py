@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 from decimal import Decimal, InvalidOperation
+import hashlib
 from hashlib import sha256
 import json
 from pathlib import Path
@@ -16,7 +17,7 @@ import shutil
 import tempfile
 
 from pipelines.census_state_population import FIPS
-from pipelines.evidence_publish import stage_release
+from pipelines.evidence_publish import stage_release, asset, json_bytes
 from pipelines.source_io import post_official_json
 from tools.validate import validate_publication
 
@@ -72,6 +73,14 @@ def project(original: bytes, request: bytes=REQUEST_BYTES) -> list[dict]:
         if not isinstance(row,dict):
             raise ValueError("Invalid USAspending geographic item")
         code=row.get("shape_code")
+        # USAspending's live state aggregation includes one source record
+        # with an empty shape_code (unattributable to a state). Retain that
+        # dollar amount in an explicit exclusion report, never map to a state.
+        if code == "":
+            if code in seen:
+                raise ValueError("Duplicate unmapped USAspending geography")
+            seen.add(code)
+            continue
         if not isinstance(code,str) or not re.fullmatch(r"[A-Z]{2}",code):
             raise ValueError("USAspending invalid state shape code")
         if code in seen:
@@ -104,9 +113,59 @@ def project(original: bytes, request: bytes=REQUEST_BYTES) -> list[dict]:
             "locationBasis":"primary_place_of_performance",
             "spendingLevel":"transactions",
         })
-    if len(projected)<40:
-        raise ValueError("USAspending source does not cover sufficient states")
+    if len(projected)!=len(USPS_TO_FIPS) or {r["geoid"] for r in projected}!=FIPS:
+        raise ValueError("USAspending state source lacks one or more 52 required geographies; no zero imputation")
     return sorted(projected,key=lambda x:x["geoid"])
+
+
+def exclusion_report(original: bytes) -> dict:
+    """Preserve source-reported noncomparable geographic amounts without mapping.
+
+    This report deliberately does not add blank-code dollars to any state or
+    suggest it represents missing zero-valued transactions.
+    """
+    try:
+        response=json.loads(original.decode("utf-8"),parse_float=Decimal,parse_int=Decimal)
+        rows=response["results"]
+    except (UnicodeError,KeyError,TypeError,ValueError) as exc:
+        raise ValueError("Cannot inspect official geography exclusions") from exc
+    omitted=[]
+    for row in rows:
+        code=row.get("shape_code")
+        if code not in EXCLUDED_TERRITORIES and code != "":
+            continue
+        amount=row.get("aggregated_amount")
+        try:
+            value=Decimal(str(amount))
+        except (InvalidOperation,ValueError) as exc:
+            raise ValueError("Invalid excluded geographic amount") from exc
+        if not value.is_finite() or abs(value)>Decimal("1e17"):
+            raise ValueError("Invalid excluded geographic amount")
+        name=row.get("display_name")
+        if not isinstance(name,str) or len(name)>120:
+            raise ValueError("Invalid excluded geographic label")
+        omitted.append({
+            "sourceShapeCode":code,
+            "sourceName":name,
+            "reportedAmount":str(value),
+            "unit":"USD",
+            "reason":("unattributed_blank_geography_code" if code==""
+                      else "territory_outside_52_area_reference"),
+        })
+    omitted.sort(key=lambda r:(r["sourceShapeCode"],r["sourceName"]))
+    nonreference={r["sourceShapeCode"] for r in omitted}
+    if nonreference != EXCLUDED_TERRITORIES | {""} or len(omitted)!=5:
+        raise ValueError("Official source geography exclusions changed; source review required")
+    total=sum((Decimal(r["reportedAmount"]) for r in omitted),Decimal("0"))
+    return {
+        "schemaVersion":"1.0.0",
+        "reason":"Source rows outside ARFI's initial 52-jurisdiction comparable state layer",
+        "referenceGeographies":52,
+        "unmappedAndTerritoryCount":len(omitted),
+        "excludedObligationTotalUSD":str(total),
+        "exclusions":omitted,
+        "caution":"Excluded dollars remain in original source. Map totals are not the entire domestic API total.",
+    }
 
 def stage(root:Path,original:bytes, request:bytes=REQUEST_BYTES)->dict:
     observations=project(original,request)
@@ -131,9 +190,27 @@ def stage(root:Path,original:bytes, request:bytes=REQUEST_BYTES)->dict:
                   "measured policy outcomes. USAspending reporting can be "
                   "revised and place-of-performance is a reporting attribute."),
     )
+    excluded=exclusion_report(original)
+    folder=root/"publication/releases"/rid
+    manifest_path=folder/"manifest.json"
+    manifest=json.loads(manifest_path.read_text(encoding="utf-8"))
+    report_bytes=json_bytes(excluded)
+    manifest["assets"]["geographyExclusions"]=asset(
+        folder,"geography-exclusions.json",report_bytes,"application/json",
+        len(excluded["exclusions"]),
+    )
+    manifest["interpretation"] += (
+        " The official response also contains four territories outside the "
+        "52-jurisdiction reference layer and one record with blank shape_code. "
+        "Their exact original amounts are retained in geography-exclusions.json "
+        "and the original publisher archive, not mapped to any of the 52 states."
+    )
+    manifest_path.write_bytes(json_bytes(manifest))
     return {"releaseId":rid,"records":len(observations),
             "sourceSha256":sha256(original).hexdigest(),
             "requestSha256":sha256(request).hexdigest(),
+            "excludedGeographyCount":excluded["unmappedAndTerritoryCount"],
+            "excludedObligationTotalUSD":excluded["excludedObligationTotalUSD"],
             "review":outcome["diff"]}
 
 def main():

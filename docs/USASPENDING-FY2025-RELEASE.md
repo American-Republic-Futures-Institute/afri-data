@@ -24,10 +24,18 @@ source URL, response schema, geography mapping, request filters and original
 decimal-text amount representation are verified on every release.
 
 Geographic normalization uses explicit USPS abbreviation to Census 2-digit
-state/territory FIPS crosswalk, including DC and Puerto Rico. Extra island
-territories AS, GU, MP and VI remain in original data and are excluded from
-ARFI's initial 52-area comparable map. A missing area is not zero. The
-source index includes only geographies present in the government response.
+state/territory FIPS crosswalk, including DC and Puerto Rico. The verified
+FY2025 live API response contains 57 geographic result records: **52**
+state-equivalent identifiers, four additional territories (AS, GU, MP, VI),
+and one `shape_code: ""` record lacking any state identifier. The five
+noncomparable rows are retained in the exact original response archive AND
+in hashed `geography-exclusions.json`, including their unmodified aggregate
+amounts. The 52-jurisdiction map MUST NOT assign unattributed spending to
+any state, conflate these omitted amounts with zero or describe the sum of
+mapped areas as the entire domestic API result. The publication validator
+replays the exclusion ledger as well as the 52 included observations.
+The source index includes only geographies present in the government
+response; missing reference states fail publication closed.
 
 ## Source method and approval
 
