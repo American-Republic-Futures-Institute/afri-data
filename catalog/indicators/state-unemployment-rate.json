@@ -1,11 +1,11 @@
 {
   "id": "state-unemployment-rate",
   "datasetId": "bls-laus-state-unemployment-2025",
-  "title": "Unemployment rate, annual average, not seasonally adjusted",
+  "title": "Unemployment rate, BLS 2025 annual estimate (11-month states/DC; 12-month Puerto Rico)",
   "sourceVariable": "LAUST{stateFips}0000000000003 with period M13",
   "unit": "percent",
   "kind": "original-publisher-estimate",
-  "method": "Select 2025 M13 annual averages for official unadjusted BLS LAUS statewide series with measure code 03, confirming series identity through BLS area and series metadata. Do not compute annual averages from monthly rates.",
+  "method": "Select 2025 M13 annual averages for official unadjusted BLS LAUS statewide series with measure code 03, confirming series identity through BLS area and series metadata. Do not compute annual averages from monthly rates. Preserve the footnote-code dictionary and qualify 51 eleven-month estimates separately from Puerto Rico's 12-month average.",
   "geography": "state",
   "display": {
     "defaultChart": "choropleth",
@@ -14,6 +14,7 @@
     "format": "percent-1"
   },
   "warnings": [
+    "BLS 2025 footnote G: October not collected; 50 states and DC include only 11 survey months and are not strictly comparable to previous full-year averages. Puerto Rico is 12 months.",
     "BLS publishes estimates, not exact counts.",
     "States, DC and Puerto Rico should be interpreted with source-defined coverage.",
     "Source revisions are independently versioned, not silently changed."
