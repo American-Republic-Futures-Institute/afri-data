@@ -408,6 +408,10 @@ def main():
         result.update(validate_publication())
         from tools.validate_geography import validate_geography
         result.update(validate_geography())
+        # Only when both independent, reviewed releases exist does the
+        # cross-publisher GEOID reconciliation become an acceptance gate.
+        from tools.cdc_county_join import validate_published_county_join
+        result.update(validate_published_county_join(ROOT))
     print(json.dumps(result, sort_keys=True))
 
 
