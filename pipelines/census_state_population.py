@@ -14,6 +14,7 @@ import hashlib
 import io
 import json
 from pathlib import Path
+import sys
 import shutil
 import tempfile
 import time
@@ -24,6 +25,9 @@ import zipfile
 import shapefile  # pyshp; pinned by requirements.txt
 
 ROOT = Path(__file__).resolve().parents[1]
+# Resolve sibling packages for both `python -m` and direct script execution.
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 RELEASE_ID = "census-state-population-v2025"
 RELEASE_PATH = Path("publication/releases") / RELEASE_ID
 YEARS = tuple(range(2020, 2026))
