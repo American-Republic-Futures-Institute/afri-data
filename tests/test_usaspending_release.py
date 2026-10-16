@@ -132,5 +132,5 @@ class SpendingTests(unittest.TestCase):
     def test_source_client_rejects_unbounded_invalid_payload(self):
         with self.assertRaisesRegex(ValueError,"size ceiling"):
             post_official_json(ENDPOINT,b"[]",host="api.usaspending.gov",limit=0)
-        with self.assertRaisesRegex(ValueError,"JSON object"):
+        with self.assertRaisesRegex(ValueError,"Invalid published source request JSON"):
             post_official_json(ENDPOINT,b"[]",host="api.usaspending.gov",limit=100000)
