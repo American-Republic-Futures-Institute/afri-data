@@ -379,7 +379,8 @@ def validate_publication(root=ROOT):
             folder = checked_path(root, entry["releaseId"], "manifest.json").parent
             source_bytes = [
                 gzip.decompress((folder / name).read_bytes())
-                for name in ("originalData.gz", "originalSeries.gz", "originalAreas.gz")
+                for name in ("originalData.gz", "originalSeries.gz", "originalAreas.gz",
+                             "originalFootnotes.gz")
             ]
             expected = parse_authoritative_annual(*source_bytes)
             projected = load_json(folder / "observations.json")["observations"]
@@ -406,6 +407,12 @@ def main():
         result.update(validate_catalog())
     if not args.catalog_only:
         result.update(validate_publication())
+        from tools.validate_geography import validate_geography
+        result.update(validate_geography())
+        # Only when both independent, reviewed releases exist does the
+        # cross-publisher GEOID reconciliation become an acceptance gate.
+        from tools.cdc_county_join import validate_published_county_join
+        result.update(validate_published_county_join(ROOT))
     print(json.dumps(result, sort_keys=True))
 
 

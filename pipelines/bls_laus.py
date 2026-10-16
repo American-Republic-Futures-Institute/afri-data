@@ -25,7 +25,7 @@ def parse_laus_state_annual(original: bytes, year: int) -> list[dict]:
     except UnicodeError as exc:
         raise ValueError("Invalid BLS source encoding") from exc
     reader=csv.DictReader(stream,delimiter="\t")
-    expected={"series_id","year","period","value"}
+    expected={"series_id","year","period","value","footnote_codes"}
     if not reader.fieldnames or not expected.issubset({x.strip() for x in reader.fieldnames}):
         raise ValueError("Unrecognized LAUS data schema")
     results={}
@@ -43,11 +43,18 @@ def parse_laus_state_annual(original: bytes, year: int) -> list[dict]:
             raise ValueError("Invalid LAUS unemployment value") from exc
         if not math.isfinite(value) or not 0<=value<=100:
             raise ValueError("Invalid LAUS unemployment rate range")
+        # Preserve the original official BLS qualifiers; the source-aware
+        # release parser will validate these codes against la.footnote.
+        raw_codes=row["footnote_codes"]
+        if not re.fullmatch(r"(?:[A-Z](?:[,; ]+[A-Z])*)?", raw_codes):
+            raise ValueError("Unsupported BLS source footnote-code notation")
+        codes=sorted(set(code for code in re.split(r"[,; ]+",raw_codes) if code))
         results[state]={"geoid":state,"year":year,"value":value,
                         "unit":"percent","statistic":"published_estimate",
                         "referencePeriod":"annual_average",
                         "seasonalAdjustment":"not_seasonally_adjusted",
-                        "status":"available","seriesId":row["series_id"]}
+                        "status":"available","seriesId":row["series_id"],
+                        "footnoteCodes":codes}
     if not results:
         raise ValueError("No LAUS annual unadjusted state unemployment rates found")
     return [results[k] for k in sorted(results)]

@@ -1,0 +1,53 @@
+annualAverageMonths,excludedMonths,footnoteCodes,geoid,name,referencePeriod,seasonalAdjustment,seriesId,sourcePeriodQualifier,statistic,status,unit,value,year
+11,['2025-10'],['G'],01,Alabama,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST010000000000003,no_october_cps_2025,published_estimate,available,percent,2.9,2025
+11,['2025-10'],['G'],02,Alaska,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST020000000000003,no_october_cps_2025,published_estimate,available,percent,4.7,2025
+11,['2025-10'],['G'],04,Arizona,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST040000000000003,no_october_cps_2025,published_estimate,available,percent,4.3,2025
+11,['2025-10'],['G'],05,Arkansas,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST050000000000003,no_october_cps_2025,published_estimate,available,percent,4.1,2025
+11,['2025-10'],['G'],06,California,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST060000000000003,no_october_cps_2025,published_estimate,available,percent,5.5,2025
+11,['2025-10'],['G'],08,Colorado,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST080000000000003,no_october_cps_2025,published_estimate,available,percent,4.0,2025
+11,['2025-10'],['G'],09,Connecticut,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST090000000000003,no_october_cps_2025,published_estimate,available,percent,4.0,2025
+11,['2025-10'],['G'],10,Delaware,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST100000000000003,no_october_cps_2025,published_estimate,available,percent,4.8,2025
+11,['2025-10'],['G'],11,District of Columbia,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST110000000000003,no_october_cps_2025,published_estimate,available,percent,6.3,2025
+11,['2025-10'],['G'],12,Florida,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST120000000000003,no_october_cps_2025,published_estimate,available,percent,3.9,2025
+11,['2025-10'],['G'],13,Georgia,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST130000000000003,no_october_cps_2025,published_estimate,available,percent,3.4,2025
+11,['2025-10'],['G'],15,Hawaii,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST150000000000003,no_october_cps_2025,published_estimate,available,percent,2.4,2025
+11,['2025-10'],['G'],16,Idaho,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST160000000000003,no_october_cps_2025,published_estimate,available,percent,3.7,2025
+11,['2025-10'],['G'],17,Illinois,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST170000000000003,no_october_cps_2025,published_estimate,available,percent,4.6,2025
+11,['2025-10'],['G'],18,Indiana,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST180000000000003,no_october_cps_2025,published_estimate,available,percent,3.7,2025
+11,['2025-10'],['G'],19,Iowa,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST190000000000003,no_october_cps_2025,published_estimate,available,percent,3.5,2025
+11,['2025-10'],['G'],20,Kansas,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST200000000000003,no_october_cps_2025,published_estimate,available,percent,3.8,2025
+11,['2025-10'],['G'],21,Kentucky,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST210000000000003,no_october_cps_2025,published_estimate,available,percent,4.6,2025
+11,['2025-10'],['G'],22,Louisiana,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST220000000000003,no_october_cps_2025,published_estimate,available,percent,4.3,2025
+11,['2025-10'],['G'],23,Maine,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST230000000000003,no_october_cps_2025,published_estimate,available,percent,3.4,2025
+11,['2025-10'],['G'],24,Maryland,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST240000000000003,no_october_cps_2025,published_estimate,available,percent,4.0,2025
+11,['2025-10'],['G'],25,Massachusetts,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST250000000000003,no_october_cps_2025,published_estimate,available,percent,4.5,2025
+11,['2025-10'],['G'],26,Michigan,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST260000000000003,no_october_cps_2025,published_estimate,available,percent,5.2,2025
+11,['2025-10'],['G'],27,Minnesota,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST270000000000003,no_october_cps_2025,published_estimate,available,percent,3.9,2025
+11,['2025-10'],['G'],28,Mississippi,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST280000000000003,no_october_cps_2025,published_estimate,available,percent,3.8,2025
+11,['2025-10'],['G'],29,Missouri,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST290000000000003,no_october_cps_2025,published_estimate,available,percent,4.0,2025
+11,['2025-10'],['G'],30,Montana,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST300000000000003,no_october_cps_2025,published_estimate,available,percent,3.3,2025
+11,['2025-10'],['G'],31,Nebraska,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST310000000000003,no_october_cps_2025,published_estimate,available,percent,3.0,2025
+11,['2025-10'],['G'],32,Nevada,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST320000000000003,no_october_cps_2025,published_estimate,available,percent,5.3,2025
+11,['2025-10'],['G'],33,New Hampshire,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST330000000000003,no_october_cps_2025,published_estimate,available,percent,3.2,2025
+11,['2025-10'],['G'],34,New Jersey,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST340000000000003,no_october_cps_2025,published_estimate,available,percent,5.2,2025
+11,['2025-10'],['G'],35,New Mexico,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST350000000000003,no_october_cps_2025,published_estimate,available,percent,4.2,2025
+11,['2025-10'],['G'],36,New York,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST360000000000003,no_october_cps_2025,published_estimate,available,percent,4.3,2025
+11,['2025-10'],['G'],37,North Carolina,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST370000000000003,no_october_cps_2025,published_estimate,available,percent,3.8,2025
+11,['2025-10'],['G'],38,North Dakota,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST380000000000003,no_october_cps_2025,published_estimate,available,percent,2.6,2025
+11,['2025-10'],['G'],39,Ohio,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST390000000000003,no_october_cps_2025,published_estimate,available,percent,4.6,2025
+11,['2025-10'],['G'],40,Oklahoma,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST400000000000003,no_october_cps_2025,published_estimate,available,percent,3.4,2025
+11,['2025-10'],['G'],41,Oregon,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST410000000000003,no_october_cps_2025,published_estimate,available,percent,5.2,2025
+11,['2025-10'],['G'],42,Pennsylvania,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST420000000000003,no_october_cps_2025,published_estimate,available,percent,4.3,2025
+11,['2025-10'],['G'],44,Rhode Island,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST440000000000003,no_october_cps_2025,published_estimate,available,percent,4.5,2025
+11,['2025-10'],['G'],45,South Carolina,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST450000000000003,no_october_cps_2025,published_estimate,available,percent,4.5,2025
+11,['2025-10'],['G'],46,South Dakota,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST460000000000003,no_october_cps_2025,published_estimate,available,percent,2.1,2025
+11,['2025-10'],['G'],47,Tennessee,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST470000000000003,no_october_cps_2025,published_estimate,available,percent,3.5,2025
+11,['2025-10'],['G'],48,Texas,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST480000000000003,no_october_cps_2025,published_estimate,available,percent,4.2,2025
+11,['2025-10'],['G'],49,Utah,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST490000000000003,no_october_cps_2025,published_estimate,available,percent,3.6,2025
+11,['2025-10'],['G'],50,Vermont,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST500000000000003,no_october_cps_2025,published_estimate,available,percent,2.7,2025
+11,['2025-10'],['G'],51,Virginia,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST510000000000003,no_october_cps_2025,published_estimate,available,percent,3.4,2025
+11,['2025-10'],['G'],53,Washington,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST530000000000003,no_october_cps_2025,published_estimate,available,percent,4.7,2025
+11,['2025-10'],['G'],54,West Virginia,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST540000000000003,no_october_cps_2025,published_estimate,available,percent,4.2,2025
+11,['2025-10'],['G'],55,Wisconsin,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST550000000000003,no_october_cps_2025,published_estimate,available,percent,3.2,2025
+11,['2025-10'],['G'],56,Wyoming,2025 annual estimate excluding October,not_seasonally_adjusted,LAUST560000000000003,no_october_cps_2025,published_estimate,available,percent,3.4,2025
+12,[],[],72,Puerto Rico,2025 full-year annual estimate,not_seasonally_adjusted,LAUST720000000000003,full_12_months_2025,published_estimate,available,percent,5.6,2025

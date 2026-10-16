@@ -19,18 +19,22 @@ def mock_bls_sources(fips=None):
     data = io.StringIO()
     series = io.StringIO()
     areas = io.StringIO()
+    footnotes = io.StringIO()
+    footnotes.write("footnote_code\tfootnote_text\n")
+    footnotes.write("G\tAnnual estimates for 2025 are 11-month averages that exclude October. Data for October 2025 were not collected due to the federal government shutdown.\n")
     data.write("series_id\tyear\tperiod\tvalue\tfootnote_codes\n")
     series.write("series_id\tarea_type_code\tarea_code\tmeasure_code\tseasonal\n")
     areas.write("area_type_code\tarea_code\tarea_text\n")
     for code in codes:
         area = "ST" + code + "0"*11
         series_id = "LAU"+area+"03"
-        data.write(f"{series_id}\t2025\tM13\t4.2\t\n")
+        code_note = "G" if code != "72" else ""
+        data.write(f"{series_id}\t2025\tM13\t4.2\t{code_note}\n")
         data.write(f"{series_id}\t2025\tM01\t7.0\t\n")
         data.write(f"LAS{area}03\t2025\tM01\t9.0\t\n")
         series.write(f"{series_id}\tA\t{area}\t03\tU\n")
         areas.write(f"A\t{area}\tTest region {code}\n")
-    return (data.getvalue().encode(),series.getvalue().encode(),areas.getvalue().encode())
+    return (data.getvalue().encode(),series.getvalue().encode(),areas.getvalue().encode(),footnotes.getvalue().encode())
 
 
 class BLSReleaseTests(unittest.TestCase):
@@ -48,6 +52,43 @@ class BLSReleaseTests(unittest.TestCase):
         self.assertEqual(rows[-1]["geoid"],"72")
         self.assertEqual(rows[0]["value"],4.2)
         self.assertEqual(rows[0]["seasonalAdjustment"],"not_seasonally_adjusted")
+        self.assertEqual(rows[0]["footnoteCodes"],["G"])
+        self.assertEqual(rows[0]["annualAverageMonths"],11)
+        self.assertEqual(rows[0]["excludedMonths"],["2025-10"])
+        self.assertEqual(rows[-1]["geoid"],"72")
+        self.assertEqual(rows[-1]["footnoteCodes"],[])
+        self.assertEqual(rows[-1]["annualAverageMonths"],12)
+        self.assertEqual(rows[-1]["excludedMonths"],[])
+
+
+    def test_missing_required_G_footnote_fails_closed(self):
+        a,b,c,d=self.originals
+        modified=a.replace(b"2025\tM13\t4.2\tG",b"2025\tM13\t4.2\t",1)
+        with self.assertRaisesRegex(ValueError,"footnote G does not match"):
+            parse_authoritative_annual(modified,b,c,d)
+
+    def test_puerto_rico_incorrectly_G_qualified_rejected(self):
+        a,b,c,d=self.originals
+        # Final M13 row belongs to Puerto Rico. Its 2025 12-month source
+        # has no G footnote even though all model-based states/DC do.
+        data=a.decode()
+        data=data.replace("LAUST720000000000003\t2025\tM13\t4.2\t\n",
+                          "LAUST720000000000003\t2025\tM13\t4.2\tG\n")
+        with self.assertRaisesRegex(ValueError,"footnote G does not match"):
+            parse_authoritative_annual(data.encode(),b,c,d)
+
+    def test_original_footnote_meaning_cannot_be_forged(self):
+        a,b,c,d=self.originals
+        bad=d.replace(b"11-month averages",b"12-month averages")
+        with self.assertRaisesRegex(ValueError,"missing-October footnote absent"):
+            parse_authoritative_annual(a,b,c,bad)
+
+    def test_source_revision_fingerprint_includes_footnote_definitions(self):
+        original=stage(self.root,*self.originals)
+        altered=self.originals[-1]+b"A\tUpdated explanatory footnote.\n"
+        changed=stage(self.root,*self.originals[:-1],altered)
+        self.assertNotEqual(original["releaseId"],changed["releaseId"])
+        self.assertEqual(validate_publication(self.root)["releases"],3)
 
     def test_source_archives_reproduce_exact_publisher_bytes(self):
         result=stage(self.root,*self.originals)
@@ -56,7 +97,7 @@ class BLSReleaseTests(unittest.TestCase):
         m=json.loads((folder/"manifest.json").read_text())
         for source in m["sourceFiles"]:
             raw=gzip.decompress((folder/(source["role"]+".gz")).read_bytes())
-            index=["originalData","originalSeries","originalAreas"].index(source["role"])
+            index=["originalData","originalSeries","originalAreas","originalFootnotes"].index(source["role"])
             self.assertEqual(raw,self.originals[index])
         stats=validate_publication(self.root)
         self.assertEqual(stats["releases"],2)
@@ -75,10 +116,10 @@ class BLSReleaseTests(unittest.TestCase):
             validate_publication(self.root)
 
     def test_duplicate_source_series_rejected(self):
-        a,b,c=self.originals
+        a,b,c,d=self.originals
         rows=b.decode().splitlines()
         with self.assertRaisesRegex(ValueError,"Duplicate BLS series"):
-            parse_authoritative_annual(a,(b.decode()+"\n"+rows[1]+"\n").encode(),c)
+            parse_authoritative_annual(a,(b.decode()+"\n"+rows[1]+"\n").encode(),c,d)
 
     def test_edited_projection_rejected_even_with_consistent_asset_hash(self):
         import hashlib
