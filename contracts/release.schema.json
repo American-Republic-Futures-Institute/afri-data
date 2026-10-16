@@ -141,6 +141,14 @@
     "method": {
       "type": "string",
       "minLength": 10
+    },
+    "interpretation": {
+      "type": "string",
+      "minLength": 15
+    },
+    "publishedSource": {
+      "type": "string",
+      "minLength": 3
     }
   }
 }
