@@ -4,6 +4,20 @@
   "releases": [
     {
       "geography": "state",
+      "indicatorId": "state-unemployment-rate",
+      "manifestPath": "publication/releases/bls-laus-state-unemployment-2025-e1625280119b26c3/manifest.json",
+      "observationsPath": "publication/releases/bls-laus-state-unemployment-2025-e1625280119b26c3/observations.json",
+      "releaseId": "bls-laus-state-unemployment-2025-e1625280119b26c3",
+      "status": "published",
+      "time": {
+        "firstYear": 2025,
+        "lastYear": 2025
+      },
+      "title": "BLS LAUS 2025 unemployment: 11-month averages except 12-month Puerto Rico",
+      "vintage": 2025
+    },
+    {
+      "geography": "state",
       "geometryPath": "publication/releases/census-state-population-v2025/states.geojson",
       "indicatorId": "state-resident-population",
       "manifestPath": "publication/releases/census-state-population-v2025/manifest.json",
