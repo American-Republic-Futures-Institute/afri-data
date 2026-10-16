@@ -1,0 +1,53 @@
+geoid,name,referencePeriod,seasonalAdjustment,seriesId,statistic,status,unit,value,year
+01,Alabama,2025 annual average,not_seasonally_adjusted,LAUST010000000000003,published_estimate,available,percent,2.9,2025
+02,Alaska,2025 annual average,not_seasonally_adjusted,LAUST020000000000003,published_estimate,available,percent,4.7,2025
+04,Arizona,2025 annual average,not_seasonally_adjusted,LAUST040000000000003,published_estimate,available,percent,4.3,2025
+05,Arkansas,2025 annual average,not_seasonally_adjusted,LAUST050000000000003,published_estimate,available,percent,4.1,2025
+06,California,2025 annual average,not_seasonally_adjusted,LAUST060000000000003,published_estimate,available,percent,5.5,2025
+08,Colorado,2025 annual average,not_seasonally_adjusted,LAUST080000000000003,published_estimate,available,percent,4.0,2025
+09,Connecticut,2025 annual average,not_seasonally_adjusted,LAUST090000000000003,published_estimate,available,percent,4.0,2025
+10,Delaware,2025 annual average,not_seasonally_adjusted,LAUST100000000000003,published_estimate,available,percent,4.8,2025
+11,District of Columbia,2025 annual average,not_seasonally_adjusted,LAUST110000000000003,published_estimate,available,percent,6.3,2025
+12,Florida,2025 annual average,not_seasonally_adjusted,LAUST120000000000003,published_estimate,available,percent,3.9,2025
+13,Georgia,2025 annual average,not_seasonally_adjusted,LAUST130000000000003,published_estimate,available,percent,3.4,2025
+15,Hawaii,2025 annual average,not_seasonally_adjusted,LAUST150000000000003,published_estimate,available,percent,2.4,2025
+16,Idaho,2025 annual average,not_seasonally_adjusted,LAUST160000000000003,published_estimate,available,percent,3.7,2025
+17,Illinois,2025 annual average,not_seasonally_adjusted,LAUST170000000000003,published_estimate,available,percent,4.6,2025
+18,Indiana,2025 annual average,not_seasonally_adjusted,LAUST180000000000003,published_estimate,available,percent,3.7,2025
+19,Iowa,2025 annual average,not_seasonally_adjusted,LAUST190000000000003,published_estimate,available,percent,3.5,2025
+20,Kansas,2025 annual average,not_seasonally_adjusted,LAUST200000000000003,published_estimate,available,percent,3.8,2025
+21,Kentucky,2025 annual average,not_seasonally_adjusted,LAUST210000000000003,published_estimate,available,percent,4.6,2025
+22,Louisiana,2025 annual average,not_seasonally_adjusted,LAUST220000000000003,published_estimate,available,percent,4.3,2025
+23,Maine,2025 annual average,not_seasonally_adjusted,LAUST230000000000003,published_estimate,available,percent,3.4,2025
+24,Maryland,2025 annual average,not_seasonally_adjusted,LAUST240000000000003,published_estimate,available,percent,4.0,2025
+25,Massachusetts,2025 annual average,not_seasonally_adjusted,LAUST250000000000003,published_estimate,available,percent,4.5,2025
+26,Michigan,2025 annual average,not_seasonally_adjusted,LAUST260000000000003,published_estimate,available,percent,5.2,2025
+27,Minnesota,2025 annual average,not_seasonally_adjusted,LAUST270000000000003,published_estimate,available,percent,3.9,2025
+28,Mississippi,2025 annual average,not_seasonally_adjusted,LAUST280000000000003,published_estimate,available,percent,3.8,2025
+29,Missouri,2025 annual average,not_seasonally_adjusted,LAUST290000000000003,published_estimate,available,percent,4.0,2025
+30,Montana,2025 annual average,not_seasonally_adjusted,LAUST300000000000003,published_estimate,available,percent,3.3,2025
+31,Nebraska,2025 annual average,not_seasonally_adjusted,LAUST310000000000003,published_estimate,available,percent,3.0,2025
+32,Nevada,2025 annual average,not_seasonally_adjusted,LAUST320000000000003,published_estimate,available,percent,5.3,2025
+33,New Hampshire,2025 annual average,not_seasonally_adjusted,LAUST330000000000003,published_estimate,available,percent,3.2,2025
+34,New Jersey,2025 annual average,not_seasonally_adjusted,LAUST340000000000003,published_estimate,available,percent,5.2,2025
+35,New Mexico,2025 annual average,not_seasonally_adjusted,LAUST350000000000003,published_estimate,available,percent,4.2,2025
+36,New York,2025 annual average,not_seasonally_adjusted,LAUST360000000000003,published_estimate,available,percent,4.3,2025
+37,North Carolina,2025 annual average,not_seasonally_adjusted,LAUST370000000000003,published_estimate,available,percent,3.8,2025
+38,North Dakota,2025 annual average,not_seasonally_adjusted,LAUST380000000000003,published_estimate,available,percent,2.6,2025
+39,Ohio,2025 annual average,not_seasonally_adjusted,LAUST390000000000003,published_estimate,available,percent,4.6,2025
+40,Oklahoma,2025 annual average,not_seasonally_adjusted,LAUST400000000000003,published_estimate,available,percent,3.4,2025
+41,Oregon,2025 annual average,not_seasonally_adjusted,LAUST410000000000003,published_estimate,available,percent,5.2,2025
+42,Pennsylvania,2025 annual average,not_seasonally_adjusted,LAUST420000000000003,published_estimate,available,percent,4.3,2025
+44,Rhode Island,2025 annual average,not_seasonally_adjusted,LAUST440000000000003,published_estimate,available,percent,4.5,2025
+45,South Carolina,2025 annual average,not_seasonally_adjusted,LAUST450000000000003,published_estimate,available,percent,4.5,2025
+46,South Dakota,2025 annual average,not_seasonally_adjusted,LAUST460000000000003,published_estimate,available,percent,2.1,2025
+47,Tennessee,2025 annual average,not_seasonally_adjusted,LAUST470000000000003,published_estimate,available,percent,3.5,2025
+48,Texas,2025 annual average,not_seasonally_adjusted,LAUST480000000000003,published_estimate,available,percent,4.2,2025
+49,Utah,2025 annual average,not_seasonally_adjusted,LAUST490000000000003,published_estimate,available,percent,3.6,2025
+50,Vermont,2025 annual average,not_seasonally_adjusted,LAUST500000000000003,published_estimate,available,percent,2.7,2025
+51,Virginia,2025 annual average,not_seasonally_adjusted,LAUST510000000000003,published_estimate,available,percent,3.4,2025
+53,Washington,2025 annual average,not_seasonally_adjusted,LAUST530000000000003,published_estimate,available,percent,4.7,2025
+54,West Virginia,2025 annual average,not_seasonally_adjusted,LAUST540000000000003,published_estimate,available,percent,4.2,2025
+55,Wisconsin,2025 annual average,not_seasonally_adjusted,LAUST550000000000003,published_estimate,available,percent,3.2,2025
+56,Wyoming,2025 annual average,not_seasonally_adjusted,LAUST560000000000003,published_estimate,available,percent,3.4,2025
+72,Puerto Rico,2025 annual average,not_seasonally_adjusted,LAUST720000000000003,published_estimate,available,percent,5.6,2025
