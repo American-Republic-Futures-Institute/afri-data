@@ -362,13 +362,15 @@ def validate_publication(root=ROOT):
             if load_json(folder / "observations.json")["observations"] != parse_places(original):
                 fail("Published CDC PLACES observations are not reproducible from originals")
         if entry.get("indicatorId") == "state-federal-award-obligations":
-            from pipelines.usaspending_release import project as project_spending
+            from pipelines.usaspending_release import project as project_spending, exclusion_report
             import gzip
             folder = checked_path(root, entry["releaseId"], "manifest.json").parent
             original = gzip.decompress((folder / "originalData.gz").read_bytes())
             request = gzip.decompress((folder / "requestBody.gz").read_bytes())
             if load_json(folder / "observations.json")["observations"] != project_spending(original,request):
                 fail("USAspending obligations are not reproducible from original response and POST")
+            if load_json(folder / "geography-exclusions.json") != exclusion_report(original):
+                fail("USAspending excluded or unattributed obligations were changed")
         # Replay the publisher-specific projection from archived original bytes.
         # Hash-consistent edited values are not authentic government evidence.
         if entry.get("indicatorId") == "state-unemployment-rate":
