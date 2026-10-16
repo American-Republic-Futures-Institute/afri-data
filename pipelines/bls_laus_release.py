@@ -113,7 +113,7 @@ def parse_authoritative_annual(data: bytes, series: bytes, areas: bytes, footnot
 
 def stage(root: Path, data: bytes, series: bytes, areas: bytes, footnotes: bytes) -> dict:
     if not all((data,series,areas,footnotes)):
-        raise ValueError("Complete original source triplet required")
+        raise ValueError("Four original BLS source files are required")
     values = parse_authoritative_annual(data,series,areas,footnotes)
     sources = [(role, url, raw) for (role,url,_),raw in zip(SOURCES,(data,series,areas,footnotes))]
     fingerprint = hashlib.sha256(
