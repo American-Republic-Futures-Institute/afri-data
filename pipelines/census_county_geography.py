@@ -27,7 +27,7 @@ from tools.release_registry import valid_id
 ROOT=Path(__file__).resolve().parents[1]
 SOURCE_URL="https://www2.census.gov/geo/tiger/GENZ2023/shp/cb_2023_us_county_20m.zip"
 VINTAGE=2023
-EXPECTED=3143
+EXPECTED=3144
 STATES=FIPS-{"72"}
 RELEASE_PREFIX="census-county-boundaries-2023-20m"
 ROOT_DIR=Path("publication/geographies/releases")
@@ -189,7 +189,7 @@ def stage(root: Path, raw_zip: bytes) -> dict:
                     "bytes":len(payload),"features":EXPECTED,
                     "level":"county","vintage":VINTAGE,"joinKey":"GEOID",
                     "contentType":"application/geo+json"},
-        "method":"Direct source-preserving transformation of Census Bureau 2023 cartographic 1:20 million county polygons to a GEOID-keyed generalized FeatureCollection, filtered to all 3,143 counties and equivalents in the 50 states and District of Columbia.",
+        "method":"Direct source-preserving transformation of Census Bureau 2023 cartographic 1:20 million county polygons to a GEOID-keyed generalized FeatureCollection, filtered to all 3,144 counties and equivalents in the 50 states and District of Columbia.",
         "limitations":"Generalized mapping geometry, not parcel, title, legal or cadastral evidence. Census 2023 boundary vintage does not automatically match all statistical program vintages; reconcile GEOID coverage before using an indicator.",
     }
     (folder/"manifest.json").write_bytes(json_bytes(manifest))
