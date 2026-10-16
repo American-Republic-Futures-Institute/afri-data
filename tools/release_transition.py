@@ -75,6 +75,47 @@ def check_transition(before: dict, after: dict,
             "newReleases":sorted(additions),"status":"approved-transition-shape"}
 
 
+
+def check_geography_transition(before:dict|None, after:dict|None,
+                               old_blobs:dict[str,str],
+                               new_blobs:dict[str,str])->dict:
+    """Additive-only history for independent county reference geometries."""
+    if before is None and after is None:
+        return {"previousGeographies":0,"proposedGeographies":0,"newGeographies":[]}
+    if before is not None and before.get("publicationStatus")!="published":
+        raise ValueError("Invalid historical approved geography status")
+    if after is None or after.get("publicationStatus")!="published":
+        raise ValueError("Approved geography index was removed or made unpublishable")
+    old=entries(before) if before is not None else {}
+    new=entries(after)
+    if not old.keys() <= new.keys():
+        raise ValueError("Rejected: approved geography release removed")
+    for rid,prior in old.items():
+        if new[rid]!=prior:
+            raise ValueError("Rejected: approved geography release entry mutated: "+rid)
+        prefix=f"publication/geographies/releases/{rid}/"
+        old_files={k:v for k,v in old_blobs.items() if k.startswith(prefix)}
+        new_files={k:v for k,v in new_blobs.items() if k.startswith(prefix)}
+        if not old_files or old_files!=new_files:
+            raise ValueError("Rejected: immutable approved geography files mutated: "+rid)
+    additions=new.keys()-old.keys()
+    for rid in additions:
+        prefix=f"publication/geographies/releases/{rid}/"
+        if (new[rid].get("manifestPath")!=prefix+"manifest.json"
+                or new[rid].get("geometryPath")!=prefix+"counties.geojson"
+                or not {"manifest.json","counties.geojson","original.zip"}
+                    <= {p.removeprefix(prefix) for p in new_blobs if p.startswith(prefix)}):
+            raise ValueError("New geography release missing canonical source or geometry")
+    for name in new_blobs:
+        parts=PurePosixPath(name).parts
+        if (len(parts)<5 or parts[:3]!=("publication","geographies","releases")
+                or parts[3] not in new):
+            raise ValueError("Unregistered geography release artifact: "+name)
+        if name not in old_blobs and parts[3] not in additions:
+            raise ValueError("Cannot add to an immutable geography release directory")
+    return {"previousGeographies":len(old),"proposedGeographies":len(new),
+            "newGeographies":sorted(additions)}
+
 def git_bytes(*args: str) -> bytes:
     proc=subprocess.run(("git",*args),check=False,capture_output=True)
     if proc.returncode:
@@ -82,8 +123,8 @@ def git_bytes(*args: str) -> bytes:
     return proc.stdout
 
 
-def git_blobs(ref: str) -> dict[str,str]:
-    output=git_bytes("ls-tree","-rz","--full-tree",ref,"--","publication/releases")
+def git_blobs(ref: str, directory: str="publication/releases") -> dict[str,str]:
+    output=git_bytes("ls-tree","-rz","--full-tree",ref,"--",directory)
     result={}
     for item in output.split(b"\0"):
         if not item:
@@ -105,6 +146,14 @@ def git_index(ref: str) -> dict:
     return json.loads(blob)
 
 
+def git_optional_geography_index(ref: str) -> dict|None:
+    location="publication/geographies/index.json"
+    exists=git_bytes("ls-tree","--name-only",ref,"--",location)
+    if not exists.strip():
+        return None
+    return json.loads(git_bytes("show",f"{ref}:{location}"))
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--base",default="origin/main")
@@ -113,6 +162,10 @@ def main():
         parser.error("Unsupported Git base ref")
     result=check_transition(git_index(args.base),git_index("HEAD"),
                             git_blobs(args.base),git_blobs("HEAD"))
+    result.update(check_geography_transition(
+        git_optional_geography_index(args.base),git_optional_geography_index("HEAD"),
+        git_blobs(args.base,"publication/geographies/releases"),
+        git_blobs("HEAD","publication/geographies/releases")))
     print(json.dumps(result,sort_keys=True))
 
 
