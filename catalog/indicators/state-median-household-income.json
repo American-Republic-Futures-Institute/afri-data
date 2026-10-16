@@ -1,0 +1,21 @@
+{
+  "id": "state-median-household-income",
+  "datasetId": "census-acs5-state-income-2024",
+  "title": "Median household income (2020–2024 five-year ACS estimate, 2024 dollars)",
+  "sourceVariable": "B19013_001E; margin of error B19013_001M",
+  "unit": "USD",
+  "kind": "original-publisher-estimate",
+  "method": "Project only the published 2024 ACS five-year B19013 median household income estimate and matching published margin of error by exact Census state FIPS. No calculation, interpolation, or invented confidence interval.",
+  "geography": "state",
+  "display": {
+    "defaultChart": "choropleth",
+    "scale": "sequential",
+    "missingValueStyle": "distinct",
+    "format": "currency"
+  },
+  "warnings": [
+    "2024 ACS five-year estimates represent pooled 2020–2024 responses, not a July 1 or single-calendar-year income measurement.",
+    "Margins of error must remain visible in detailed inspection.",
+    "Not directly comparable with annual BLS LAUS time periods without explicit method."
+  ]
+}
