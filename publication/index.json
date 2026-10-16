@@ -3,6 +3,20 @@
   "publisher": "American Republic Futures Institute",
   "releases": [
     {
+      "geography": "county",
+      "indicatorId": "county-modeled-obesity-prevalence",
+      "manifestPath": "publication/releases/cdc-places-county-obesity-2025-ec00ab31716eccca/manifest.json",
+      "observationsPath": "publication/releases/cdc-places-county-obesity-2025-ec00ab31716eccca/observations.json",
+      "releaseId": "cdc-places-county-obesity-2025-ec00ab31716eccca",
+      "status": "published",
+      "time": {
+        "firstYear": 2023,
+        "lastYear": 2023
+      },
+      "title": "CDC PLACES 2025 model-based county adult obesity prevalence (2023 inputs)",
+      "vintage": 2025
+    },
+    {
       "geography": "state",
       "geometryPath": "publication/releases/census-state-population-v2025/states.geojson",
       "indicatorId": "state-resident-population",
