@@ -136,8 +136,23 @@ def parse_county_geometries(raw_zip: bytes) -> dict:
             }
     finally:
         reader.close()
-    if len(features)!=EXPECTED or {v["properties"]["STATEFP"] for v in features.values()}!=STATES:
-        raise ValueError("Census 2023 county geometry coverage differs from 3,143 expected areas")
+    observed_states={v["properties"]["STATEFP"] for v in features.values()}
+    if len(features)!=EXPECTED or observed_states!=STATES:
+        # Government geographic-vintage changes must be reviewed, not silently
+        # removed or padded to match another publisher's statistical universe.
+        counts={}
+        for row in features.values():
+            code=row["properties"]["STATEFP"]
+            counts[code]=counts.get(code,0)+1
+        # Controlled FIPS-only diagnostic: no source paths, arbitrary labels,
+        # ZIP member names or untrusted data reflected into CI logs.
+        raise ValueError(
+            f"Census 2023 county geometry coverage mismatch: sourceCount={len(features)}, "
+            f"expectedCount={EXPECTED}, observedStateCount={len(observed_states)}, "
+            f"missingStateFips={sorted(STATES-observed_states)}, "
+            f"unexpectedStateFips={sorted(observed_states-STATES)}, "
+            f"stateFipsCounts={sorted(counts.items())}"
+        )
     return {
         "type":"FeatureCollection",
         "metadata":{
