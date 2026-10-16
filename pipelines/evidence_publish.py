@@ -63,7 +63,7 @@ def difference(before: list[dict], after: list[dict], predecessor: str | None) -
 
 
 def stage_release(root: Path, *, release_id: str, dataset_id: str,
-                  indicator_id: str, title: str, geography: str, year: int,
+                  indicator_id: str, title: str, publisher_name: str, geography: str, year: int,
                   vintage: int, geography_vintage: int, observations: list[dict],
                   originals: list[tuple[str, str, bytes]], method: str,
                   warnings: str, first_year: int | None = None,
@@ -128,7 +128,7 @@ def stage_release(root: Path, *, release_id: str, dataset_id: str,
         "temporalCoverage": {"firstYear": first_year, "lastYear": last_year,
                              "vintage": vintage},
         "method": method, "interpretation": warnings,
-        "publishedSource": "Original public federal source, pending ARFI reviewer approval",
+        "publishedSource": publisher_name,
     }
     prior_manifest_file.write_bytes(json_bytes(manifest))
     entry = {
