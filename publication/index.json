@@ -1,0 +1,23 @@
+{
+  "publicationStatus": "published",
+  "publisher": "American Republic Futures Institute",
+  "releases": [
+    {
+      "geography": "state",
+      "geometryPath": "publication/releases/census-state-population-v2025/states.geojson",
+      "indicatorId": "state-resident-population",
+      "manifestPath": "publication/releases/census-state-population-v2025/manifest.json",
+      "observationsPath": "publication/releases/census-state-population-v2025/observations.json",
+      "releaseId": "census-state-population-v2025",
+      "status": "published",
+      "time": {
+        "firstYear": 2020,
+        "lastYear": 2025
+      },
+      "title": "State resident population, July 1 estimates, 2020–2025 (Vintage 2025)",
+      "vintage": 2025
+    }
+  ],
+  "schemaVersion": "1.0.0",
+  "sourceOfTruth": "https://github.com/American-Republic-Futures-Institute/afri-data"
+}
