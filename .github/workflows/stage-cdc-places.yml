@@ -1,0 +1,61 @@
+name: Stage verified CDC PLACES 2025 county evidence for review
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - pipelines/source_io.py
+      - pipelines/evidence_publish.py
+      - pipelines/cdc_places_release.py
+      - pipelines/cdc_places_release.py
+      - tools/validate.py
+      - catalog/datasets/cdc-places-2025-county-obesity.json
+      - catalog/indicators/county-modeled-obesity-prevalence.json
+      - .github/workflows/stage-cdc-places.yml
+permissions:
+  contents: write
+concurrency:
+  group: cdc-places-2025-county-source-review
+  cancel-in-progress: false
+jobs:
+  stage-evidence:
+    if: github.repository == 'American-Republic-Futures-Institute/afri-data'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install locked evidence dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Verify source contracts and catalog
+        run: python tools/validate.py --catalog-only
+      - name: Download official BLS originals and stage new immutable release
+        run: python -m pipelines.cdc_places_release
+      - name: Replay original evidence and validate every published release
+        run: |
+          python tools/validate.py
+          python -m unittest discover -s tests -v
+      - name: Push reviewed-data branch only (never merge into main)
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add publication/
+          if git diff --cached --quiet; then
+            echo "Identical validated release already in main; no PR required."
+            exit 0
+          fi
+          RELEASE="$(python -c 'import json; d=json.load(open("publication/index.json"));print(next(x["releaseId"] for x in d["releases"] if x["indicatorId"]=="county-modeled-obesity-prevalence" and x["releaseId"].startswith("cdc-places-county-obesity-2025-")))' )"
+          BRANCH="data/$RELEASE"
+          if git ls-remote --heads origin "$BRANCH" | grep -q .; then
+            echo "::notice::Existing review branch $BRANCH; inspect it before trying another ingest."
+            exit 0
+          fi
+          git checkout -b "$BRANCH"
+          git commit -m "data: stage official CDC 2025 PLACES county obesity source fingerprint for review"
+          git push origin "$BRANCH"
+          echo "::notice::Validated source review branch: https://github.com/American-Republic-Futures-Institute/afri-data/compare/main...$BRANCH?expand=1"
