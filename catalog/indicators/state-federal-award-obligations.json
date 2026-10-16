@@ -16,6 +16,7 @@
   "warnings": [
     "Obligations are not federal outlays, expenditures, grant effectiveness, or economic benefits delivered.",
     "Place of performance does not necessarily identify where a transaction's benefits accrue.",
-    "Transactions may be revised by agencies after the reported fiscal year."
+    "Transactions may be revised by agencies after the reported fiscal year.",
+    "Mapped state totals omit four nonreference territories and one source record with blank geographic code; view the separately verified exclusion ledger before interpreting aggregates."
   ]
 }
