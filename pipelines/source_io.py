@@ -43,3 +43,48 @@ def download_official(url: str, *, host: str, limit: int, opener=None) -> bytes:
 
 def fingerprint(payload: bytes) -> str:
     return sha256(payload).hexdigest()
+
+
+def post_official_json(url: str, payload: bytes, *, host: str,
+                       limit: int, opener=None) -> bytes:
+    """POST only deterministic JSON to one approved HTTPS publisher endpoint.
+
+    A request is archived independently, while only the exact response is
+    marked as publisher evidence. Fail closed for redirects and oversized
+    responses. Never echo URL/credentials in exceptions.
+    """
+    parsed = urlsplit(url)
+    if (parsed.scheme != "https" or parsed.hostname != host or parsed.username
+            or parsed.password or parsed.port is not None or parsed.query
+            or parsed.fragment or not parsed.path.startswith("/")):
+        raise ValueError("Unapproved official POST location")
+    if (not isinstance(payload, bytes) or not 2 <= len(payload) <= 40_000
+            or not 0 < limit <= 5_000_000):
+        raise ValueError("Invalid source request or response size ceiling")
+    try:
+        import json
+        request_doc = json.loads(payload.decode("utf-8"))
+        if not isinstance(request_doc, dict):
+            raise ValueError("POST body must be a JSON object")
+    except (UnicodeError, ValueError) as exc:
+        raise ValueError("Invalid published source request JSON") from None
+    request = Request(url, data=payload, method="POST", headers={
+        "User-Agent": "ARFI-Public-Evidence/1.0 (research reproduction)",
+        "Accept": "application/json",
+        "Accept-Encoding": "identity",
+        "Content-Type": "application/json; charset=utf-8",
+    })
+    handler = opener or build_opener(NoRedirects())
+    try:
+        with handler.open(request, timeout=35) as response:
+            if response.geturl() != url:
+                raise ValueError("Publisher redirect rejected")
+            declared = response.headers.get("Content-Length")
+            if declared is not None and int(declared) > limit:
+                raise ValueError("Official response exceeds size ceiling")
+            answer = response.read(limit + 1)
+            if not answer or len(answer) > limit:
+                raise ValueError("Official response empty or oversized")
+            return answer
+    except (HTTPError, URLError, OSError):
+        raise RuntimeError("Official POST acquisition failed; check publisher status") from None
