@@ -1,0 +1,31 @@
+{
+  "id": "cdc-places-2025-county-obesity",
+  "publisherId": "cdc",
+  "title": "CDC PLACES 2025 county-level model-based obesity prevalence (2023 measure)",
+  "kind": "modeled-estimate",
+  "stage": "integration-ready",
+  "geography": "county",
+  "sourceUrl": "https://data.cdc.gov/resource/i46a-9kgh.json?%24select=countyfips%2Ccountyname%2Cstateabbr%2Cobesity_crudeprev%2Cobesity_crude95ci&%24order=countyfips&%24limit=4000",
+  "methodologyUrl": "https://www.cdc.gov/places/methodology/",
+  "temporalCoverage": {
+    "vintage": 2025,
+    "startYear": 2023,
+    "endYear": 2023
+  },
+  "sourceVariables": [
+    "countyfips",
+    "countyname",
+    "stateabbr",
+    "obesity_crudeprev",
+    "obesity_crude95ci"
+  ],
+  "limitations": [
+    "CDC PLACES reports small-area MODEL-BASED estimates, not directly observed county surveys.",
+    "2025 release obesity prevalence is modeled using the 2023 BRFSS input period; it is not a 2025 outcome measurement.",
+    "Confidence intervals are model-produced estimates; not claims of measured intervention effectiveness.",
+    "CDC explicitly cautions against using PLACES for impact evaluation of local interventions.",
+    "Coverage is 3,143 2025-source county records across 50 states and DC; Puerto Rico is excluded.",
+    "Data access and usage rights are independently reviewed before promoting a staged release."
+  ],
+  "licenseStatus": "us-federal-public-domain"
+}
