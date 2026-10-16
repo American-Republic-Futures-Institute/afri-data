@@ -354,6 +354,13 @@ def validate_publication(root=ROOT):
             original = gzip.decompress((folder / "originalData.gz").read_bytes())
             if load_json(folder / "observations.json")["observations"] != project_acs_income(original):
                 fail("Published ACS observations are not reproducible from originals")
+        if entry.get("indicatorId") == "county-modeled-obesity-prevalence":
+            from pipelines.cdc_places_release import parse_places
+            import gzip
+            folder = checked_path(root, entry["releaseId"], "manifest.json").parent
+            original = gzip.decompress((folder / "originalData.gz").read_bytes())
+            if load_json(folder / "observations.json")["observations"] != parse_places(original):
+                fail("Published CDC PLACES observations are not reproducible from originals")
         # Replay the publisher-specific projection from archived original bytes.
         # Hash-consistent edited values are not authentic government evidence.
         if entry.get("indicatorId") == "state-unemployment-rate":
