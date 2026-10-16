@@ -344,6 +344,20 @@ def validate_publication(root=ROOT):
             fail("Duplicate or invalid release")
         seen.add(entry["releaseId"])
         metrics = validate_generic_release(root, entry, datasets, indicators)
+        # Replay the publisher-specific projection from archived original bytes.
+        # Hash-consistent edited values are not authentic government evidence.
+        if entry.get("indicatorId") == "state-unemployment-rate":
+            from pipelines.bls_laus_release import parse_authoritative_annual
+            import gzip
+            folder = checked_path(root, entry["releaseId"], "manifest.json").parent
+            source_bytes = [
+                gzip.decompress((folder / name).read_bytes())
+                for name in ("originalData.gz", "originalSeries.gz", "originalAreas.gz")
+            ]
+            expected = parse_authoritative_annual(*source_bytes)
+            projected = load_json(folder / "observations.json")["observations"]
+            if projected != expected:
+                fail("Published LAUS observations are not reproducible from originals")
         if entry["releaseId"] == "census-state-population-v2025":
             validate_census_release(root, entry)
             totals["release"] = entry["releaseId"]
