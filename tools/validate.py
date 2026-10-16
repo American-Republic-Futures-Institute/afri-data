@@ -11,6 +11,11 @@ import math
 from pathlib import Path
 from urllib.parse import urlsplit
 
+try:
+    from tools.release_registry import checked_path, exact_release_path, valid_asset_name, valid_id
+except ModuleNotFoundError:
+    from release_registry import checked_path, exact_release_path, valid_asset_name, valid_id
+
 from jsonschema import Draft202012Validator, FormatChecker
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -111,17 +116,8 @@ def validate_coordinates(geometry):
         fail("Insufficient polygon coordinates")
 
 
-def validate_publication(root=ROOT):
-    index_path = root / "publication/index.json"
-    if not index_path.exists():
-        fail("No published dataset release/index. Run the Census ingestion pipeline first.")
-    index = load_json(index_path)
-    releases = index.get("releases", [])
-    if len(releases) != 1:
-        fail("Unexpected publication index release count")
-    release = releases[0]
-    if release.get("releaseId") != "census-state-population-v2025":
-        fail("Unregistered release in publication index")
+def validate_census_release(root, release):
+    """Original strict Census source and geometry regression validation."""
     expected_paths = {
         "manifestPath": "manifest.json",
         "observationsPath": "observations.json",
@@ -207,6 +203,124 @@ def validate_publication(root=ROOT):
             fail("CSV/JSON observation values differ")
     return {"release": release["releaseId"], "observations": len(rows),
             "geometryFeatures": len(features), "verifiedAssets": len(roles)}
+
+
+
+def validate_generic_release(root, release, datasets, indicators):
+    rid = release.get("releaseId")
+    indicator_id = release.get("indicatorId")
+    if not valid_id(rid) or not valid_id(indicator_id):
+        fail("Invalid release or indicator id")
+    if indicator_id not in indicators:
+        fail("Unknown published indicator")
+    indicator = indicators[indicator_id]
+    dataset = datasets[indicator["datasetId"]]
+    if dataset["licenseStatus"] == "review-required" or release.get("status") != "published":
+        fail("Unreviewed or rights-restricted evidence")
+    if release.get("manifestPath") != exact_release_path(rid, "manifest.json"):
+        fail("Noncanonical manifest path")
+    manifest = load_json(checked_path(root, rid, "manifest.json"))
+    validate_schema(manifest, "release")
+    if manifest["datasetId"] != dataset["id"] or manifest["releaseId"] != rid:
+        fail("Release identity mismatch")
+    period, geography = manifest["temporalCoverage"], manifest["geography"]
+    if (geography["level"] != release.get("geography") or geography["level"] != indicator["geography"]
+            or period["vintage"] != release.get("vintage")
+            or period["firstYear"] != release.get("time", {}).get("firstYear")
+            or period["lastYear"] != release.get("time", {}).get("lastYear")
+            or period["firstYear"] > period["lastYear"]):
+        fail("Incompatible release geography or time")
+    for source in manifest["sourceFiles"]:
+        u = urlsplit(source["url"])
+        if u.scheme != "https" or not u.hostname or u.username or u.password or u.fragment:
+            fail("Unsafe original evidence URL")
+    assets = manifest["assets"]
+    if "observations" not in assets:
+        fail("Missing canonical observations")
+    seen_names = set()
+    for role, asset in assets.items():
+        name = asset["path"]
+        if not valid_asset_name(name) or name in seen_names:
+            fail("Unsafe or duplicate asset name")
+        seen_names.add(name)
+        if asset["bytes"] > 25000000:
+            fail("Asset exceeds static publication limit")
+        file = checked_path(root, rid, name)
+        if not file.is_file() or file.is_symlink():
+            fail("Missing or linked asset")
+        raw = file.read_bytes()
+        if len(raw) != asset["bytes"] or hashlib.sha256(raw).hexdigest() != asset["sha256"]:
+            fail("Artifact integrity mismatch: " + name)
+        if asset["contentType"] not in ("application/json", "application/geo+json", "text/csv"):
+            fail("Unsupported asset MIME type")
+    for field, role in (("observationsPath", "observations"), ("geometryPath", "geometry")):
+        if role in assets:
+            if release.get(field) != exact_release_path(rid, assets[role]["path"]):
+                fail("Incorrect published asset path")
+        elif field in release:
+            fail("Published index refers to absent asset")
+    content = load_json(checked_path(root, rid, assets["observations"]["path"]))
+    if (content.get("datasetId") != dataset["id"] or content.get("indicatorId") != indicator_id
+            or content.get("vintage") != period["vintage"]
+            or content.get("geography") != geography["level"]):
+        fail("Inconsistent observations envelope")
+    observations = content.get("observations")
+    if not isinstance(observations, list) or not observations:
+        fail("Missing observations")
+    if len(observations) != assets["observations"].get("rows"):
+        fail("Observation count mismatch")
+    keys = set()
+    for row in observations:
+        geoid = row.get("geoid", row.get("fips"))
+        year = row.get("year")
+        if not isinstance(geoid, str) or not geoid.isdigit():
+            fail("GEOID must be a string of digits")
+        lengths = {"state":2, "county":5, "tract":11}
+        if geography["level"] in lengths and len(geoid) != lengths[geography["level"]]:
+            fail("Unexpected geographic identifier width")
+        if type(year) is not int or not period["firstYear"] <= year <= period["lastYear"]:
+            fail("Observation year is outside release coverage")
+        key = (geoid, year)
+        if key in keys:
+            fail("Duplicate observation")
+        keys.add(key)
+        value = row.get("value")
+        if value is None:
+            if row.get("status") not in ("missing", "suppressed", "not_available"):
+                fail("Null observation needs missing/suppressed status")
+        elif isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+            fail("Invalid numeric observation")
+    if "geometry" in assets:
+        geo = load_json(checked_path(root, rid, assets["geometry"]["path"]))
+        if geo.get("type") != "FeatureCollection" or len(geo.get("features", [])) != geography["features"]:
+            fail("Geometry count or structure invalid")
+    return {"observations":len(observations), "verifiedAssets":len(assets),
+            "geometryFeatures":geography["features"] if "geometry" in assets else 0}
+
+def validate_publication(root=ROOT):
+    index_file = root / "publication/index.json"
+    if not index_file.is_file():
+        fail("No approved publication index")
+    index = load_json(index_file)
+    releases = index.get("releases")
+    if index.get("schemaVersion") != "1.0.0" or not isinstance(releases, list) or not 1 <= len(releases) <= 250:
+        fail("Invalid publication index")
+    datasets = {doc["id"]:doc for p in (ROOT / "catalog/datasets").glob("*.json") if (doc := load_json(p))}
+    indicators = {doc["id"]:doc for p in (ROOT / "catalog/indicators").glob("*.json") if (doc := load_json(p))}
+    seen = set()
+    totals = {"releases":0,"observations":0,"verifiedAssets":0,"geometryFeatures":0}
+    for entry in releases:
+        if not isinstance(entry, dict) or entry.get("releaseId") in seen:
+            fail("Duplicate or invalid release")
+        seen.add(entry["releaseId"])
+        metrics = validate_generic_release(root, entry, datasets, indicators)
+        if entry["releaseId"] == "census-state-population-v2025":
+            validate_census_release(root, entry)
+            totals["release"] = entry["releaseId"]
+        totals["releases"] += 1
+        for k in ("observations","verifiedAssets","geometryFeatures"):
+            totals[k] += metrics[k]
+    return totals
 
 
 def main():
