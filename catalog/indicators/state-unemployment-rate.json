@@ -1,0 +1,21 @@
+{
+  "id": "state-unemployment-rate",
+  "datasetId": "bls-laus-state-unemployment-2025",
+  "title": "Unemployment rate, annual average, not seasonally adjusted",
+  "sourceVariable": "LAUST{stateFips}0000000000003 with period M13",
+  "unit": "percent",
+  "kind": "original-publisher-estimate",
+  "method": "Select 2025 M13 annual averages for official unadjusted BLS LAUS statewide series with measure code 03, confirming series identity through BLS area and series metadata. Do not compute annual averages from monthly rates.",
+  "geography": "state",
+  "display": {
+    "defaultChart": "choropleth",
+    "scale": "sequential",
+    "missingValueStyle": "distinct",
+    "format": "percent-1"
+  },
+  "warnings": [
+    "BLS publishes estimates, not exact counts.",
+    "States, DC and Puerto Rico should be interpreted with source-defined coverage.",
+    "Source revisions are independently versioned, not silently changed."
+  ]
+}

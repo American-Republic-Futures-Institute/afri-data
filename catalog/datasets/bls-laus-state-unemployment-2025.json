@@ -1,0 +1,33 @@
+{
+  "id": "bls-laus-state-unemployment-2025",
+  "publisherId": "bls",
+  "title": "BLS LAUS not seasonally adjusted 2025 state annual-average unemployment rate",
+  "kind": "raw-statistical",
+  "stage": "integration-ready",
+  "geography": "state",
+  "sourceUrl": "https://download.bls.gov/pub/time.series/la/la.data.2.AllStatesU",
+  "methodologyUrl": "https://www.bls.gov/lau/",
+  "temporalCoverage": {
+    "vintage": 2025,
+    "startYear": 2025,
+    "endYear": 2025
+  },
+  "sourceVariables": [
+    "series_id",
+    "year",
+    "period",
+    "value",
+    "footnote_codes",
+    "area_code",
+    "measure_code",
+    "seasonal"
+  ],
+  "limitations": [
+    "BLS rates are estimated from statistical and administrative inputs; not a headcount from an unemployment benefits register.",
+    "Annual-average period M13 of unadjusted LAUS series; these are not seasonally adjusted monthly rates.",
+    "Source files are periodically revised, including historical years. Each distinct set of source fingerprints creates a new release.",
+    "Puerto Rico is included only when it is present in the verified official source and metadata, never imputed."
+  ],
+  "licenseStatus": "us-federal-public-domain",
+  "notes": "Archiving compressed exact publisher bytes is intended for reproducibility. Review third-party material and redistribution before merge."
+}

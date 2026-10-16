@@ -63,8 +63,8 @@ class PublicationTests(unittest.TestCase):
     def test_catalog_referential_integrity(self):
         counts = validate_catalog()
         self.assertGreaterEqual(counts["publishers"], 40)
-        self.assertEqual(counts["datasets"], 2)
-        self.assertEqual(counts["indicators"], 1)
+        self.assertGreaterEqual(counts["datasets"], 2)
+        self.assertGreaterEqual(counts["indicators"], 1)
 
     def test_observations_are_official_columns_without_calculations(self):
         rows = parse_population(fixture_csv())

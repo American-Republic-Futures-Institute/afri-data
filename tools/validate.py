@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import csv
 import hashlib
+import gzip
 import io
 import json
 import math
@@ -251,8 +252,37 @@ def validate_generic_release(root, release, datasets, indicators):
         raw = file.read_bytes()
         if len(raw) != asset["bytes"] or hashlib.sha256(raw).hexdigest() != asset["sha256"]:
             fail("Artifact integrity mismatch: " + name)
-        if asset["contentType"] not in ("application/json", "application/geo+json", "text/csv"):
+        if asset["contentType"] not in ("application/json", "application/geo+json", "text/csv", "application/gzip"):
             fail("Unsupported asset MIME type")
+    # A release with new sources must be reproducible from exact archived
+    # publisher bytes, not a mutable URL and unchecked hash claim.
+    source_roles = set()
+    for source in manifest["sourceFiles"]:
+        if source["role"] in source_roles:
+            fail("Duplicate primary source role")
+        source_roles.add(source["role"])
+        archive_role = source.get("archiveAsset")
+        if archive_role is None:
+            if rid != "census-state-population-v2025":
+                fail("Reproducible releases require original source archives")
+            continue
+        archived = assets.get(archive_role)
+        if not archived or archived["contentType"] != "application/gzip":
+            fail("Missing archived primary source")
+        raw_compressed = checked_path(root, rid, archived["path"]).read_bytes()
+        try:
+            with gzip.GzipFile(fileobj=io.BytesIO(raw_compressed)) as stream:
+                original = stream.read(25_000_001)
+                if stream.read(1):
+                    fail("Source archive exceeds decompression limit")
+        except (OSError, EOFError) as exc:
+            fail("Invalid compressed primary source")
+        if len(original) > 25_000_000 or len(original) != source["bytes"] \
+                or hashlib.sha256(original).hexdigest() != source["sha256"]:
+            fail("Archived original source SHA-256 or length mismatch")
+        if source["role"] == "originalData" and urlsplit(source["url"]).hostname != urlsplit(dataset["sourceUrl"]).hostname:
+            fail("Source hostname mismatches approved publisher")
+
     for field, role in (("observationsPath", "observations"), ("geometryPath", "geometry")):
         if role in assets:
             if release.get(field) != exact_release_path(rid, assets[role]["path"]):
@@ -314,6 +344,20 @@ def validate_publication(root=ROOT):
             fail("Duplicate or invalid release")
         seen.add(entry["releaseId"])
         metrics = validate_generic_release(root, entry, datasets, indicators)
+        # Replay the publisher-specific projection from archived original bytes.
+        # Hash-consistent edited values are not authentic government evidence.
+        if entry.get("indicatorId") == "state-unemployment-rate":
+            from pipelines.bls_laus_release import parse_authoritative_annual
+            import gzip
+            folder = checked_path(root, entry["releaseId"], "manifest.json").parent
+            source_bytes = [
+                gzip.decompress((folder / name).read_bytes())
+                for name in ("originalData.gz", "originalSeries.gz", "originalAreas.gz")
+            ]
+            expected = parse_authoritative_annual(*source_bytes)
+            projected = load_json(folder / "observations.json")["observations"]
+            if projected != expected:
+                fail("Published LAUS observations are not reproducible from originals")
         if entry["releaseId"] == "census-state-population-v2025":
             validate_census_release(root, entry)
             totals["release"] = entry["releaseId"]
