@@ -29,6 +29,7 @@ SOURCES = (
     ("originalData", SOURCE_DATA_URL, 21_000_000),
     ("originalSeries", SOURCE_SERIES_URL, 8_000_000),
     ("originalAreas", SOURCE_AREA_URL, 2_000_000),
+    ("originalFootnotes", "https://download.bls.gov/pub/time.series/la/la.footnote", 100_000),
 )
 
 def rows_from_tsv(source: bytes, expected: frozenset[str] | set[str]) -> list[dict]:
@@ -46,7 +47,7 @@ def rows_from_tsv(source: bytes, expected: frozenset[str] | set[str]) -> list[di
         out.append({k.strip(): str(v or "").strip() for k, v in item.items()})
     return out
 
-def parse_authoritative_annual(data: bytes, series: bytes, areas: bytes) -> list[dict]:
+def parse_authoritative_annual(data: bytes, series: bytes, areas: bytes, footnotes: bytes) -> list[dict]:
     """Cross-check unadjusted annual rates against BLS series and area catalogs."""
     values = parse_laus_state_annual(data, YEAR)
     by_series = {}
@@ -72,6 +73,16 @@ def parse_authoritative_annual(data: bytes, series: bytes, areas: bytes) -> list
             raise ValueError("Duplicate or blank BLS geographic description")
         by_area[code] = row["area_text"]
 
+    definitions = {}
+    for item in rows_from_tsv(footnotes, {"footnote_code", "footnote_text"}):
+        key = item["footnote_code"]
+        if not re.fullmatch(r"[A-Z]", key) or key in definitions or not item["footnote_text"]:
+            raise ValueError("Invalid BLS source footnote definitions")
+        definitions[key] = item["footnote_text"]
+    definition = definitions.get("G", "").lower()
+    if not all(term in definition for term in ("2025", "11-month", "october")):
+        raise ValueError("Required official BLS missing-October footnote absent")
+
     observed = {v["geoid"] for v in values}
     if observed != FIPS:
         raise ValueError("BLS coverage mismatch: missing or unapproved FIPS")
@@ -83,8 +94,21 @@ def parse_authoritative_annual(data: bytes, series: bytes, areas: bytes) -> list
         name = by_area.get(by_series[sid]["area_code"])
         if not name:
             raise ValueError("Missing source metadata for BLS area")
-        projected.append({**row, "name": name,
-                          "referencePeriod": "2025 annual average"})
+        codes = row["footnoteCodes"]
+        if any(code not in definitions for code in codes):
+            raise ValueError("Undefined original BLS source footnote code")
+        eleven_month = row["geoid"] != "72"
+        if ("G" in codes) != eleven_month:
+            raise ValueError("BLS 2025 source footnote G does not match geography")
+        projected.append({
+            **row, "name": name,
+            "referencePeriod": ("2025 annual estimate excluding October"
+                                if eleven_month else "2025 full-year annual estimate"),
+            "annualAverageMonths": 11 if eleven_month else 12,
+            "excludedMonths": ["2025-10"] if eleven_month else [],
+            "sourcePeriodQualifier": ("no_october_cps_2025" if eleven_month
+                                      else "full_12_months_2025"),
+        })
     return projected
 
 def stage(root: Path, data: bytes, series: bytes, areas: bytes) -> dict:
