@@ -7,7 +7,6 @@ on:
       - pipelines/source_io.py
       - pipelines/evidence_publish.py
       - pipelines/cdc_places_release.py
-      - pipelines/cdc_places_release.py
       - tools/validate.py
       - catalog/datasets/cdc-places-2025-county-obesity.json
       - catalog/indicators/county-modeled-obesity-prevalence.json
