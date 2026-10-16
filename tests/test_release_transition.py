@@ -113,6 +113,11 @@ class GeographyTransitionTests(unittest.TestCase):
             check_geography_transition(geo_index(geo_entry(rid)),geo_index(geo_entry(rid)),
                                        geo_blobs(rid),changed)
 
+    def test_orphan_blob_without_index_is_rejected(self):
+        with self.assertRaisesRegex(ValueError,"Unindexed geography blobs"):
+            check_geography_transition(None,None,{},
+                {"publication/geographies/releases/bad/original.zip":"x"})
+
     def test_unindexed_geography_blob_rejected(self):
         with self.assertRaisesRegex(ValueError,"Unregistered geography"):
             check_geography_transition(None,geo_index(),{},
