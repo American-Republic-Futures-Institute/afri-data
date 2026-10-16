@@ -111,11 +111,11 @@ def parse_authoritative_annual(data: bytes, series: bytes, areas: bytes, footnot
         })
     return projected
 
-def stage(root: Path, data: bytes, series: bytes, areas: bytes) -> dict:
-    if not all((data,series,areas)):
+def stage(root: Path, data: bytes, series: bytes, areas: bytes, footnotes: bytes) -> dict:
+    if not all((data,series,areas,footnotes)):
         raise ValueError("Complete original source triplet required")
-    values = parse_authoritative_annual(data,series,areas)
-    sources = [(role, url, raw) for (role,url,_),raw in zip(SOURCES,(data,series,areas))]
+    values = parse_authoritative_annual(data,series,areas,footnotes)
+    sources = [(role, url, raw) for (role,url,_),raw in zip(SOURCES,(data,series,areas,footnotes))]
     fingerprint = hashlib.sha256(
         b"".join(hashlib.sha256(raw).digest() for _,_,raw in sources)
     ).hexdigest()[:16]
@@ -124,19 +124,23 @@ def stage(root: Path, data: bytes, series: bytes, areas: bytes) -> dict:
         root, release_id=release_id,
         dataset_id="bls-laus-state-unemployment-2025",
         indicator_id="state-unemployment-rate",
-        title="BLS LAUS state annual unemployment rate, unadjusted, 2025",
+        title="BLS LAUS 2025 unemployment: 11-month averages except 12-month Puerto Rico",
         publisher_name="U.S. Bureau of Labor Statistics",
         geography="state",year=YEAR,vintage=YEAR,geography_vintage=2025,
         observations=values,originals=sources,
-        method=("Select 2025 M13 annual-average unemployment-rate observations "
-                "from the official BLS LAUS unadjusted state file. Validate "
-                "each series against the original BLS series and area files "
-                "for measure code 03, seasonal U and area type A. No rate "
-                "normalization or derived annual average was performed."),
-        warnings=("Source is the BLS published annual-average estimate and "
-                  "may be revised. Geographic areas include states, DC and "
-                  "Puerto Rico when independently verified. Annual M13 "
-                  "must not be confused with monthly seasonally adjusted rates."),
+        method=("Preserve BLS 2025 M13 published rates with unadjusted "
+                "state series, official area/series tables and original "
+                "la.footnote definition G. All 50 states and DC exclude "
+                "October 2025 and have 11-month annual estimates. Puerto "
+                "Rico alone retains a 12-month calendar-year annual rate. "
+                "Do not impute the missing month or recompute the published rate."),
+        warnings=("BLS 2025 LAUS 11-month annual estimates for states and "
+                  "DC omit October and are not strictly comparable with "
+                  "prior 12-month annual averages. Puerto Rico is a "
+                  "full-year 12-month exception. Rates remain publisher "
+                  "estimates, subject to revision, not seasonally adjusted "
+                  "monthly observations. Source explanation: "
+                  "https://www.bls.gov/lau/launews1.htm"),
     )
     return {"releaseId":release_id,"records":len(values),
             "sourceFingerprints":{role:hashlib.sha256(raw).hexdigest()
@@ -148,11 +152,12 @@ def main():
     p.add_argument("--data-file",type=Path)
     p.add_argument("--series-file",type=Path)
     p.add_argument("--area-file",type=Path)
+    p.add_argument("--footnote-file",type=Path)
     p.add_argument("--out-root",type=Path,default=ROOT)
     args=p.parse_args()
-    local = [args.data_file,args.series_file,args.area_file]
+    local = [args.data_file,args.series_file,args.area_file,args.footnote_file]
     if any(local) and not all(local):
-        p.error("Supply all three original files or allow verified HTTPS acquisition")
+        p.error("Supply all four original files or allow verified HTTPS acquisition")
     originals = ([x.read_bytes() for x in local] if all(local)
                  else [download_official(url,host="download.bls.gov",limit=limit)
                        for _,url,limit in SOURCES])
