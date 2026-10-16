@@ -10,6 +10,7 @@ import io
 import json
 import math
 from pathlib import Path
+import sys
 from urllib.parse import urlsplit
 
 try:
@@ -20,6 +21,8 @@ except ModuleNotFoundError:
 from jsonschema import Draft202012Validator, FormatChecker
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))  # Support CLI `python tools/validate.py` replay imports.
 RELEASE = Path("publication/releases/census-state-population-v2025")
 FIPS = frozenset((
     "01 02 04 05 06 08 09 10 11 12 13 15 16 17 18 19 20 21 "
