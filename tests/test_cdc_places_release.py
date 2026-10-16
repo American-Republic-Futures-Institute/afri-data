@@ -47,6 +47,15 @@ class PlacesTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"duplicate county"):
             parse_places(fixture(override))
 
+
+    def test_socrata_omitted_null_measurement_preserves_missing_status(self):
+        def omit(rows):
+            rows[0].pop("obesity_crudeprev")
+            rows[0].pop("obesity_crude95ci")
+        parsed=parse_places(fixture(omit))
+        self.assertIsNone(parsed[0]["value"])
+        self.assertEqual(parsed[0]["status"],"not_available")
+
     def test_bad_confidence_bounds_rejected(self):
         def override(rows):rows[0]["obesity_crude95ci"]="40.0-50.0"
         with self.assertRaisesRegex(ValueError,"confidence interval excludes"):

@@ -52,8 +52,10 @@ def parse_places(original:bytes) -> list[dict]:
     output=[]
     seen=set()
     for src in source:
-        if not isinstance(src,dict) or not set(FIELDS).issubset(src):
-            raise ValueError("PLACES source schema drift")
+        if not isinstance(src,dict) or not {"countyfips","countyname","stateabbr"}.issubset(src):
+            raise ValueError("PLACES source schema drift (missing geographic identity)")
+        # Socrata JSON can omit an individual field entirely when its source
+        # value is null. An omitted measurement means unavailable, not zero.
         geoid=src["countyfips"]
         if not isinstance(geoid,str) or not re.fullmatch(r"[0-9]{5}",geoid) or geoid in seen:
             raise ValueError("Invalid or duplicate county FIPS")
@@ -64,8 +66,8 @@ def parse_places(original:bytes) -> list[dict]:
         name=src["countyname"]
         if not isinstance(name,str) or not name.strip():
             raise ValueError("Empty county description")
-        value=numeric(src["obesity_crudeprev"],"prevalence")
-        interval=src["obesity_crude95ci"]
+        value=numeric(src.get("obesity_crudeprev"),"prevalence")
+        interval=src.get("obesity_crude95ci")
         lower=upper=None
         if interval not in (None,""):
             if not isinstance(interval,str) or not (m:=CI.fullmatch(interval)):
