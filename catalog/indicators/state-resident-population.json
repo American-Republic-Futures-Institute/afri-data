@@ -1,0 +1,21 @@
+{
+  "id": "state-resident-population",
+  "datasetId": "census-state-population-v2025",
+  "title": "Resident population by state, District of Columbia and Puerto Rico",
+  "sourceVariable": "POPESTIMATE{year}",
+  "unit": "persons",
+  "kind": "original-publisher-estimate",
+  "method": "Value is the Census Bureau published POPESTIMATE{year} field, parsed as a nonnegative integer without interpolation, aggregation or denominator adjustment.",
+  "geography": "state",
+  "display": {
+    "defaultChart": "choropleth",
+    "scale": "sequential",
+    "missingValueStyle": "distinct",
+    "format": "integer"
+  },
+  "warnings": [
+    "Larger jurisdictions tend to have larger populations; use comparisons rather than treating high totals as adverse outcomes.",
+    "The values are Census population estimates for July 1 of each year, not decennial enumeration counts.",
+    "County and tract values are not included in this initial release."
+  ]
+}

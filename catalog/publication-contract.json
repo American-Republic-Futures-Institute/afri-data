@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "1.0.0",
+  "publisher": "American Republic Futures Institute",
+  "publicationIndex": "publication/index.json",
+  "stableEntry": "https://raw.githubusercontent.com/American-Republic-Futures-Institute/afri-data/main/publication/index.json",
+  "releaseManifest": "publication/releases/census-state-population-v2025/manifest.json",
+  "dataJoin": {
+    "geometryKey": "GEOID",
+    "measureKey": "fips",
+    "geography": "state",
+    "geographyVintage": 2025
+  },
+  "websiteConsumption": {
+    "recommendedMode": "server-side-pinned-commit-or-build-time-copy",
+    "publicClientOnly": true,
+    "warning": "Do not expose secrets in a browser or assume GitHub raw/CDN capacity is unlimited."
+  }
+}

@@ -1,0 +1,32 @@
+name: Validate ARFI data contracts
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  validation:
+    name: Evidence catalog and integrity
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install pinned validation dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Validate publisher, dataset and indicator catalogs
+        run: python tools/validate.py --catalog-only
+      - name: Run offline conversion, geography and security regressions
+        run: python -m unittest discover -s tests -v
+      - name: Verify published evidence if present
+        shell: bash
+        run: |
+          if test -f publication/index.json; then
+            python tools/validate.py
+          else
+            echo "No approved release on this branch; initial catalog only."
+          fi
