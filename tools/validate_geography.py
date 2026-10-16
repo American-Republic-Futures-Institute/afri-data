@@ -75,7 +75,11 @@ def validate_geography(root:Path=ROOT)->dict:
             raise ValueError("Census county geometry artifact fingerprint mismatch")
         if not 0<len(original)<=2_000_000 or not 0<len(asset)<=25_000_000:
             raise ValueError("Unbounded county geometry asset")
-        expected=parse_county_geometries(original)
+        # Shape.__geo_interface__ can contain tuples; JSON serialization
+        # represents those sequences as arrays. Compare the same canonical
+        # serialized projection instead of Python container implementation.
+        from pipelines.evidence_publish import json_bytes
+        expected=json.loads(json_bytes(parse_county_geometries(original)))
         actual=json.loads(asset.decode("utf-8"))
         if actual!=expected:
             raise ValueError("Census county cartographic geometry cannot be replayed from original source")
