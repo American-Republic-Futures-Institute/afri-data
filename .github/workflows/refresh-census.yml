@@ -37,6 +37,11 @@ jobs:
       - name: Verify asset checksums, table fidelity and geometry joins
         run: python tools/validate.py
       - name: Stage a reviewable release PR (never modify main directly)
+        id: stage-pr
+        # The organization currently disallows PR creation by GITHUB_TOKEN.
+        # This action still pushes the reviewed-data branch; report the policy
+        # limitation without misclassifying the completed evidence validation.
+        continue-on-error: true
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -59,3 +64,9 @@ jobs:
             - Inspect generalized geometry and original CSV hashes.
             - Confirm the documented interpretation and no fabricated values.
             - Check CI and any source-revision implications.
+      - name: Report when a reviewer must open the generated PR
+        if: steps.stage-pr.outcome == 'failure'
+        run: |
+          echo "::warning::Official Census evidence passed validation and the review branch was pushed, but GitHub organization settings prohibit Actions from creating PRs."
+          echo "::notice::Open https://github.com/American-Republic-Futures-Institute/afri-data/compare/main...data/census-state-population-v2025?expand=1"
+          echo "To automate review PR creation, an organization admin can allow GitHub Actions to create pull requests under Settings > Actions > General."
