@@ -38,3 +38,7 @@ Both options must be provided together. The automated test fixtures are syntheti
 ## Publication checklist
 
 Check source host URLs and SHA-256, methodology and rights, completeness of the 52 matched FIPS, zero missing years, exactly 312 observations, values versus official table, generalized map geometry, accessibility/table, benchmark snapshot comparison and a reviewer signoff. Do not blindly approve scheduled refreshes.
+
+## Verified repository automation boundary (2026-10-16)
+
+The first actual Census source downloads and release validation succeeded. GitHub Actions has contents write permission and successfully pushed the generated branch, but its GITHUB_TOKEN was denied PR creation by organization policy. The workflow now emits a warning and an explicit compare link when that policy blocks PR creation; evidence building is still verifiable, and no unreviewed data are merged. Open the review PR using an authorized GitHub user/connector, or have an organization admin explicitly enable GitHub Actions to create pull requests. No personal access token is necessary.
