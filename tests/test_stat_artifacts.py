@@ -6,6 +6,9 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
+from jsonschema import Draft202012Validator
+from referencing import Registry, Resource
+
 from arfi_stats.artifacts import (
     ROOT, KIND, StatArtifactError, hash_json, produce, replay,
     validate_request, read_json_file, write_output, main,
@@ -100,6 +103,48 @@ class StatisticalArtifactTests(unittest.TestCase):
         self.assertEqual(result["sourceIdentity"]["sourceCommit"], None)
         self.assertEqual(result["sourceIdentity"]["canonicalization"],
                          "sorted-json-utf8-v1")
+
+    def test_artifact_schema_independently_rejects_malformed_embedded_contracts(self):
+        chart = json.loads((ROOT / "contracts/stat-chart-preview.schema.json").read_text())
+        req_schema = json.loads((ROOT / "contracts/stat-analysis-request.schema.json").read_text())
+        artifact_schema = json.loads((ROOT / "contracts/stat-analysis-artifact.schema.json").read_text())
+        registry = Registry().with_resources([
+            (chart["$id"], Resource.from_contents(chart)),
+            (req_schema["$id"], Resource.from_contents(req_schema)),
+        ])
+        validator = Draft202012Validator(artifact_schema, registry=registry)
+        good = produce(request("histogram"), fixture())
+        self.assertTrue(validator.is_valid(good))
+        for location, changed in [
+            (("request",), {}),
+            (("chart",), {}),
+            (("quality", "context"), {}),
+            (("request", "method", "chartType"), "unauthorized-model"),
+            (("chart", "authority", "publicationAuthorized"), True),
+        ]:
+            candidate = copy.deepcopy(good)
+            part = candidate
+            for key in location[:-1]:
+                part = part[key]
+            part[location[-1]] = changed
+            self.assertFalse(validator.is_valid(candidate),
+                             "schema must reject malformed nested object: " + str(location))
+
+    def test_source_contract_string_bounds_match_real_statkit_limits(self):
+        for field, value in [("unit", "Z" * 81)]:
+            req = request("histogram")
+            req["fields"][field] = value
+            with self.assertRaises(StatArtifactError):
+                produce(req, fixture())
+        req = request("histogram")
+        req["method"] = {"chartType": "interval", "methodId": METHODS["interval"],
+                         "version": "1.0.0"}
+        req["fields"]["x"] = "region"
+        req["fields"]["y"] = "value"
+        req["parameters"] = {"lower": "low", "upper": "high",
+                             "intervalLabel": "Z" * 161}
+        with self.assertRaises(StatArtifactError):
+            produce(req, fixture())
 
     def test_replay_rejects_changed_input_even_if_chart_looks_identical(self):
         req = request("histogram")
