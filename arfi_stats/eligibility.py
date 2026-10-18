@@ -67,7 +67,10 @@ def evaluate(request, *, root=ROOT, historical=True):
                 deny("RELEASE_NOT_REGISTERED")
             else:
                 try:
-                    profile = verify_profile(load(location), root=root,
+                    loaded = load(location)
+                    if loaded.get("identity", {}).get("releaseId") != release:
+                        raise StatisticalProfileError("Profile release identity does not match filename")
+                    profile = verify_profile(loaded, root=root,
                                              historical=historical)
                     verified = True
                 except (StatisticalProfileError, ValueError, KeyError,
@@ -153,8 +156,8 @@ def evaluate(request, *, root=ROOT, historical=True):
         elif req == "multi-year-source-series":
             if x != measure["yearField"] or y != measure["valueField"]:
                 deny("UNAPPROVED_TEMPORAL_COLUMNS")
-            if request["segment"] is not None:
-                deny("UNSUPPORTED_TEMPORAL_SEGMENTATION")
+            if request["segment"] != measure["geographyField"]:
+                deny("GEOGRAPHIC_SERIES_KEY_REQUIRED")
             if not coverage["sourcePeriodUniform"]:
                 deny("UNSUPPORTED_OR_MIXED_SOURCE_TIME_SERIES")
         elif req == "publisher-interval":
