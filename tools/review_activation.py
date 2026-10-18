@@ -5,7 +5,6 @@ import base64
 import json
 import re
 from tools.reviewer_policy import ROOT, REPO, validate_reviewer_policy, verify_branch_protection
-from tools.review_governance import _api_fetch, validate_ledger
 
 PATHS = ("governance/reviewer-policy.json", "governance/packets/example.json",
          "governance/decisions/example.json", "contracts/review-decision.schema.json",
@@ -43,6 +42,7 @@ def check_live_codeowners(fetch):
     return check_codeowners(raw.decode("utf-8"))
 
 def preflight(root=ROOT,online=False,github_get=None):
+    from tools.review_governance import _api_fetch, validate_ledger
     from pathlib import Path
     folder=Path(root)
     policy=json.loads((folder/"governance/reviewer-policy.json").read_text(encoding="utf-8"))
