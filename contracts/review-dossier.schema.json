@@ -1,0 +1,219 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Noncertifying, source-bound independent-review preparation dossier",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "status",
+    "releaseId",
+    "datasetId",
+    "indicatorId",
+    "publicationKind",
+    "sourceCommit",
+    "manifestSha256",
+    "assetSha256",
+    "originalSources",
+    "publisher",
+    "publicationMethod",
+    "scopeResults",
+    "questionsForReviewer",
+    "sample",
+    "rightsStatus",
+    "reviewerLogin",
+    "independentReviewEvidence",
+    "derivedComparisonAuthorized",
+    "causalInferenceAuthorized"
+  ],
+  "properties": {
+    "contract": {
+      "const": "ARFI-ReviewDossier/1.0.0"
+    },
+    "status": {
+      "const": "pending_independent_human_assessment"
+    },
+    "releaseId": {
+      "const": "bls-laus-state-unemployment-2025-e1625280119b26c3"
+    },
+    "datasetId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "indicatorId": {
+      "const": "state-unemployment-rate"
+    },
+    "publicationKind": {
+      "const": "indicator"
+    },
+    "sourceCommit": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$"
+    },
+    "manifestSha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "assetSha256": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[a-f0-9]{64}$"
+      }
+    },
+    "originalSources": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "archiveAsset",
+          "bytes",
+          "role",
+          "sha256",
+          "url"
+        ],
+        "properties": {
+          "archiveAsset": {
+            "type": "string"
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "role": {
+            "type": "string"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "pattern": "^https://"
+          }
+        }
+      }
+    },
+    "publisher": {
+      "const": "U.S. Bureau of Labor Statistics"
+    },
+    "publicationMethod": {
+      "type": "string",
+      "minLength": 100
+    },
+    "scopeResults": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rightsLicense",
+        "methodology",
+        "temporalInterpretation",
+        "geographicUniverse",
+        "permittedPublicUses",
+        "cautions"
+      ],
+      "properties": {
+        "rightsLicense": {
+          "const": "not_independently_certified"
+        },
+        "methodology": {
+          "const": "not_independently_certified"
+        },
+        "temporalInterpretation": {
+          "const": "not_independently_certified"
+        },
+        "geographicUniverse": {
+          "const": "not_independently_certified"
+        },
+        "permittedPublicUses": {
+          "const": "not_independently_certified"
+        },
+        "cautions": {
+          "const": "not_independently_certified"
+        }
+      }
+    },
+    "questionsForReviewer": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "items": {
+        "type": "string",
+        "minLength": 25
+      }
+    },
+    "sample": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "referenceYear",
+        "geographicLevel",
+        "observationCount",
+        "allAvailable",
+        "reportedUnit",
+        "qualifierGCount",
+        "elevenMonthGeographies",
+        "excludedMonth",
+        "twelveMonthGeographies",
+        "unreviewedUncertainty"
+      ],
+      "properties": {
+        "referenceYear": {
+          "const": 2025
+        },
+        "geographicLevel": {
+          "const": "state"
+        },
+        "observationCount": {
+          "const": 52
+        },
+        "allAvailable": {
+          "const": true
+        },
+        "reportedUnit": {
+          "const": "percent"
+        },
+        "qualifierGCount": {
+          "const": 51
+        },
+        "elevenMonthGeographies": {
+          "const": 51
+        },
+        "excludedMonth": {
+          "const": "2025-10"
+        },
+        "twelveMonthGeographies": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "const": "72"
+          }
+        },
+        "unreviewedUncertainty": {
+          "type": "string",
+          "minLength": 20
+        }
+      }
+    },
+    "rightsStatus": {
+      "const": "independent_review_required"
+    },
+    "reviewerLogin": {
+      "type": "null"
+    },
+    "independentReviewEvidence": {
+      "type": "null"
+    },
+    "derivedComparisonAuthorized": {
+      "const": false
+    },
+    "causalInferenceAuthorized": {
+      "const": false
+    }
+  }
+}
