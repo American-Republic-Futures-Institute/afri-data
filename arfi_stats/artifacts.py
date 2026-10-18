@@ -16,6 +16,7 @@ import re
 from typing import Any
 
 from jsonschema import Draft202012Validator
+from referencing import Registry, Resource
 import numpy as np
 
 from arfi_stats import (
@@ -79,7 +80,15 @@ def file_hash(file: Path) -> str:
 def schema_check(document: Any, name: str) -> None:
     schema = json.loads((ROOT / "contracts" / name).read_text("utf-8"))
     Draft202012Validator.check_schema(schema)
-    errors = sorted(Draft202012Validator(schema).iter_errors(document),
+    # Resolve only exact repository-controlled contract IDs. Never fetch schema
+    # references across the network or trust caller-provided definitions.
+    linked = []
+    for source in ("stat-analysis-request.schema.json", "stat-chart-preview.schema.json"):
+        doc = json.loads((ROOT / "contracts" / source).read_text("utf-8"))
+        Draft202012Validator.check_schema(doc)
+        linked.append((doc["$id"], Resource.from_contents(doc)))
+    registry = Registry().with_resources(linked)
+    errors = sorted(Draft202012Validator(schema, registry=registry).iter_errors(document),
                     key=lambda e: ".".join(str(x) for x in e.absolute_path))
     if errors:
         error = errors[0]
