@@ -25,6 +25,8 @@ jobs:
         run: python tools/validate.py --catalog-only
       - name: Run offline conversion, geography and security regressions
         run: python -m unittest discover -s tests -v
+      - name: Validate pinned statistical source profiles and eligibility registry
+        run: python -m arfi_stats.eligibility --verify-profiles
       - name: Verify candidate BLS dossier source fingerprints
         run: python -m tools.review_pilot_dossier --verify
       - name: Report human review activation blockers
