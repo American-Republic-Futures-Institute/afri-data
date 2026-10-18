@@ -88,10 +88,12 @@ class StatisticalArtifactTests(unittest.TestCase):
         result = produce(request("histogram"), fixture())
         required = {"methodId", "methodVersion", "chartType",
                     "statkitVersion", "pythonVersion", "numpyVersion",
-                    "coreSha256", "runnerSha256", "methodRegistrySha256",
+                    "coreSha256", "statkitInitSha256", "runnerSha256",
+                    "methodRegistrySha256",
                     "requirementsSha256", "chartSha256", "chartInputFingerprint"}
         self.assertEqual(set(result["computation"]), required)
-        for name in ("coreSha256", "runnerSha256", "methodRegistrySha256",
+        for name in ("coreSha256", "statkitInitSha256", "runnerSha256",
+                     "methodRegistrySha256",
                      "requirementsSha256"):
             self.assertRegex(result["computation"][name], r"^[a-f0-9]{64}$")
         self.assertEqual(result["sourceIdentity"]["releaseId"], None)
@@ -121,6 +123,7 @@ class StatisticalArtifactTests(unittest.TestCase):
             (("sourceIdentity", "fixtureId"), "forged-identity"),
             (("computation", "numpyVersion"), "999.9.9"),
             (("computation", "coreSha256"), "f" * 64),
+            (("computation", "statkitInitSha256"), "f" * 64),
             (("computation", "requirementsSha256"), "f" * 64),
             (("request", "context", "interpretation"), "Fabricated interpretation with a different statement."),
         ]:
@@ -168,6 +171,11 @@ class StatisticalArtifactTests(unittest.TestCase):
             req[key] = "malicious"
             with self.assertRaises(StatArtifactError, msg=key):
                 produce(req, fixture())
+
+    def test_unpinned_numerical_runtime_cannot_create_pretend_reproducible_artifact(self):
+        with patch("arfi_stats.artifacts.np.__version__", "9.9.9"):
+            with self.assertRaisesRegex(StatArtifactError, "installed NumPy"):
+                produce(request("histogram"), fixture())
 
     def test_invalid_bins_parameters_and_forged_methods_are_denied(self):
         for bins in (0, -1, 65, True, "arbitrary", 1.5):
