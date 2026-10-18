@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import argparse
 from decimal import Decimal
+import math
 import hashlib
 import json
 from pathlib import Path
@@ -27,6 +28,10 @@ def read_json(path: Path) -> dict:
 
 def normalized(value):
     """Typed decimals avoid IEEE-754 rounding in monetary change audit trails."""
+    if isinstance(value, float):
+        if not math.isfinite(value):
+            raise ValueError("Nonfinite floating observation")
+        return {"numericDecimal": str(value)}
     if isinstance(value, Decimal):
         if not value.is_finite():
             raise ValueError("Nonfinite decimal")
