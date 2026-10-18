@@ -123,8 +123,35 @@ def verify_profile(profile, *, root=ROOT, historical=True):
             coverage["explicitUnavailableRows"] or
             coverage["firstYear"] > coverage["lastYear"]):
         fail("profile availability or temporal coverage inconsistent")
+    indicator = load(root / "catalog/indicators" /
+                     (identity["indicatorId"] + ".json"))
+    if (indicator["id"] != identity["indicatorId"] or
+            indicator["datasetId"] != identity["datasetId"] or
+            indicator["unit"] != measure["unit"] or
+            indicator["geography"] != coverage["geography"]):
+        fail("statistical source profile conflicts with official indicator metadata")
+    expected = {
+        "population-stock": ("published_estimate", "original-publisher-estimate",
+                             "publisher-demographic-estimate", "count", "persons"),
+        "published-rate": ("published_estimate", "original-publisher-estimate",
+                           "published-unadjusted-labor-survey-estimate", "rate", "percent"),
+        "administrative-money-flow": (
+            "reported_award_transaction_obligations", "published-administrative-aggregate",
+            "publisher-geographic-transaction-aggregate", "monetary-flow", "USD"),
+        "publisher-modeled-prevalence": (
+            "model_based_estimate", "modeled",
+            "publisher-small-area-model", "rate", "percent"),
+    }
+    required_statistic, required_indicator_kind, required_design, required_scale, required_unit = (
+        expected[measure["family"]])
+    if (indicator["kind"] != required_indicator_kind or
+            measure["samplingDesign"] != required_design or
+            measure["scale"] != required_scale or
+            measure["unit"] != required_unit):
+        fail("statistical measurement family conflicts with original publisher classification")
     seen = set()
     counts = {"available": 0, "not_available": 0}
+    annual_months = {}
     for row in records:
         geo = row.get(measure["geographyField"])
         year = row.get(measure["yearField"])
@@ -140,6 +167,18 @@ def verify_profile(profile, *, root=ROOT, historical=True):
         seen.add(key)
         if row.get("unit") != measure["unit"]:
             fail("source-native numerical unit mismatch")
+        if row.get("statistic") != required_statistic:
+            fail("publisher statistic does not match claimed measurement family")
+        if measure["family"] == "published-rate":
+            months = row.get("annualAverageMonths")
+            if (type(months) is not int or months not in (11, 12) or
+                    (geo == "72") != (months == 12)):
+                fail("BLS 2025 publisher 11/12-month reference scope was misclassified")
+            annual_months[months] = annual_months.get(months, 0) + 1
+            if months == 11 and (
+                    "G" not in row.get("footnoteCodes", []) or
+                    "2025-10" not in row.get("excludedMonths", [])):
+                fail("BLS 2025 missing-October publisher footnote G was suppressed")
         status = row.get(measure["statusField"], "available") if (
             measure["statusField"]) else "available"
         if status not in counts:
@@ -173,6 +212,13 @@ def verify_profile(profile, *, root=ROOT, historical=True):
     if (counts["available"] != coverage["availableRows"] or
             counts["not_available"] != coverage["explicitUnavailableRows"]):
         fail("published missingness counts do not match source observations")
+    if measure["family"] == "published-rate" and (
+            annual_months != {11: 51, 12: 1} or
+            coverage["sourcePeriodUniform"]):
+        fail("2025 BLS published period qualifications must remain nonuniform")
+    if (measure["family"] != "published-rate" and
+            not coverage["sourcePeriodUniform"]):
+        fail("source temporal uniformity cannot be changed without a reviewed profile")
     if coverage["knownOmittedSourceBuckets"]:
         excluded = manifest["assets"].get("geographyExclusions")
         if not excluded or excluded["rows"] != coverage["knownOmittedSourceBuckets"]:
