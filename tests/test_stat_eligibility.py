@@ -128,7 +128,8 @@ class StatisticalEligibilityTests(unittest.TestCase):
         self.assertFalse(result["publicationAuthorized"])
 
     def test_within_census_multi_year_series_does_not_imply_independent_samples(self):
-        value = request("census", "time-series", years=[2020, 2021, 2025])
+        value = request("census", "time-series", years=[2020, 2021, 2025],
+                        segment="fips")
         output = decide(value)
         self.assertEqual(output["decision"], "qualified")
         self.assertIn("REPEATED_GEOGRAPHIC_ESTIMATES_NOT_INDEPENDENT",
@@ -142,8 +143,11 @@ class StatisticalEligibilityTests(unittest.TestCase):
         self.assertEqual(decide(grouped)["decision"], "qualified")
         incorrectly_split_series = request("census", "time-series",
                                             years=[2020, 2025], segment="year")
-        self.assertIn("UNSUPPORTED_TEMPORAL_SEGMENTATION",
+        self.assertIn("GEOGRAPHIC_SERIES_KEY_REQUIRED",
                       decide(incorrectly_split_series)["reasonCodes"])
+        ungrouped = request("census", "time-series", years=[2020, 2025])
+        self.assertIn("GEOGRAPHIC_SERIES_KEY_REQUIRED",
+                      decide(ungrouped)["reasonCodes"])
 
     def test_bls_nonuniform_reference_period_must_not_be_normalized_silently(self):
         a = request("bls", "histogram")
@@ -228,6 +232,7 @@ class StatisticalEligibilityTests(unittest.TestCase):
                     req["y"] = "value"
                 if method == "time-series" and name == "census":
                     req["periodYears"] = [2020, 2025]
+                    req["segment"] = "fips"
                 outcome = decide(req)
                 if method == "scatter" or name != "census":
                     self.assertEqual(outcome["decision"], "denied", (name, method))
@@ -308,6 +313,22 @@ class StatisticalEligibilityTests(unittest.TestCase):
         p["coverage"]["sourcePeriodUniform"] = True
         with self.assertRaisesRegex(StatisticalProfileError, "nonuniform"):
             verify_profile(p)
+
+    def test_swapped_profile_filenames_can_never_rebind_release_semantics(self):
+        from tools.stat_profile_validate import verify_all_profiles
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / PROFILES_DIR).mkdir(parents=True)
+            target = root / "publication/index.json"
+            target.parent.mkdir(parents=True)
+            shutil.copyfile(ROOT / "publication/index.json", target)
+            for release in RELEASES.values():
+                name = PROFILES_DIR / (release + ".json")
+                shutil.copyfile(ROOT / name, root / name)
+            dst = root / PROFILES_DIR / (RELEASES["census"] + ".json")
+            shutil.copyfile(ROOT / PROFILES_DIR / (RELEASES["bls"] + ".json"), dst)
+            with self.assertRaisesRegex(StatisticalProfileError, "filename"):
+                verify_all_profiles(root=root, historical=False)
 
     def test_same_request_same_fingerprint_and_no_cross_dataset_effects(self):
         a = request("census", "histogram")
