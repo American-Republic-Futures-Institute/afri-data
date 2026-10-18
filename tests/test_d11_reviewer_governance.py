@@ -230,6 +230,24 @@ class PacketAndDecisionTests(unittest.TestCase):
             with self.assertRaises((ValueError,TypeError)):
                 verify_github_approval(self.decision,self.policy,self.fetcher)
 
+    def test_approval_cannot_be_recorded_after_reviewer_expiry_or_revocation(self):
+        self.decision["recordedAt"] = "2028-01-01T00:00:00Z"
+        with self.assertRaisesRegex(ValueError, "designation is not valid"):
+            verify_github_approval(self.decision, self.policy, self.fetcher)
+        self.setUp()
+        enrolled = self.policy["reviewers"][0]
+        enrolled["status"] = "revoked"
+        enrolled["revocation"] = {
+            "revokedAt": "2026-10-19T00:00:00Z",
+            "approvedBy": "independent-eligibility-officer",
+            "reason": "Synthetic revocation occurred after review, before certification.",
+        }
+        self.policy["approvedReviewers"] = []
+        self.policy["status"] = "suspended"
+        self.decision["recordedAt"] = "2026-10-20T00:00:00Z"
+        with self.assertRaisesRegex(ValueError, "revoked"):
+            verify_github_approval(self.decision, self.policy, self.fetcher)
+
     def test_v1_historical_baselines_cannot_claim_a_new_review_retroactively(self):
         schema = json.loads((ROOT/"contracts/review-decision.schema.json").read_text())
         baseline = json.loads((ROOT/json.loads((ROOT/"governance/index.json").read_text())

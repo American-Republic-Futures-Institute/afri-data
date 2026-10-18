@@ -100,6 +100,7 @@ def _api_fetch(route: str):
 
 def verify_github_approval(decision: dict, policy: dict, github_get=None) -> dict:
     """Fail closed on wrong PR head, absent/mismatched packet or current review."""
+    _checked_schema(decision, "review-decision")
     require(decision["methodologyStatus"] == "independent_reviewed"
             and decision["authorization"] == "owner_authorized",
             "only independently reviewed, owner-authorized decisions can be attested")
@@ -118,6 +119,7 @@ def verify_github_approval(decision: dict, policy: dict, github_get=None) -> dic
             "independent reviewer findings must justify every certified scope")
     reviewer = evidence["reviewerLogin"].lower()
     reviewer_eligible(policy, reviewer, evidence["submittedAt"])
+    reviewer_eligible(policy, reviewer, decision["recordedAt"])
     require(COMMIT.fullmatch(evidence["headSha"]) is not None,
             "untrusted review head")
     fetch = github_get or _api_fetch
