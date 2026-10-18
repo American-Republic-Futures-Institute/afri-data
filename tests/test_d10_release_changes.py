@@ -3,7 +3,8 @@ import copy
 import unittest
 
 from tools.release_diff import build_changeset, canonical_bytes, verify_changeset
-from tools.governance_transition import check_revisions, check_review_transition
+from tools.governance_transition import (check_revisions, check_review_transition,
+                                         check_changeset_transition)
 
 
 def pkg(rid, rows, dataset="source-dataset", geography="state", source="a"):
@@ -112,6 +113,17 @@ class AppendOnlyGovernanceTests(unittest.TestCase):
         ]:
             with self.assertRaises(ValueError):
                 check_review_transition(old, candidate, {p: "one"}, blobs)
+
+    def test_published_revision_reports_are_immutable(self):
+        old = {"governance/changesets/old--new.json": "sha-one"}
+        self.assertEqual(check_changeset_transition(old, {**old,
+            "governance/changesets/new--next.json": "sha-two"})["newChangeReports"],
+            ["governance/changesets/new--next.json"])
+        with self.assertRaisesRegex(ValueError, "changed or was deleted"):
+            check_changeset_transition(old,
+                {"governance/changesets/old--new.json": "modified"})
+        with self.assertRaisesRegex(ValueError, "changed or was deleted"):
+            check_changeset_transition(old, {})
 
     def test_same_dataset_requires_predecessor_and_exact_changeset(self):
         a, observations = pkg("old", [row("01", "-3.00")])
