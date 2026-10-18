@@ -219,7 +219,8 @@ def main():
         lambda path: git_optional_json("HEAD", path)))
     result.update(check_changeset_transition(
         git_blobs(args.base, "governance/changesets"),
-        git_blobs("HEAD", "governance/changesets")))
+        git_blobs("HEAD", "governance/changesets"),
+        {item["changesetPath"] for item in result["revisions"]}))
     verify_source_commit_references(new_governance)
     print(json.dumps(result,sort_keys=True))
 
