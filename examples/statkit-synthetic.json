@@ -1,0 +1,32 @@
+[
+  {
+    "value": 12.3,
+    "region": "East",
+    "availability": "available"
+  },
+  {
+    "value": 19.1,
+    "region": "East",
+    "availability": "available"
+  },
+  {
+    "value": 21.4,
+    "region": "West",
+    "availability": "available"
+  },
+  {
+    "value": 17.8,
+    "region": "West",
+    "availability": "available"
+  },
+  {
+    "value": null,
+    "region": "West",
+    "availability": "not_available"
+  },
+  {
+    "value": 24,
+    "region": "East",
+    "availability": "available"
+  }
+]
