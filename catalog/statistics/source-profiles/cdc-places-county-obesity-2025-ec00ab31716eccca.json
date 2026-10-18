@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "1.0.0",
+  "type": "ARFI-StatisticalSourceProfile",
+  "reviewStatus": "not_independently_certified",
+  "identity": {
+    "releaseId": "cdc-places-county-obesity-2025-ec00ab31716eccca",
+    "datasetId": "cdc-places-2025-county-obesity",
+    "indicatorId": "county-modeled-obesity-prevalence",
+    "sourceCommit": "2a54ab437e083a40ef995d12f4d46366a8eb2963",
+    "manifestPath": "publication/releases/cdc-places-county-obesity-2025-ec00ab31716eccca/manifest.json",
+    "manifestGitBlobSha": "d874f2fbccb16aea837c24b3218ed9e79d8a1a3b",
+    "observationsSha256": "27ae25ff9fed45d8d03f0da5240a07d32cfd6d7f0f0873bafd1597726b6a83e4"
+  },
+  "measurement": {
+    "family": "publisher-modeled-prevalence",
+    "scale": "rate",
+    "unit": "percent",
+    "valueField": "value",
+    "geographyField": "geoid",
+    "yearField": "year",
+    "statusField": "status",
+    "intervalFields": {
+      "lower": "lower95",
+      "upper": "upper95"
+    },
+    "exactAmountField": null,
+    "observationUnit": "One 2023 reference-year CDC PLACES adult obesity crude prevalence model estimate for a county.",
+    "targetPopulation": "CDC small-area modeled obesity prevalence for included county geographies; not direct individual or county survey samples.",
+    "samplingDesign": "publisher-small-area-model",
+    "denominatorAvailability": "publisher-derived-rate",
+    "publisherModelled": true
+  },
+  "coverage": {
+    "geography": "county",
+    "geographyVintage": 2023,
+    "firstYear": 2023,
+    "lastYear": 2023,
+    "temporalKind": "modeled-reference-year",
+    "sourceRows": 3143,
+    "availableRows": 2956,
+    "explicitUnavailableRows": 187,
+    "knownOmittedSourceBuckets": 0,
+    "sourcePeriodUniform": true,
+    "qualifierCodes": [
+      "publisher-modeled-not-direct",
+      "cdc-published-95-ci",
+      "explicit-missing-ky-pa",
+      "jurisdiction-distribution-not-people"
+    ],
+    "allowedSegments": [
+      "stateAbbr"
+    ]
+  },
+  "restrictions": {
+    "crossReleaseDerivation": false,
+    "causalInference": false,
+    "imputation": false,
+    "genericShrinkage": false,
+    "computeNewIntervals": false,
+    "populationWeighting": false,
+    "exactMoneyByFloat": false
+  },
+  "caveats": [
+    "CDC PLACES 2025 reported obesity models draw on 2023 BRFSS; 95% intervals are publisher supplied, not recomputed.",
+    "The 187 explicitly unavailable CDC records (Kentucky 120, Pennsylvania 67) are not zero. Census geometry-only Loving County TX is outside CDC source observations and is not an explicit null row.",
+    "Modeled county estimates do not represent independent raw survey samples. Further automatic shrinkage, policy-effect inference, and unqualified county-performance ranking are not authorized."
+  ]
+}

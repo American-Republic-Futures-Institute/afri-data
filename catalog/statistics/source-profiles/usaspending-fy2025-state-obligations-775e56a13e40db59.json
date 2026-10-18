@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "1.0.0",
+  "type": "ARFI-StatisticalSourceProfile",
+  "reviewStatus": "not_independently_certified",
+  "identity": {
+    "releaseId": "usaspending-fy2025-state-obligations-775e56a13e40db59",
+    "datasetId": "usaspending-state-fy2025-obligations",
+    "indicatorId": "state-federal-award-obligations",
+    "sourceCommit": "2a54ab437e083a40ef995d12f4d46366a8eb2963",
+    "manifestPath": "publication/releases/usaspending-fy2025-state-obligations-775e56a13e40db59/manifest.json",
+    "manifestGitBlobSha": "5cc840db216510839b2a62c1e9440476429dbb12",
+    "observationsSha256": "f5af671b080374e4cd8ababca51fc398c742f79cedea781b58e132f3908083b8"
+  },
+  "measurement": {
+    "family": "administrative-money-flow",
+    "scale": "monetary-flow",
+    "unit": "USD",
+    "valueField": "value",
+    "geographyField": "geoid",
+    "yearField": "year",
+    "statusField": "status",
+    "intervalFields": null,
+    "exactAmountField": "reportedAmount",
+    "observationUnit": "One published FY2025 USAspending transaction obligation aggregate per state-equivalent place of performance.",
+    "targetPopulation": "Federal award obligations by primary place of performance, not fiscal outlays, recipient populations, or program benefits.",
+    "samplingDesign": "publisher-geographic-transaction-aggregate",
+    "denominatorAvailability": "external-denominator-required",
+    "publisherModelled": false
+  },
+  "coverage": {
+    "geography": "state",
+    "geographyVintage": 2025,
+    "firstYear": 2025,
+    "lastYear": 2025,
+    "temporalKind": "fiscal-year-transactions",
+    "sourceRows": 52,
+    "availableRows": 52,
+    "explicitUnavailableRows": 0,
+    "knownOmittedSourceBuckets": 5,
+    "sourcePeriodUniform": true,
+    "qualifierCodes": [
+      "fiscal-obligations-not-outlays",
+      "geographic-exclusion-ledger",
+      "signed-decimal-money"
+    ],
+    "allowedSegments": []
+  },
+  "restrictions": {
+    "crossReleaseDerivation": false,
+    "causalInference": false,
+    "imputation": false,
+    "genericShrinkage": false,
+    "computeNewIntervals": false,
+    "populationWeighting": false,
+    "exactMoneyByFloat": false
+  },
+  "caveats": [
+    "Amounts are signed monetary flows and retain exact source reportedAmount strings, including deobligations. Float statistics are not exact accounting.",
+    "Five excluded publisher buckets are outside the mapped 52 jurisdictions and must remain disclosed in interpretation.",
+    "Primary place of performance is not necessarily benefit destination; per-capita and inflation calculations require independent method and source approval."
+  ]
+}

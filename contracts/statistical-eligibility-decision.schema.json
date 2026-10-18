@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "contracts/statistical-eligibility-decision.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "type",
+    "releaseId",
+    "methodId",
+    "decision",
+    "reasonCodes",
+    "methodApplicable",
+    "sourceIdentityVerified",
+    "publicationAuthorized",
+    "crossSourceAuthorized",
+    "statisticalInferenceAuthorized",
+    "causalInferenceAuthorized",
+    "reviewStatus",
+    "requestFingerprint"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0.0"
+    },
+    "type": {
+      "const": "ARFI-StatisticalMethodEligibility/1.0.0"
+    },
+    "releaseId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "methodId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "decision": {
+      "enum": [
+        "permitted",
+        "qualified",
+        "denied"
+      ]
+    },
+    "reasonCodes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 32,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z_]+$"
+      }
+    },
+    "methodApplicable": {
+      "type": "boolean"
+    },
+    "sourceIdentityVerified": {
+      "type": "boolean"
+    },
+    "publicationAuthorized": {
+      "const": false
+    },
+    "crossSourceAuthorized": {
+      "const": false
+    },
+    "statisticalInferenceAuthorized": {
+      "const": false
+    },
+    "causalInferenceAuthorized": {
+      "const": false
+    },
+    "reviewStatus": {
+      "const": "not_independently_certified"
+    },
+    "requestFingerprint": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

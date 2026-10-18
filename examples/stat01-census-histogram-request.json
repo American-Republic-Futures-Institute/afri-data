@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "1.0.0",
+  "releaseId": "census-state-population-v2025",
+  "methodId": "numpy.histogram/1",
+  "sourceCommit": "2a54ab437e083a40ef995d12f4d46366a8eb2963",
+  "observationsSha256": "e37483bbce3564f8737bc6db132cda90df1402e46237bbf42aaa69bf2b7b994d",
+  "intent": "descriptive-preview",
+  "x": "value",
+  "y": null,
+  "segment": null,
+  "unitOfAnalysis": "geographic-units",
+  "periodYears": [
+    2025
+  ],
+  "otherReleaseIds": [],
+  "operations": {
+    "impute": false,
+    "sampleWeight": false,
+    "perCapita": false,
+    "shrinkage": false,
+    "newInterval": false,
+    "deriveRate": false,
+    "excludeSourceBuckets": false,
+    "requireUniformPeriods": false
+  },
+  "acknowledgedQualifiers": [
+    "publisher-estimate",
+    "jurisdiction-distribution-not-people"
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "schemaVersion": "1.0.0",
+  "type": "ARFI-StatisticalMethodEligibilityRegistry",
+  "publicationAuthorized": false,
+  "methods": [
+    {
+      "methodId": "numpy.histogram/1",
+      "chartType": "histogram",
+      "requires": "numeric-value",
+      "supportedFamilies": [
+        "population-stock",
+        "published-rate",
+        "publisher-modeled-prevalence"
+      ],
+      "minimumPublishedYears": 1,
+      "definition": "Exploratory distribution of publisher numeric observations across verified same-source geographic units; preserves group counts, does not make inference or weight by residents.",
+      "reviewStatus": "not_independently_certified",
+      "publicationAuthorized": false
+    },
+    {
+      "methodId": "numpy.unique-cumsum/1",
+      "chartType": "ecdf",
+      "requires": "numeric-value",
+      "supportedFamilies": [
+        "population-stock",
+        "published-rate",
+        "publisher-modeled-prevalence"
+      ],
+      "minimumPublishedYears": 1,
+      "definition": "Empirical cumulative share of published numeric observations across declared geographic units, with distinct missingness; no independent-sample inference.",
+      "reviewStatus": "not_independently_certified",
+      "publicationAuthorized": false
+    },
+    {
+      "methodId": "numpy.quantile-linear-tukey/1",
+      "chartType": "boxplot",
+      "requires": "numeric-value",
+      "supportedFamilies": [
+        "population-stock",
+        "published-rate",
+        "publisher-modeled-prevalence"
+      ],
+      "minimumPublishedYears": 1,
+      "definition": "Descriptive empirical quantiles and Tukey outlier candidates from publisher values; no automatic deletion, significance or central tendency for individuals.",
+      "reviewStatus": "not_independently_certified",
+      "publicationAuthorized": false
+    },
+    {
+      "methodId": "categorical-count/1",
+      "chartType": "frequency",
+      "requires": "categorical-availability",
+      "supportedFamilies": [
+        "population-stock",
+        "published-rate",
+        "administrative-money-flow",
+        "publisher-modeled-prevalence"
+      ],
+      "minimumPublishedYears": 1,
+      "definition": "Counts of availability statuses only; no ordinal scoring or inferred subject-level properties and no zero imputation.",
+      "reviewStatus": "not_independently_certified",
+      "publicationAuthorized": false
+    },
+    {
+      "methodId": "source-paired-points/1",
+      "chartType": "scatter",
+      "requires": "numeric-pairs",
+      "supportedFamilies": [
+        "population-stock",
+        "published-rate",
+        "administrative-money-flow",
+        "publisher-modeled-prevalence"
+      ],
+      "minimumPublishedYears": 1,
+      "definition": "Descriptive same-source paired columns only when both original publisher numeric columns have been independently admitted; never an unauthorized cross-source join.",
+      "reviewStatus": "not_independently_certified",
+      "publicationAuthorized": false
+    },
+    {
+      "methodId": "source-period-points/1",
+      "chartType": "time-series",
+      "requires": "multi-year-source-series",
+      "supportedFamilies": [
+        "population-stock",
+        "published-rate",
+        "publisher-modeled-prevalence"
+      ],
+      "minimumPublishedYears": 2,
+      "definition": "Preserves original publisher values at two or more comparable years, with explicit gaps and no extrapolation, interpolation or derived rates.",
+      "reviewStatus": "not_independently_certified",
+      "publicationAuthorized": false
+    },
+    {
+      "methodId": "publisher-supplied-bounds/1",
+      "chartType": "interval",
+      "requires": "publisher-interval",
+      "supportedFamilies": [
+        "publisher-modeled-prevalence"
+      ],
+      "minimumPublishedYears": 1,
+      "definition": "Displays original source-provided numerical interval bounds without recomputing intervals or inferring a statistically significant pairwise difference.",
+      "reviewStatus": "not_independently_certified",
+      "publicationAuthorized": false
+    }
+  ]
+}

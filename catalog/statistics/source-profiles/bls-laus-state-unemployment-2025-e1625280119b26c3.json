@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "1.0.0",
+  "type": "ARFI-StatisticalSourceProfile",
+  "reviewStatus": "not_independently_certified",
+  "identity": {
+    "releaseId": "bls-laus-state-unemployment-2025-e1625280119b26c3",
+    "datasetId": "bls-laus-state-unemployment-2025",
+    "indicatorId": "state-unemployment-rate",
+    "sourceCommit": "2a54ab437e083a40ef995d12f4d46366a8eb2963",
+    "manifestPath": "publication/releases/bls-laus-state-unemployment-2025-e1625280119b26c3/manifest.json",
+    "manifestGitBlobSha": "a7df8a36324d8b79626eeb0adadbbe74168325f8",
+    "observationsSha256": "1a274904c160ea006b7a7f095274b3375f688fd647b6c8ca3f634f23715d014b"
+  },
+  "measurement": {
+    "family": "published-rate",
+    "scale": "rate",
+    "unit": "percent",
+    "valueField": "value",
+    "geographyField": "geoid",
+    "yearField": "year",
+    "statusField": "status",
+    "intervalFields": null,
+    "exactAmountField": null,
+    "observationUnit": "One BLS LAUS 2025 published unemployment rate estimate per state-equivalent.",
+    "targetPopulation": "BLS LAUS published unadjusted unemployment rate estimates, not individual unemployment event observations or microdata.",
+    "samplingDesign": "published-unadjusted-labor-survey-estimate",
+    "denominatorAvailability": "publisher-derived-rate",
+    "publisherModelled": false
+  },
+  "coverage": {
+    "geography": "state",
+    "geographyVintage": 2025,
+    "firstYear": 2025,
+    "lastYear": 2025,
+    "temporalKind": "qualified-annual-average",
+    "sourceRows": 52,
+    "availableRows": 52,
+    "explicitUnavailableRows": 0,
+    "knownOmittedSourceBuckets": 0,
+    "sourcePeriodUniform": false,
+    "qualifierCodes": [
+      "bls-footnote-g-11-vs-12",
+      "publisher-estimate",
+      "jurisdiction-distribution-not-people"
+    ],
+    "allowedSegments": []
+  },
+  "restrictions": {
+    "crossReleaseDerivation": false,
+    "causalInference": false,
+    "imputation": false,
+    "genericShrinkage": false,
+    "computeNewIntervals": false,
+    "populationWeighting": false,
+    "exactMoneyByFloat": false
+  },
+  "caveats": [
+    "BLS 2025 footnote G: the 50 states plus DC omit October and have 11-month annual averages; Puerto Rico has 12 months.",
+    "The release does not include valid respondent-level survey design weights, rate denominators, or publisher per-state confidence interval inputs.",
+    "Distribution across jurisdictions does not describe the distribution of individual workers and cannot be used to infer causal policy impacts."
+  ]
+}
