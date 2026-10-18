@@ -106,12 +106,14 @@ class GithubReviewerBoundaryTests(unittest.TestCase):
             lambda: self.decision["reviewEvidence"].update(reviewId=100),
             lambda: self.review.update(state="DISMISSED"),
             lambda: self.review.update(state="COMMENTED"),
+            lambda: self.review.update(submitted_at="2026-10-18T00:01:00Z"),
             lambda: self.review.update(commit_id="a" * 40),
             lambda: self.pr["user"].update(login="independent-statistician"),
             lambda: self.pr["head"].update(sha="a" * 40),
             lambda: self.decision["reviewEvidence"].update(packetSha256="0" * 64),
             lambda: self.decision["reviewEvidence"].update(reviewerLogin="forged-person"),
             lambda: self.policy.update(approvedReviewers=[]),
+            lambda: self.decision["reviewScope"].update(methodology="not_independently_certified"),
         ]:
             self.setUp()
             mutate()
