@@ -216,7 +216,7 @@ class PacketAndDecisionTests(unittest.TestCase):
         for mutate in (
             lambda:self.decision["reviewFindings"].update(
                 methodology="Changed unreviewed methodology reasoning after the signed packet."),
-            lambda:self.decision["manifestSha256"].replace("a","b"),
+            lambda:self.decision.update(manifestSha256="0"*64),
             lambda:self.review.update(state="DISMISSED"),
             lambda:self.review["user"].update(type="Bot"),
             lambda:self.pr["user"].update(type="Bot"),

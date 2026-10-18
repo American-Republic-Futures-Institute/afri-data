@@ -17,7 +17,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 
 from tools.release_diff import canonical_bytes
 from tools.reviewer_policy import (validate_reviewer_policy, reviewer_eligible,
-                                   verify_branch_protection)
+                                   verify_branch_protection, timestamp)
 
 ROOT = Path(__file__).resolve().parents[1]
 REPO = "American-Republic-Futures-Institute/afri-data"
@@ -110,7 +110,9 @@ def verify_github_approval(decision: dict, policy: dict, github_get=None) -> dic
     require(isinstance(evidence, dict) and evidence.get("repository") == REPO,
             "independent review evidence is missing")
     validate_reviewer_policy(policy)
-    require(all(isinstance(decision.get("reviewFindings", {}).get(key), str) and
+    require(isinstance(decision.get("reviewFindings"), dict),
+            "independent review requires explicit method findings")
+    require(all(isinstance(decision["reviewFindings"].get(key), str) and
                 len(decision["reviewFindings"][key]) >= 24 for key in
                 (*REVIEW_FIELDS, "conflictOfInterest")),
             "independent reviewer findings must justify every certified scope")
@@ -152,7 +154,7 @@ def verify_github_approval(decision: dict, policy: dict, github_get=None) -> dic
             latest.get("commit_id") == evidence["headSha"] and
             latest.get("submitted_at") == evidence["submittedAt"],
             "review dismissed, superseded, non-human or for a stale head")
-    require(decision["recordedAt"] >= evidence["submittedAt"],
+    require(timestamp(decision["recordedAt"]) >= timestamp(evidence["submittedAt"]),
             "decision recorded before independent human approval")
     branch = verify_branch_protection(policy, fetch)
     return {"verification": "github_current_independent_approval",
