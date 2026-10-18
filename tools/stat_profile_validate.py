@@ -242,8 +242,10 @@ def verify_all_profiles(*, root=ROOT, historical=True):
         fail("published releases must match statistical profiles exactly; missing=" +
              repr(sorted(approved - seen)) + " extra=" + repr(sorted(seen - approved)))
     for release in sorted(approved):
-        verify_profile(load(profiles / (release + ".json")),
-                       root=root, historical=historical)
+        profile = load(profiles / (release + ".json"))
+        if profile.get("identity", {}).get("releaseId") != release:
+            fail("statistical profile filename does not match its embedded release ID")
+        verify_profile(profile, root=root, historical=historical)
     register = load(root / REGISTRY)
     check_schema(register, "contracts/statistical-method-applicability.schema.json")
     base = load(root / "contracts/stat-method-registry.json")
