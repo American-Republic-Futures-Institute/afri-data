@@ -65,3 +65,10 @@ def findings_fixture():
         for scope in SCOPES
     } | {"conflictOfInterest":
          "Synthetic non-conflict demonstration only; no genuine human has signed this review."}
+
+def codeowners_fixture():
+    return ("/governance/ @independent-board\n"
+            "/contracts/ @independent-board\n"
+            "/tools/ @independent-board\n"
+            "/.github/workflows/ @independent-board\n"
+            "/.github/CODEOWNERS @independent-board\n")
