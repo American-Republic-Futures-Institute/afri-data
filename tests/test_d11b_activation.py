@@ -6,6 +6,7 @@ from pathlib import Path
 import shutil
 import tempfile
 import unittest
+from unittest.mock import patch
 from jsonschema import Draft202012Validator, FormatChecker
 
 from reviewer_fixture import codeowners_fixture, protected_branch_fixture
@@ -103,6 +104,15 @@ class InstitutionalReadinessTests(unittest.TestCase):
         self.assertEqual(report["methodologyDecisions"],0)
         self.assertEqual(report["blockers"],
                          ["human_review_event_missing","qualified_human_not_designated"])
+
+    def test_future_human_review_claim_requires_online_attestation(self):
+        with patch("tools.review_governance.validate_ledger",
+                   side_effect=ValueError("ARFI review rejected: independent review unverified offline; cannot promote")):
+            result=preflight()
+        self.assertEqual(result["status"],"blocked")
+        self.assertIn("review_claim_requires_online_authentication",result["blockers"])
+        self.assertNotIn("human_review_event_missing",result["blockers"])
+        self.assertFalse(result["certificationGranted"])
 
     def test_missing_CODEOWNERS_or_forbidden_branch_read_stays_blocked(self):
         def unavailable(path):
