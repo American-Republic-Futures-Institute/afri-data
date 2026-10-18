@@ -31,6 +31,8 @@ jobs:
         run: python -m pip install -r requirements.txt
       - name: Verify publisher catalog before acquisition
         run: python -m tools.validate --catalog-only
+      - name: Run approved-baseline security and governance regressions before staging
+        run: python -m unittest discover -s tests -v
       - name: Obtain official Treasury POST aggregation and stage release
         shell: bash
         run: |
@@ -42,7 +44,6 @@ jobs:
           # Candidate staging is not review authorization. Governance approval
           # is enforced by the exact-head PR merge gate after human inspection.
           python -c "from tools.validate import validate_publication; print(validate_publication())"
-          python -m unittest discover -s tests -v
       - name: Stage evidence on a new human-reviewed branch only
         shell: bash
         run: |
