@@ -101,6 +101,7 @@ def evaluate(request, *, root=ROOT, historical=True):
         if (request["sourceCommit"] != identity["sourceCommit"] or
                 request["observationsSha256"] != identity["observationsSha256"]):
             deny("IMMUTABLE_SOURCE_IDENTITY_MISMATCH")
+            verified = False
         if request["otherReleaseIds"] or request["intent"] == "cross-source":
             deny("CROSS_RELEASE_OPERATION_DENIED")
         if request["intent"] == "public-derived-statistic":
@@ -152,6 +153,8 @@ def evaluate(request, *, root=ROOT, historical=True):
         elif req == "multi-year-source-series":
             if x != measure["yearField"] or y != measure["valueField"]:
                 deny("UNAPPROVED_TEMPORAL_COLUMNS")
+            if request["segment"] is not None:
+                deny("UNSUPPORTED_TEMPORAL_SEGMENTATION")
             if not coverage["sourcePeriodUniform"]:
                 deny("UNSUPPORTED_OR_MIXED_SOURCE_TIME_SERIES")
         elif req == "publisher-interval":
