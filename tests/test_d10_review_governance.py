@@ -11,7 +11,7 @@ from tools.review_governance import (
     ROOT, expected_packet, validate_ledger, verify_github_approval,
 )
 from reviewer_fixture import (reviewer_policy_fixture, protected_branch_fixture,
-                              findings_fixture)
+                              findings_fixture, codeowners_fixture)
 
 
 class BaselineEvidenceTests(unittest.TestCase):
@@ -95,6 +95,9 @@ class GithubReviewerBoundaryTests(unittest.TestCase):
     def fetcher(self, route):
         if route.endswith("/branches/main/protection"):
             return protected_branch_fixture()
+        if route.endswith("/contents/.github/CODEOWNERS?ref=main"):
+            return {"encoding": "base64", "content":
+                    base64.b64encode(codeowners_fixture().encode()).decode()}
         if route.endswith("/pulls/101"):
             return self.pr
         if "/contents/" in route:

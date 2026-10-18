@@ -25,6 +25,10 @@ jobs:
         run: python tools/validate.py --catalog-only
       - name: Run offline conversion, geography and security regressions
         run: python -m unittest discover -s tests -v
+      - name: Verify candidate BLS dossier source fingerprints
+        run: python -m tools.review_pilot_dossier --verify
+      - name: Report human review activation blockers
+        run: python -m tools.review_activation --offline
       - name: Refuse removal or modification of approved evidence across pull requests
         if: github.event_name == 'pull_request'
         run: python -m tools.release_transition --base origin/main

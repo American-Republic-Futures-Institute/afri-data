@@ -16,6 +16,7 @@ import urllib.request
 from jsonschema import Draft202012Validator, FormatChecker
 
 from tools.release_diff import canonical_bytes
+from tools.review_activation import check_live_codeowners
 from tools.reviewer_policy import (validate_reviewer_policy, reviewer_eligible,
                                    verify_branch_protection, timestamp)
 
@@ -159,9 +160,11 @@ def verify_github_approval(decision: dict, policy: dict, github_get=None) -> dic
     require(timestamp(decision["recordedAt"]) >= timestamp(evidence["submittedAt"]),
             "decision recorded before independent human approval")
     branch = verify_branch_protection(policy, fetch)
+    codeowners = check_live_codeowners(fetch)
     return {"verification": "github_current_independent_approval",
             "reviewId": latest["id"], "reviewedHeadSha": evidence["headSha"],
-            "protectedBranch": branch["verification"]}
+            "protectedBranch": branch["verification"],
+            "protectedGovernancePaths": codeowners["coveredPaths"]}
 
 
 def validate_ledger(root: Path, verify_online=False, github_get=None) -> dict:

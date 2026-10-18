@@ -1,0 +1,86 @@
+{
+  "assetSha256": {
+    "observations": "1a274904c160ea006b7a7f095274b3375f688fd647b6c8ca3f634f23715d014b",
+    "observationsCsv": "ed7bb2f1a380299b5c0888d13530e0830caa32b1c53fd5129caf411fd86a6bb5",
+    "originalAreasGzip": "99d40bffec28db4be95758dc68de9950d264bfaea350df6add0e319e594595bf",
+    "originalDataGzip": "019f672e50729a5962596f3020a3d47f2acca97692e26ebdbee4d29b299b66d5",
+    "originalFootnotesGzip": "2a3bf0197cceb0a723ff7989cf5a2b5d922c67beaee8c6d97b52b0419d72d0d5",
+    "originalSeriesGzip": "b9ed841334b8aaa3d3b17e0f89deafc5ce737c74ee756215f2c9187222576219",
+    "reviewReport": "98b2a622102681fa44d6c50d019b2375b7057728413891449797ec42bd3871e1"
+  },
+  "causalInferenceAuthorized": false,
+  "contract": "ARFI-ReviewDossier/1.0.0",
+  "datasetId": "bls-laus-state-unemployment-2025",
+  "derivedComparisonAuthorized": false,
+  "independentReviewEvidence": null,
+  "indicatorId": "state-unemployment-rate",
+  "manifestSha256": "4e6d89570f843c2528fb3b9898207916a8d80b653edfc8f3ec048e48f053465f",
+  "originalSources": [
+    {
+      "archiveAsset": "originalDataGzip",
+      "bytes": 13065702,
+      "role": "originalData",
+      "sha256": "46456aa1e15ac8497d2e921472497b6fefeaad40acb2ddc8c783c734f2da0be4",
+      "url": "https://download.bls.gov/pub/time.series/la/la.data.2.AllStatesU"
+    },
+    {
+      "archiveAsset": "originalSeriesGzip",
+      "bytes": 4086542,
+      "role": "originalSeries",
+      "sha256": "a938666287086eb9eae630c434948e0b9dd90eaf91285f92183f24b1074e26a0",
+      "url": "https://download.bls.gov/pub/time.series/la/la.series"
+    },
+    {
+      "archiveAsset": "originalAreasGzip",
+      "bytes": 439599,
+      "role": "originalAreas",
+      "sha256": "7f1dcbd6a2506d92d65641609cf08bd04f0a534503c6d0f23497f284dce1fc45",
+      "url": "https://download.bls.gov/pub/time.series/la/la.area"
+    },
+    {
+      "archiveAsset": "originalFootnotesGzip",
+      "bytes": 706,
+      "role": "originalFootnotes",
+      "sha256": "e68dbc2ea353d57047b57ec28ac01a4f5d06cff98a87c16fe4ab32daa2d2df34",
+      "url": "https://download.bls.gov/pub/time.series/la/la.footnote"
+    }
+  ],
+  "publicationKind": "indicator",
+  "publicationMethod": "Preserve BLS 2025 M13 published rates with unadjusted state series, official area/series tables and original la.footnote definition G. All 50 states and DC exclude October 2025 and have 11-month annual estimates. Puerto Rico alone retains a 12-month calendar-year annual rate. Do not impute the missing month or recompute the published rate.",
+  "publisher": "U.S. Bureau of Labor Statistics",
+  "questionsForReviewer": [
+    "Verify actual rights and downstream redistribution permissions of original BLS sources.",
+    "Independently replay BLS M13, series measure 03 and official source footnote G.",
+    "Assess 11-month 2025 estimates versus Puerto Rico's full 12-month year.",
+    "Confirm all 52 jurisdictions and identify unmatched or missing source records.",
+    "Confirm whether publisher estimates may be used only in source-qualified displays.",
+    "Document cautions, revision risks, uncertainty and unsupported causal inferences."
+  ],
+  "releaseId": "bls-laus-state-unemployment-2025-e1625280119b26c3",
+  "reviewerLogin": null,
+  "rightsStatus": "independent_review_required",
+  "sample": {
+    "allAvailable": true,
+    "elevenMonthGeographies": 51,
+    "excludedMonth": "2025-10",
+    "geographicLevel": "state",
+    "observationCount": 52,
+    "qualifierGCount": 51,
+    "referenceYear": 2025,
+    "reportedUnit": "percent",
+    "twelveMonthGeographies": [
+      "72"
+    ],
+    "unreviewedUncertainty": "publisher rate estimates may be revised"
+  },
+  "scopeResults": {
+    "cautions": "not_independently_certified",
+    "geographicUniverse": "not_independently_certified",
+    "methodology": "not_independently_certified",
+    "permittedPublicUses": "not_independently_certified",
+    "rightsLicense": "not_independently_certified",
+    "temporalInterpretation": "not_independently_certified"
+  },
+  "sourceCommit": "f9e9d3cdcab573d41526d2fb1893860774636c13",
+  "status": "pending_independent_human_assessment"
+}
