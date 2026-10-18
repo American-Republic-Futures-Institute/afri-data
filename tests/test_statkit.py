@@ -162,6 +162,10 @@ class FoundationTests(unittest.TestCase):
             missing = copy.deepcopy(rows)
             del missing[0]["low95"]
             stat.intervals(missing, x="place", y="estimate", lower="low95", upper="high95")
+        with self.assertRaisesRegex(ValueError, "finite"):
+            missing = copy.deepcopy(rows)
+            missing[0]["low95"] = float("nan")
+            stat.intervals(missing, x="place", y="estimate", lower="low95", upper="high95")
 
     def test_filter_and_fingerprint_are_repeatable_without_mutation(self):
         rows = copy.deepcopy(self.records)
