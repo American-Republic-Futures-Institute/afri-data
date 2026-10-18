@@ -132,3 +132,8 @@ def verify_branch_protection(policy, github_get):
             "branch force-push or deletion is permitted")
     return {"verification": "live-github-main-protection",
             "requiredChecks": sorted(checks), "approvals": reviews["required_approving_review_count"]}
+
+
+if __name__ == "__main__":
+    policy = json.loads((ROOT / "governance/reviewer-policy.json").read_text(encoding="utf-8"))
+    print(json.dumps(validate_reviewer_policy(policy), sort_keys=True))
