@@ -399,6 +399,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--catalog-only", action="store_true")
     parser.add_argument("--publication-only", action="store_true")
+    parser.add_argument("--verify-review-online", action="store_true",
+                        help="Require a live authenticated GitHub review for independent decisions")
     args = parser.parse_args()
     if args.catalog_only and args.publication_only:
         parser.error("Choose at most one validation scope")
@@ -413,6 +415,8 @@ def main():
         # cross-publisher GEOID reconciliation become an acceptance gate.
         from tools.cdc_county_join import validate_published_county_join
         result.update(validate_published_county_join(ROOT))
+        from tools.review_governance import validate_ledger
+        result.update(validate_ledger(ROOT, verify_online=args.verify_review_online))
     print(json.dumps(result, sort_keys=True))
 
 

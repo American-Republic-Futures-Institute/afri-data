@@ -1,0 +1,40 @@
+{
+  "contract": "ARFI-ReviewDecision/1.0.0",
+  "decisionId": "census-state-population-v2025-owner-authorization",
+  "releaseId": "census-state-population-v2025",
+  "publicationKind": "indicator",
+  "datasetId": "census-state-population-v2025",
+  "sourceCommit": "f9e9d3cdcab573d41526d2fb1893860774636c13",
+  "manifestSha256": "5ea73893a9d343f907979c67ac7fe4d7b85784483ff36df94d6311fc7499c4de",
+  "assetSha256": {
+    "geometry": "fc3b7c75db00421739d60ed462cbaa7f26e898cdf47b7361c49db75de58a6993",
+    "observations": "e37483bbce3564f8737bc6db132cda90df1402e46237bbf42aaa69bf2b7b994d",
+    "observationsCsv": "6bc14732e6cdc5cf85e38ea7e08166774d40cdc185989da9a982c886e5e001ed",
+    "originalTable": "92188e29cb0a67dcf95afa7d6c47359409782f086478b70ea4128eb70e223ca9"
+  },
+  "originalSources": [
+    {
+      "role": "originalTable",
+      "sha256": "92188e29cb0a67dcf95afa7d6c47359409782f086478b70ea4128eb70e223ca9"
+    },
+    {
+      "role": "originalBoundaryArchive",
+      "sha256": "9340b6d995e971b2b4230518f4fa85e6cd9e7fe6811afabc90a6a8b1191530f6"
+    }
+  ],
+  "authorization": "owner_authorized",
+  "methodologyStatus": "pending",
+  "reviewScope": {
+    "rightsLicense": "not_independently_certified",
+    "methodology": "not_independently_certified",
+    "temporalInterpretation": "not_independently_certified",
+    "geographicUniverse": "not_independently_certified",
+    "permittedPublicUses": "not_independently_certified",
+    "cautions": "not_independently_certified"
+  },
+  "auditRef": "https://github.com/American-Republic-Futures-Institute/afri-data/commit/f9e9d3cdcab573d41526d2fb1893860774636c13",
+  "recordKind": "historical_baseline",
+  "predecessorDecisionId": null,
+  "reviewEvidence": null,
+  "recordedAt": "2026-10-18T00:29:08Z"
+}

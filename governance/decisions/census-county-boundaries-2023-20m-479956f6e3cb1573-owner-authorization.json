@@ -1,0 +1,34 @@
+{
+  "contract": "ARFI-ReviewDecision/1.0.0",
+  "decisionId": "census-county-boundaries-2023-20m-479956f6e3cb1573-owner-authorization",
+  "releaseId": "census-county-boundaries-2023-20m-479956f6e3cb1573",
+  "publicationKind": "geography",
+  "datasetId": null,
+  "sourceCommit": "f9e9d3cdcab573d41526d2fb1893860774636c13",
+  "manifestSha256": "0a0f70963c8267c821ca60f4c93f1b6f906035067c6c231f36f1fcb1e999600a",
+  "assetSha256": {
+    "geometry": "fd748e9d2583498bd4fcec768af193f561799a439ea9e3b2191cce665b65b3b9",
+    "originalArchive": "479956f6e3cb1573705c1ceb35d17ca7cd1b5179f3947ee6adbaa274b7e931e4"
+  },
+  "originalSources": [
+    {
+      "role": "originalArchive",
+      "sha256": "479956f6e3cb1573705c1ceb35d17ca7cd1b5179f3947ee6adbaa274b7e931e4"
+    }
+  ],
+  "authorization": "owner_authorized",
+  "methodologyStatus": "pending",
+  "reviewScope": {
+    "rightsLicense": "not_independently_certified",
+    "methodology": "not_independently_certified",
+    "temporalInterpretation": "not_independently_certified",
+    "geographicUniverse": "not_independently_certified",
+    "permittedPublicUses": "not_independently_certified",
+    "cautions": "not_independently_certified"
+  },
+  "auditRef": "https://github.com/American-Republic-Futures-Institute/afri-data/commit/f9e9d3cdcab573d41526d2fb1893860774636c13",
+  "recordKind": "historical_baseline",
+  "predecessorDecisionId": null,
+  "reviewEvidence": null,
+  "recordedAt": "2026-10-18T00:29:17Z"
+}

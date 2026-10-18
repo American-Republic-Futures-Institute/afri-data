@@ -1,0 +1,7 @@
+{
+  "schemaVersion": "1.0.0",
+  "repository": "American-Republic-Futures-Institute/afri-data",
+  "approvedReviewers": [],
+  "status": "unconfigured",
+  "note": "No independent domain reviewer has been designated or cryptographically/organizationally qualified. Do not enable independent_reviewed claims until GitHub protected-branch ownership, reviewer eligibility and checks are in place."
+}

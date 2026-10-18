@@ -1,0 +1,42 @@
+{
+  "contract": "ARFI-ReviewDecision/1.0.0",
+  "decisionId": "usaspending-fy2025-state-obligations-775e56a13e40db59-owner-authorization",
+  "releaseId": "usaspending-fy2025-state-obligations-775e56a13e40db59",
+  "publicationKind": "indicator",
+  "datasetId": "usaspending-state-fy2025-obligations",
+  "sourceCommit": "f9e9d3cdcab573d41526d2fb1893860774636c13",
+  "manifestSha256": "0dcd71b21dfe74b7d17ebdbf31f35818b6f594797b93a7ad67406eb48ece7713",
+  "assetSha256": {
+    "geographyExclusions": "de6ace0596314305b1486fce3248ec36c35ec19041820e2a1ea1fd92000a9822",
+    "observations": "f5af671b080374e4cd8ababca51fc398c742f79cedea781b58e132f3908083b8",
+    "observationsCsv": "707c861023fa758ca87b5c6d0bfd9a0efca78d696191a30a94bb008a1dce7745",
+    "originalDataGzip": "b267ef49258e0d5e7099fbfd7bd6d2c5b4a1e2db0210cb8c685595f0ab39f75f",
+    "requestBodyGzip": "edffbf4fb1ffb2824ecc6f8c6297cb3648ce23201e398f5459285c8f43a10c52",
+    "reviewReport": "98b2a622102681fa44d6c50d019b2375b7057728413891449797ec42bd3871e1"
+  },
+  "originalSources": [
+    {
+      "role": "originalData",
+      "sha256": "361b52985ca9bed462a803a7a5c5792a3c842f4299e2b3845b5eb52fab878392"
+    },
+    {
+      "role": "requestBody",
+      "sha256": "2716d079ea5dc3fe51701ce1d21c574ea40121989d6f0368f060d87e0dd299fa"
+    }
+  ],
+  "authorization": "owner_authorized",
+  "methodologyStatus": "pending",
+  "reviewScope": {
+    "rightsLicense": "not_independently_certified",
+    "methodology": "not_independently_certified",
+    "temporalInterpretation": "not_independently_certified",
+    "geographicUniverse": "not_independently_certified",
+    "permittedPublicUses": "not_independently_certified",
+    "cautions": "not_independently_certified"
+  },
+  "auditRef": "https://github.com/American-Republic-Futures-Institute/afri-data/commit/f9e9d3cdcab573d41526d2fb1893860774636c13",
+  "recordKind": "historical_baseline",
+  "predecessorDecisionId": null,
+  "reviewEvidence": null,
+  "recordedAt": "2026-10-18T00:29:13Z"
+}

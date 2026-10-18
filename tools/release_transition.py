@@ -7,12 +7,15 @@ candidate merge tree against the *current* base branch publication registry.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import PurePosixPath
 import re
 import subprocess
 
 from tools.release_registry import valid_id
+from tools.governance_transition import (check_review_transition, check_revisions,
+                                         check_changeset_transition)
 
 
 def entries(index: dict) -> dict[str, dict]:
@@ -156,6 +159,37 @@ def git_optional_geography_index(ref: str) -> dict|None:
     return json.loads(git_bytes("show",f"{ref}:{location}"))
 
 
+def git_optional_json(ref: str, path: str) -> dict | None:
+    exists = git_bytes("ls-tree", "--name-only", ref, "--", path)
+    return json.loads(git_bytes("show", f"{ref}:{path}")) if exists.strip() else None
+
+
+def git_release_document(ref: str, rid: str, filename: str) -> dict:
+    if not valid_id(rid) or filename not in ("manifest.json", "observations.json"):
+        raise ValueError("Unsafe release-document lookup")
+    return json.loads(git_bytes("show", f"{ref}:publication/releases/{rid}/{filename}"))
+
+
+def verify_source_commit_references(governance: dict) -> None:
+    """Require the cited source commit to actually contain these exact manifest bytes."""
+    for path in governance["decisionPaths"]:
+        decision = json.loads(git_bytes("show", "HEAD:" + path))
+        rid, kind, source = (decision["releaseId"], decision["publicationKind"],
+                             decision["sourceCommit"])
+        if not valid_id(rid) or not re.fullmatch(r"[0-9a-f]{40}", source):
+            raise ValueError("Untrusted immutable review provenance")
+        folder = ("publication/releases/" if kind == "indicator" else
+                  "publication/geographies/releases/")
+        manifest_path = folder + rid + "/manifest.json"
+        previous = git_bytes("show", f"{source}:{manifest_path}")
+        current = git_bytes("show", "HEAD:" + manifest_path)
+        digest = decision["manifestSha256"]
+        if (hashlib.sha256(previous).hexdigest() != digest or
+                hashlib.sha256(current).hexdigest() != digest or
+                previous != current):
+            raise ValueError("Review record references changed or unavailable source commit")
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--base",default="origin/main")
@@ -168,6 +202,26 @@ def main():
         git_optional_geography_index(args.base),git_optional_geography_index("HEAD"),
         git_blobs(args.base,"publication/geographies/releases"),
         git_blobs("HEAD","publication/geographies/releases")))
+    old_governance = git_optional_json(args.base, "governance/index.json")
+    new_governance = git_optional_json("HEAD", "governance/index.json")
+    if new_governance is None:
+        raise ValueError("The append-only review ledger must exist")
+    result.update(check_review_transition(
+        old_governance, new_governance,
+        git_blobs(args.base, "governance/decisions"),
+        git_blobs("HEAD", "governance/decisions")))
+    result.update(check_revisions(
+        git_index(args.base), git_index("HEAD"),
+        lambda rid: git_release_document(args.base, rid, "manifest.json"),
+        lambda rid: git_release_document("HEAD", rid, "manifest.json"),
+        lambda rid: git_release_document(args.base, rid, "observations.json"),
+        lambda rid: git_release_document("HEAD", rid, "observations.json"),
+        lambda path: git_optional_json("HEAD", path)))
+    result.update(check_changeset_transition(
+        git_blobs(args.base, "governance/changesets"),
+        git_blobs("HEAD", "governance/changesets"),
+        {item["changesetPath"] for item in result["revisions"]}))
+    verify_source_commit_references(new_governance)
     print(json.dumps(result,sort_keys=True))
 
 
