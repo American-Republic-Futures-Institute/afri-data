@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ARFI deterministic release revision report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "before",
+    "after",
+    "counts",
+    "changes",
+    "manifestFields",
+    "reportSha256"
+  ],
+  "properties": {
+    "contract": {
+      "const": "ARFI-ReleaseChangeSet/1.0.0"
+    },
+    "before": {
+      "type": "object"
+    },
+    "after": {
+      "type": "object"
+    },
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "added",
+        "removed",
+        "revised",
+        "unchanged"
+      ],
+      "properties": {
+        "added": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "removed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "revised": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unchanged": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "changes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "key",
+          "kind",
+          "fields"
+        ],
+        "properties": {
+          "key": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "geoid",
+              "year"
+            ],
+            "properties": {
+              "geoid": {
+                "type": "string",
+                "pattern": "^[0-9]{2,11}$"
+              },
+              "year": {
+                "type": "integer",
+                "minimum": 1900,
+                "maximum": 3000
+              }
+            }
+          },
+          "kind": {
+            "enum": [
+              "added",
+              "removed",
+              "revised"
+            ]
+          },
+          "fields": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": [
+                "field",
+                "before",
+                "after"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "field": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "before": {},
+                "after": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "manifestFields": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "field",
+          "before",
+          "after"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "type": "string",
+            "minLength": 1
+          },
+          "before": {},
+          "after": {}
+        }
+      }
+    },
+    "reportSha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}
