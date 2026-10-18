@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "1.0.0",
+  "kind": "ARFI-StatSyntheticRequest/1.0.0",
+  "source": {
+    "sourceClass": "caller-declared-synthetic",
+    "fixtureId": "stat02a-distribution-demo-01",
+    "releaseId": null,
+    "sourceCommit": null
+  },
+  "fields": {
+    "x": "value",
+    "y": null,
+    "segment": "region",
+    "availability": "availability",
+    "unit": "synthetic-index"
+  },
+  "filters": {},
+  "context": {
+    "unitOfAnalysis": "synthetic-observation",
+    "targetPopulation": "Only the six intentionally fabricated observations in the synthetic fixture; no real population is represented.",
+    "referencePopulation": "The example cohort is artificially constructed solely for verification, not an inferential reference population.",
+    "denominator": "Within each synthetic region, only the available synthetic observations enter the numeric distribution.",
+    "timePeriod": "synthetic-undated",
+    "uncertaintyTreatment": "none-estimated",
+    "interpretation": "Shows the behavior of a numerical distribution primitive, not a real-world estimate or policy finding.",
+    "qualifications": [
+      "One record is expressly unavailable; its value is missing rather than zero.",
+      "The groups are fictional, not representative samples of any geographic population."
+    ]
+  },
+  "controls": {
+    "publicationAuthorized": false,
+    "sourceVerified": false,
+    "statisticalInferenceAuthorized": false,
+    "crossSourceAuthorized": false,
+    "causalInferenceAuthorized": false
+  },
+  "method": {
+    "chartType": "ecdf",
+    "methodId": "numpy.unique-cumsum/1",
+    "version": "1.0.0"
+  },
+  "parameters": {}
+}
