@@ -47,13 +47,24 @@ def preflight(root=ROOT,online=False,github_get=None):
     folder=Path(root)
     policy=json.loads((folder/"governance/reviewer-policy.json").read_text(encoding="utf-8"))
     roster=validate_reviewer_policy(policy)
-    ledger=validate_ledger(folder)
     blockers=[]
+    fetch=(github_get or _api_fetch) if online else None
+    try:
+        ledger=validate_ledger(folder,verify_online=online,github_get=fetch)
+    except ValueError as error:
+        if online or "independent review unverified offline; cannot promote" not in str(error):
+            raise
+        ledger={"independentlyReviewed":0}
+        blockers.append("review_claim_requires_online_authentication")
+    except OSError:
+        if not online: raise
+        ledger={"independentlyReviewed":0}
+        blockers.append("review_provenance_api_unverifiable")
     if not roster["activeReviewers"]: blockers.append("qualified_human_not_designated")
-    if not ledger["independentlyReviewed"]: blockers.append("human_review_event_missing")
+    if not ledger["independentlyReviewed"] and not any(x.startswith("review_") for x in blockers):
+        blockers.append("human_review_event_missing")
     protected=owners=False
     if online:
-        fetch=github_get or _api_fetch
         try:
             check_live_codeowners(fetch)
             owners=True
