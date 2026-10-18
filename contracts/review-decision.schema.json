@@ -19,7 +19,8 @@
     "auditRef",
     "recordKind",
     "predecessorDecisionId",
-    "reviewEvidence"
+    "reviewEvidence",
+    "recordedAt"
   ],
   "properties": {
     "contract": {
@@ -211,7 +212,8 @@
             "packetPath",
             "packetSha256",
             "reviewerLogin",
-            "reviewId"
+            "reviewId",
+            "submittedAt"
           ],
           "properties": {
             "repository": {
@@ -241,10 +243,18 @@
             "reviewId": {
               "type": "integer",
               "minimum": 1
+            },
+            "submittedAt": {
+              "type": "string",
+              "format": "date-time"
             }
           }
         }
       ]
+    },
+    "recordedAt": {
+      "type": "string",
+      "format": "date-time"
     }
   }
 }
