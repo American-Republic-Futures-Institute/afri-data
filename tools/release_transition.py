@@ -14,7 +14,8 @@ import re
 import subprocess
 
 from tools.release_registry import valid_id
-from tools.governance_transition import check_review_transition, check_revisions
+from tools.governance_transition import (check_review_transition, check_revisions,
+                                         check_changeset_transition)
 
 
 def entries(index: dict) -> dict[str, dict]:
@@ -216,6 +217,9 @@ def main():
         lambda rid: git_release_document(args.base, rid, "observations.json"),
         lambda rid: git_release_document("HEAD", rid, "observations.json"),
         lambda path: git_optional_json("HEAD", path)))
+    result.update(check_changeset_transition(
+        git_blobs(args.base, "governance/changesets"),
+        git_blobs("HEAD", "governance/changesets")))
     verify_source_commit_references(new_governance)
     print(json.dumps(result,sort_keys=True))
 
