@@ -11,6 +11,8 @@ Two new schemas define:
 - \`contracts/stat-analysis-request.schema.json\`: exact synthetic fixture identity, explicit chart type and existing StatKit method ID/version, X/Y/segment and filter columns, method parameters, analysis population/period/denominator/uncertainty context, limitations and **all authority flags false**.
 - \`contracts/stat-analysis-artifact.schema.json\`: original request, request and input digests, full unchanged StatKit chart model, quality/coverage context, dependencies and exact method source-code hashes, output digest and whole-artifact digest, with **all authority flags false** and no official release identity.
 
+Artifact validation resolves embedded request, chart and quality-context schemas using a **local, pinned schema registry**, without runtime network fetches. Independent consumers must supply the matching versioned request and StatKit chart schemas to validate embedded objects. Request unit and interval-label limits match the actual statistical primitive validators.
+
 The implementation \`arfi_stats/artifacts.py\` has **only** the following operations:
 
 - \`produce(request, rows)\`: validate a typed **caller-declared synthetic** request and normalized JSON observation list, call the exact existing StatKit primitive, validate the chart output schema, and return a content-addressed unsigned artifact.
