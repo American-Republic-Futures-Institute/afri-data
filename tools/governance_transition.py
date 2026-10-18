@@ -47,6 +47,60 @@ def check_review_transition(prior, proposed, before_blobs, after_blobs):
             "newDecisions": new[len(old):]}
 
 
+def check_reviewer_policy_transition(prior, proposed):
+    """Disallow roster rollback, silent qualification edits or reviewer reinstatement.
+
+    An inactive reviewer's past approval remains historical, but revoked
+    credentials must never be used for a *new* approval.
+    """
+    reject(isinstance(proposed, dict) and proposed.get("schemaVersion") == "2.0.0",
+           "reviewer policy must use the hardened D-11 contract")
+    if prior is None:
+        reject(proposed.get("status") == "unconfigured" and
+               proposed.get("approvedReviewers") == [] and
+               proposed.get("reviewers") == [],
+               "initial reviewer policy cannot claim eligibility")
+        return {"registeredReviewers": 0, "newReviewerIdentities": []}
+    reject(isinstance(prior, dict), "missing prior reviewer policy")
+    if prior.get("schemaVersion") == "1.0.0":
+        reject(prior.get("status") == "unconfigured" and
+               prior.get("approvedReviewers") == [] and
+               proposed.get("status") == "unconfigured" and
+               proposed.get("reviewers") == [] and
+               proposed.get("approvedReviewers") == [],
+               "legacy roster migration cannot appoint reviewers")
+        return {"registeredReviewers": 0, "newReviewerIdentities": []}
+    reject(prior.get("schemaVersion") == "2.0.0" and
+           prior.get("repository") == proposed.get("repository") and
+           prior.get("requirements") == proposed.get("requirements"),
+           "repository or mandatory branch controls cannot be weakened")
+    before, after = prior.get("reviewers"), proposed.get("reviewers")
+    reject(isinstance(before, list) and isinstance(after, list) and
+           len(after) >= len(before), "reviewer history cannot be truncated")
+    for old, current in zip(before, after):
+        reject(old.get("login") == current.get("login"),
+               "reviewer history cannot be reordered or renamed")
+        if old == current:
+            continue
+        original = dict(old)
+        original.pop("status", None)
+        original.pop("revocation", None)
+        replacement = dict(current)
+        replacement.pop("status", None)
+        replacement.pop("revocation", None)
+        reject(old.get("status") == "active" and
+               current.get("status") == "revoked" and
+               old.get("revocation") is None and
+               isinstance(current.get("revocation"), dict) and
+               original == replacement,
+               "past reviewer qualifications may only transition to irrevocable revocation")
+    names = [item["login"] for item in after[len(before):]]
+    reject(all(item.get("status") == "active" and item.get("revocation") is None
+               for item in after[len(before):]),
+           "new designations cannot be inserted already revoked")
+    return {"registeredReviewers": len(after), "newReviewerIdentities": names}
+
+
 def check_changeset_transition(prior_blobs, proposed_blobs, expected_additions=None):
     """After first publication, a certified canonical change report is immutable."""
     for path, sha in prior_blobs.items():

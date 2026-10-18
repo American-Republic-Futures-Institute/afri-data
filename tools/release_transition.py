@@ -15,7 +15,8 @@ import subprocess
 
 from tools.release_registry import valid_id
 from tools.governance_transition import (check_review_transition, check_revisions,
-                                         check_changeset_transition)
+                                         check_changeset_transition,
+                                         check_reviewer_policy_transition)
 
 
 def entries(index: dict) -> dict[str, dict]:
@@ -210,6 +211,9 @@ def main():
         old_governance, new_governance,
         git_blobs(args.base, "governance/decisions"),
         git_blobs("HEAD", "governance/decisions")))
+    result.update(check_reviewer_policy_transition(
+        git_optional_json(args.base, "governance/reviewer-policy.json"),
+        git_optional_json("HEAD", "governance/reviewer-policy.json")))
     result.update(check_revisions(
         git_index(args.base), git_index("HEAD"),
         lambda rid: git_release_document(args.base, rid, "manifest.json"),
