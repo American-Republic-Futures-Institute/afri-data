@@ -88,7 +88,6 @@ def stage_release(root: Path, *, release_id: str, dataset_id: str,
                 and previous.get("status") == "published"
                 and previous.get("sourceFiles") == incoming_sources
                 and previous.get("method") == method
-                and previous.get("interpretation", "").startswith(warnings)
                 and previous.get("geography", {}).get("level") == geography
                 and previous.get("geography", {}).get("vintage") == geography_vintage
                 and previous.get("temporalCoverage", {}).get("vintage") == vintage
