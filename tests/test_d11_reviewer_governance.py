@@ -13,7 +13,7 @@ from pathlib import Path
 
 from jsonschema import Draft202012Validator, FormatChecker
 from reviewer_fixture import (reviewer_policy_fixture, protected_branch_fixture,
-                              findings_fixture)
+                              findings_fixture, codeowners_fixture)
 from tools.governance_transition import check_reviewer_policy_transition
 from tools.reviewer_policy import (validate_reviewer_policy, reviewer_eligible,
                                    verify_branch_protection, REPO)
@@ -198,6 +198,8 @@ class PacketAndDecisionTests(unittest.TestCase):
         self.protection = protected_branch_fixture()
 
     def fetcher(self,path):
+        if path.endswith("/contents/.github/CODEOWNERS?ref=main"):
+            return {"encoding":"base64","content":base64.b64encode(codeowners_fixture().encode()).decode()}
         if path.endswith("/pulls/101"):return self.pr
         if path.endswith("/reviews?per_page=100"):return [self.review]
         if "/contents/" in path:
