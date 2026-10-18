@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "1.0.0",
+  "type": "ARFI-StatisticalSourceProfile",
+  "reviewStatus": "not_independently_certified",
+  "identity": {
+    "releaseId": "census-state-population-v2025",
+    "datasetId": "census-state-population-v2025",
+    "indicatorId": "state-resident-population",
+    "sourceCommit": "2a54ab437e083a40ef995d12f4d46366a8eb2963",
+    "manifestPath": "publication/releases/census-state-population-v2025/manifest.json",
+    "manifestGitBlobSha": "e15cf7db20b7a0131dfe93ae1125a34b142107fb",
+    "observationsSha256": "e37483bbce3564f8737bc6db132cda90df1402e46237bbf42aaa69bf2b7b994d"
+  },
+  "measurement": {
+    "family": "population-stock",
+    "scale": "count",
+    "unit": "persons",
+    "valueField": "value",
+    "geographyField": "fips",
+    "yearField": "year",
+    "statusField": null,
+    "intervalFields": null,
+    "exactAmountField": null,
+    "observationUnit": "One July 1 population estimate per published state-equivalent and estimate year.",
+    "targetPopulation": "Census July 1 resident population estimates for the 50 states, DC and Puerto Rico, not independent samples of individuals.",
+    "samplingDesign": "publisher-demographic-estimate",
+    "denominatorAvailability": "none-published",
+    "publisherModelled": false
+  },
+  "coverage": {
+    "geography": "state",
+    "geographyVintage": 2025,
+    "firstYear": 2020,
+    "lastYear": 2025,
+    "temporalKind": "population-july-1",
+    "sourceRows": 312,
+    "availableRows": 312,
+    "explicitUnavailableRows": 0,
+    "knownOmittedSourceBuckets": 0,
+    "sourcePeriodUniform": true,
+    "qualifierCodes": [
+      "publisher-estimate",
+      "jurisdiction-distribution-not-people"
+    ],
+    "allowedSegments": [
+      "year"
+    ]
+  },
+  "restrictions": {
+    "crossReleaseDerivation": false,
+    "causalInference": false,
+    "imputation": false,
+    "genericShrinkage": false,
+    "computeNewIntervals": false,
+    "populationWeighting": false,
+    "exactMoneyByFloat": false
+  },
+  "caveats": [
+    "This official dataset contains published annual population estimates, not exact enumerations or independent person-level samples.",
+    "A distribution of the 52 state-equivalent estimates characterizes jurisdictions rather than the typical US resident; per-person inference is not supported."
+  ]
+}
