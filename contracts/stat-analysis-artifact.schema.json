@@ -88,7 +88,8 @@
         "methodRegistrySha256",
         "requirementsSha256",
         "chartSha256",
-        "chartInputFingerprint"
+        "chartInputFingerprint",
+        "statkitInitSha256"
       ],
       "properties": {
         "methodId": {
@@ -144,6 +145,10 @@
           "pattern": "^[a-f0-9]{64}$"
         },
         "chartInputFingerprint": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "statkitInitSha256": {
           "type": "string",
           "pattern": "^[a-f0-9]{64}$"
         }
