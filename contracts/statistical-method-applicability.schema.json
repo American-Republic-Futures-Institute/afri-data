@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "contracts/statistical-method-applicability.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "type",
+    "publicationAuthorized",
+    "methods"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0.0"
+    },
+    "type": {
+      "const": "ARFI-StatisticalMethodEligibilityRegistry"
+    },
+    "publicationAuthorized": {
+      "const": false
+    },
+    "methods": {
+      "type": "array",
+      "minItems": 7,
+      "maxItems": 7,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "methodId",
+          "chartType",
+          "requires",
+          "supportedFamilies",
+          "minimumPublishedYears",
+          "definition",
+          "reviewStatus",
+          "publicationAuthorized"
+        ],
+        "properties": {
+          "methodId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "chartType": {
+            "enum": [
+              "histogram",
+              "ecdf",
+              "boxplot",
+              "frequency",
+              "scatter",
+              "time-series",
+              "interval"
+            ]
+          },
+          "requires": {
+            "enum": [
+              "numeric-value",
+              "categorical-availability",
+              "numeric-pairs",
+              "multi-year-source-series",
+              "publisher-interval"
+            ]
+          },
+          "supportedFamilies": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 4,
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "population-stock",
+                "published-rate",
+                "administrative-money-flow",
+                "publisher-modeled-prevalence"
+              ]
+            }
+          },
+          "minimumPublishedYears": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20
+          },
+          "definition": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 900
+          },
+          "reviewStatus": {
+            "const": "not_independently_certified"
+          },
+          "publicationAuthorized": {
+            "const": false
+          }
+        }
+      }
+    }
+  }
+}
