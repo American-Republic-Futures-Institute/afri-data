@@ -275,7 +275,8 @@
           "items": {
             "enum": [
               "year",
-              "stateAbbr"
+              "stateAbbr",
+              "fips"
             ]
           }
         }
