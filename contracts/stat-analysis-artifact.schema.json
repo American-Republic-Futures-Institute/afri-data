@@ -67,7 +67,7 @@
       }
     },
     "request": {
-      "type": "object"
+      "$ref": "https://arfinstitute.org/contracts/stat-analysis-request-1.0.0.json"
     },
     "requestSha256": {
       "type": "string",
@@ -155,7 +155,7 @@
       }
     },
     "chart": {
-      "type": "object"
+      "$ref": "https://arfinstitute.org/contracts/stat-chart-preview-1.0.0.json"
     },
     "quality": {
       "type": "object",
@@ -231,7 +231,7 @@
           "maxLength": 1600
         },
         "context": {
-          "type": "object"
+          "$ref": "https://arfinstitute.org/contracts/stat-analysis-request-1.0.0.json#/properties/context"
         },
         "publisherUncertaintyVerified": {
           "const": false
@@ -284,5 +284,6 @@
       "type": "string",
       "pattern": "^[a-f0-9]{64}$"
     }
-  }
+  },
+  "$id": "https://arfinstitute.org/contracts/stat-analysis-artifact-1.0.0.json"
 }
