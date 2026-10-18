@@ -21,14 +21,14 @@ Every artifact binds:
 
 1. \`sourceIdentity\`: caller-declared synthetic fixture ID, SHA-256 of canonical JSON input, row count, canonicalization version; \`releaseId=null\` and \`sourceCommit=null\`. An input digest detects changes but does not authenticate an external source.
 2. \`request\`: immutable in-artifact request, method kind/version/ID and all parameters, exact fields, segment, explicit filters and required context. \`requestSha256\` covers all of it.
-3. \`computation\`: Python runtime version, installed NumPy version, StatKit library version, SHA-256 of \`arfi_stats/core.py\`, SHA-256 of \`arfi_stats/artifacts.py\`, \`stat-method-registry.json\` and \`requirements.txt\`, plus original StatKit chart output SHA-256 and \`inputFingerprint\`.
+3. \`computation\`: Python runtime version, installed NumPy version, StatKit library version, SHA-256 of \`arfi_stats/core.py\`, the exported \`arfi_stats/__init__.py\`, \`arfi_stats/artifacts.py\`, \`stat-method-registry.json\` and \`requirements.txt\`, plus original StatKit chart output SHA-256 and \`inputFingerprint\`.
 4. \`chart\`: full source-neutral output using the existing \`ARFI-StatChartPreview/1.0.0\` contract, not new analysis code. It includes shared histogram bin boundaries and segment counts, ECDF frequencies/cumulative proportions, or boxplot quantiles/outliers, as appropriate. Other existing seven StatKit operations are dispatched via fixed method IDs.
 5. \`quality\`: complete selected-source availability counts (including \`not_available\` and \`no_record\`), segment sample denominators in the original chart, unit of analysis, analyst-declared target and reference population, period, no-estimated-uncertainty status and explicit limitations.
 6. \`authority\`: all public source/publishing/inference/causal/cross-source approvals **false**. \`independentReviewStatus=not-applicable-to-synthetic-fixture\`. A caller cannot set flags to true.
 
 ### Integrity and reproducibility are not source authentication
 
-The artifact checksum prevents undetected accidental modification. Recomputing its result, in an installation with the exact same source-code and numerical dependency versions, detects altered calculations. Nevertheless, an actor controlling both source input and artifact can create a different internally consistent synthetic preview. **This is not cryptographically signed publisher provenance, independent human certification or proof of absence of bias.**
+Artifact creation also rejects installed NumPy versions that disagree with the exact pinned requirements lock. The artifact checksum prevents undetected accidental modification. Recomputing its result, in an installation with the exact same source-code and numerical dependency versions, detects altered calculations. Nevertheless, an actor controlling both source input and artifact can create a different internally consistent synthetic preview. **This is not cryptographically signed publisher provenance, independent human certification or proof of absence of bias.**
 
 If the computing code or dependency lock changes, the prior artifact no longer satisfies this engine's exact-environment replay criterion. It must be reproduced under its original pinned environment or explicitly version-migrated with independent review. No silent version upgrade is accepted.
 
