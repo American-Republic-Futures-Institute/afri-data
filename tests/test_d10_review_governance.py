@@ -10,6 +10,8 @@ import unittest
 from tools.review_governance import (
     ROOT, expected_packet, validate_ledger, verify_github_approval,
 )
+from reviewer_fixture import (reviewer_policy_fixture, protected_branch_fixture,
+                              findings_fixture)
 
 
 class BaselineEvidenceTests(unittest.TestCase):
@@ -67,7 +69,8 @@ class GithubReviewerBoundaryTests(unittest.TestCase):
         self.decision["methodologyStatus"] = "independent_reviewed"
         self.decision["reviewScope"] = {key: "approved" for key in
                                         self.decision["reviewScope"]}
-        self.policy = {"approvedReviewers": ["independent-statistician"]}
+        self.policy = reviewer_policy_fixture()
+        self.decision["reviewFindings"] = findings_fixture()
         self.head = "f" * 40
         packet = expected_packet(self.decision)
         self.raw = json.dumps(packet, sort_keys=True).encode("utf-8")
@@ -80,15 +83,18 @@ class GithubReviewerBoundaryTests(unittest.TestCase):
             "reviewerLogin": "independent-statistician", "reviewId": 1234,
             "submittedAt": "2026-10-18T00:00:00Z",
         }
-        self.pr = {"user": {"login": "release-author"},
+        self.pr = {"user": {"login": "release-author", "type": "User"},
                    "head": {"sha": self.head, "repo": {
                        "full_name": "American-Republic-Futures-Institute/afri-data"}},
                    "base": {"ref": "main"}, "merged": True}
-        self.review = {"id": 1234, "user": {"login": "independent-statistician"},
+        self.review = {"id": 1234, "user": {"login": "independent-statistician",
+                                     "type": "User"},
                        "state": "APPROVED", "commit_id": self.head,
                        "submitted_at": "2026-10-18T00:00:00Z"}
 
     def fetcher(self, route):
+        if route.endswith("/branches/main/protection"):
+            return protected_branch_fixture()
         if route.endswith("/pulls/101"):
             return self.pr
         if "/contents/" in route:

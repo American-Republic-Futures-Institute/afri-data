@@ -255,6 +255,106 @@
     "recordedAt": {
       "type": "string",
       "format": "date-time"
+    },
+    "reviewFindings": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "rightsLicense",
+            "methodology",
+            "temporalInterpretation",
+            "geographicUniverse",
+            "permittedPublicUses",
+            "cautions",
+            "conflictOfInterest"
+          ],
+          "properties": {
+            "rightsLicense": {
+              "type": "string",
+              "minLength": 24,
+              "maxLength": 4000
+            },
+            "methodology": {
+              "type": "string",
+              "minLength": 24,
+              "maxLength": 4000
+            },
+            "temporalInterpretation": {
+              "type": "string",
+              "minLength": 24,
+              "maxLength": 4000
+            },
+            "geographicUniverse": {
+              "type": "string",
+              "minLength": 24,
+              "maxLength": 4000
+            },
+            "permittedPublicUses": {
+              "type": "string",
+              "minLength": 24,
+              "maxLength": 4000
+            },
+            "cautions": {
+              "type": "string",
+              "minLength": 24,
+              "maxLength": 4000
+            },
+            "conflictOfInterest": {
+              "type": "string",
+              "minLength": 24,
+              "maxLength": 4000
+            }
+          }
+        }
+      ]
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "methodologyStatus": {
+            "const": "independent_reviewed"
+          }
+        },
+        "required": [
+          "methodologyStatus"
+        ]
+      },
+      "then": {
+        "required": [
+          "reviewFindings"
+        ],
+        "properties": {
+          "reviewFindings": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "recordKind": {
+            "const": "historical_baseline"
+          }
+        },
+        "required": [
+          "recordKind"
+        ]
+      },
+      "then": {
+        "not": {
+          "required": [
+            "reviewFindings"
+          ]
+        }
+      }
+    }
+  ]
 }

@@ -1,7 +1,19 @@
 {
-  "schemaVersion": "1.0.0",
+  "schemaVersion": "2.0.0",
   "repository": "American-Republic-Futures-Institute/afri-data",
-  "approvedReviewers": [],
   "status": "unconfigured",
-  "note": "No independent domain reviewer has been designated or cryptographically/organizationally qualified. Do not enable independent_reviewed claims until GitHub protected-branch ownership, reviewer eligibility and checks are in place."
+  "approvedReviewers": [],
+  "reviewers": [],
+  "requirements": {
+    "branch": "main",
+    "minimumApprovals": 1,
+    "requireCodeOwnerReview": true,
+    "dismissStaleReviews": true,
+    "requireLastPushApproval": true,
+    "enforceAdministrators": true,
+    "requiredStatusChecks": [
+      "Evidence catalog and integrity"
+    ]
+  },
+  "note": "D-11 fail-closed: no eligible independent reviewer or protected-branch attestation is configured. Never infer approval from owner authorization, GitHub comments, successful CI, or unverified JSON reviewer claims."
 }

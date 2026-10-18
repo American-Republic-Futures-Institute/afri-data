@@ -28,15 +28,18 @@ jobs:
       - name: Refuse removal or modification of approved evidence across pull requests
         if: github.event_name == 'pull_request'
         run: python -m tools.release_transition --base origin/main
+      - name: Validate reviewer policy and time-bounded qualifications
+        run: python -m tools.reviewer_policy
       - name: Verify historical and independent evidence-review provenance
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ARFI_GOVERNANCE_READ_TOKEN: ${{ secrets.ARFI_GOVERNANCE_READ_TOKEN }}
         run: python -m tools.review_governance --online
       - name: Verify published evidence if present
         shell: bash
         run: |
           if test -f publication/index.json; then
-            GITHUB_TOKEN="${{ secrets.GITHUB_TOKEN }}" python tools/validate.py --verify-review-online
+            GITHUB_TOKEN="${{ secrets.GITHUB_TOKEN }}" ARFI_GOVERNANCE_READ_TOKEN="${{ secrets.ARFI_GOVERNANCE_READ_TOKEN }}" python tools/validate.py --verify-review-online
           else
             echo "No approved release on this branch; initial catalog only."
           fi

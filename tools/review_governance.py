@@ -16,6 +16,8 @@ import urllib.request
 from jsonschema import Draft202012Validator, FormatChecker
 
 from tools.release_diff import canonical_bytes
+from tools.reviewer_policy import (validate_reviewer_policy, reviewer_eligible,
+                                   verify_branch_protection, timestamp)
 
 ROOT = Path(__file__).resolve().parents[1]
 REPO = "American-Republic-Futures-Institute/afri-data"
@@ -66,14 +68,20 @@ def expected_path(decision_id: str) -> str:
 
 def expected_packet(decision: dict) -> dict:
     """Packet reviewed at a separate immutable PR head, not a self-signed claim."""
-    return {"contract": "ARFI-ReviewPacket/1.0.0",
+    require(decision.get("methodologyStatus") == "independent_reviewed" and
+            isinstance(decision.get("reviewFindings"), dict),
+            "independently reviewed packet must carry explanatory findings")
+    return {"contract": "ARFI-ReviewPacket/1.1.0",
             "releaseId": decision["releaseId"], "sourceCommit": decision["sourceCommit"],
             "manifestSha256": decision["manifestSha256"],
-            "assetSha256": decision["assetSha256"], "reviewScope": decision["reviewScope"]}
+            "assetSha256": decision["assetSha256"], "reviewScope": decision["reviewScope"],
+            "reviewFindings": decision["reviewFindings"],
+            "disposition": "independent_reviewed"}
 
 
 def _api_fetch(route: str):
-    token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
+    token = (os.environ.get("ARFI_GOVERNANCE_READ_TOKEN") or
+             os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN"))
     require(bool(token), "independent approval requires an authenticated GitHub read token")
     require(route.startswith("/repos/" + REPO + "/") and ".." not in route,
             "unapproved GitHub API route")
@@ -92,6 +100,7 @@ def _api_fetch(route: str):
 
 def verify_github_approval(decision: dict, policy: dict, github_get=None) -> dict:
     """Fail closed on wrong PR head, absent/mismatched packet or current review."""
+    _checked_schema(decision, "review-decision")
     require(decision["methodologyStatus"] == "independent_reviewed"
             and decision["authorization"] == "owner_authorized",
             "only independently reviewed, owner-authorized decisions can be attested")
@@ -101,14 +110,16 @@ def verify_github_approval(decision: dict, policy: dict, github_get=None) -> dic
     evidence = decision.get("reviewEvidence")
     require(isinstance(evidence, dict) and evidence.get("repository") == REPO,
             "independent review evidence is missing")
-    approved = policy.get("approvedReviewers")
-    require(isinstance(approved, list) and bool(approved)
-            and all(isinstance(x, str) and re.fullmatch(r"[a-zA-Z0-9-]{1,39}", x)
-                    for x in approved) and len(set(x.lower() for x in approved)) == len(approved),
-            "designated independent reviewer roster is unconfigured")
+    validate_reviewer_policy(policy)
+    require(isinstance(decision.get("reviewFindings"), dict),
+            "independent review requires explicit method findings")
+    require(all(isinstance(decision["reviewFindings"].get(key), str) and
+                len(decision["reviewFindings"][key]) >= 24 for key in
+                (*REVIEW_FIELDS, "conflictOfInterest")),
+            "independent reviewer findings must justify every certified scope")
     reviewer = evidence["reviewerLogin"].lower()
-    require(reviewer in {x.lower() for x in approved},
-            "reviewer is not a designated independent reviewer")
+    reviewer_eligible(policy, reviewer, evidence["submittedAt"])
+    reviewer_eligible(policy, reviewer, decision["recordedAt"])
     require(COMMIT.fullmatch(evidence["headSha"]) is not None,
             "untrusted review head")
     fetch = github_get or _api_fetch
@@ -119,7 +130,9 @@ def verify_github_approval(decision: dict, policy: dict, github_get=None) -> dic
             and pr.get("head", {}).get("repo", {}).get("full_name") == REPO,
             "stale, forked or substituted GitHub review head")
     owner_login = (pr.get("user") or {}).get("login", "").lower()
-    require(owner_login and owner_login != reviewer, "self-review is not independent")
+    require(owner_login and owner_login != reviewer and
+            (pr.get("user") or {}).get("type") == "User",
+            "self-review or non-human PR author is not independently admissible")
     data = fetch(f"/repos/{REPO}/contents/{evidence['packetPath']}?ref={evidence['headSha']}")
     require(data.get("encoding") == "base64" and isinstance(data.get("content"), str),
             "reviewed packet cannot be authenticated")
@@ -139,11 +152,16 @@ def verify_github_approval(decision: dict, policy: dict, github_get=None) -> dic
                                                       review.get("id", 0)))
     require(latest.get("id") == evidence["reviewId"] and
             latest.get("state") == "APPROVED" and
+            (latest.get("user") or {}).get("type") == "User" and
             latest.get("commit_id") == evidence["headSha"] and
             latest.get("submitted_at") == evidence["submittedAt"],
-            "review dismissed, superseded, missing, unapproved or for a stale head")
+            "review dismissed, superseded, non-human or for a stale head")
+    require(timestamp(decision["recordedAt"]) >= timestamp(evidence["submittedAt"]),
+            "decision recorded before independent human approval")
+    branch = verify_branch_protection(policy, fetch)
     return {"verification": "github_current_independent_approval",
-            "reviewId": latest["id"], "reviewedHeadSha": evidence["headSha"]}
+            "reviewId": latest["id"], "reviewedHeadSha": evidence["headSha"],
+            "protectedBranch": branch["verification"]}
 
 
 def validate_ledger(root: Path, verify_online=False, github_get=None) -> dict:
@@ -154,6 +172,8 @@ def validate_ledger(root: Path, verify_online=False, github_get=None) -> dict:
     """
     index_path = root / "governance/index.json"
     require(index_path.is_file(), "governance ledger missing")
+    policy = read(root / "governance/reviewer-policy.json")
+    roster = validate_reviewer_policy(policy)
     index = read(index_path)
     require(isinstance(index, dict) and set(index) == {"schemaVersion", "decisionPaths"}
             and index["schemaVersion"] == "1.0.0"
@@ -215,11 +235,11 @@ def validate_ledger(root: Path, verify_online=False, github_get=None) -> dict:
                     "historical baseline cannot retroactively certify methodology")
         if decision["methodologyStatus"] == "independent_reviewed":
             require(verify_online, "independent review unverified offline; cannot promote")
-            verify_github_approval(decision, read(root / "governance/reviewer-policy.json"),
-                                   github_get=github_get)
+            verify_github_approval(decision, policy, github_get=github_get)
         else:
-            require(decision["reviewEvidence"] is None,
-                    "unreviewed decision cannot contain an approval claim")
+            require(decision["reviewEvidence"] is None and
+                    decision.get("reviewFindings") is None,
+                    "unreviewed decision cannot contain a review finding or approval claim")
         decisions[did] = decision
         latest[(kind, rid)] = did
     require(set(latest) == set(expected),
@@ -227,7 +247,9 @@ def validate_ledger(root: Path, verify_online=False, github_get=None) -> dict:
     return {"decisions": len(decisions), "releaseIdentities": len(expected),
             "independentlyReviewed": sum(decisions[did]["methodologyStatus"] ==
                                          "independent_reviewed" for did in latest.values()),
-            "reviewVerification": "online" if verify_online else "offline-no-promotions"}
+            "reviewVerification": "online" if verify_online else "offline-no-promotions",
+            "reviewerPolicyStatus": roster["status"],
+            "eligibleCurrentReviewers": roster["activeReviewers"]}
 
 
 if __name__ == "__main__":
