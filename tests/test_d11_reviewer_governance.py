@@ -214,6 +214,14 @@ class PacketAndDecisionTests(unittest.TestCase):
         self.assertEqual(list(Draft202012Validator(schema,format_checker=FormatChecker())
                               .iter_errors(self.decision)),[])
 
+    def test_live_codeowners_failure_blocks_independent_certification(self):
+        def missing_codeowners(path):
+            if path.endswith("/contents/.github/CODEOWNERS?ref=main"):
+                raise PermissionError("GitHub denied CODEOWNERS verification")
+            return self.fetcher(path)
+        with self.assertRaises(PermissionError):
+            verify_github_approval(self.decision, self.policy, missing_codeowners)
+
     def test_changing_justification_or_provenance_invalidates_review(self):
         for mutate in (
             lambda:self.decision["reviewFindings"].update(
