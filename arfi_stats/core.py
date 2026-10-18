@@ -10,10 +10,12 @@ public chart admission are separate system boundaries (STAT-01/STAT-02).
 from __future__ import annotations
 
 from collections import Counter, defaultdict
+from datetime import date
 from hashlib import sha256
 import json
 import math
 import re
+from types import MappingProxyType
 from typing import Any
 
 import numpy as np
@@ -24,7 +26,7 @@ STATUS = frozenset(("available", "not_available", "no_record", "suppressed",
                     "not_applicable", "unknown"))
 CHARTS = frozenset(("histogram", "ecdf", "boxplot", "frequency", "scatter",
                     "time-series", "interval"))
-METHODS = {
+METHODS = MappingProxyType({
     "histogram": "numpy.histogram/1",
     "ecdf": "numpy.unique-cumsum/1",
     "boxplot": "numpy.quantile-linear-tukey/1",
@@ -32,11 +34,12 @@ METHODS = {
     "scatter": "source-paired-points/1",
     "time-series": "source-period-points/1",
     "interval": "publisher-supplied-bounds/1",
-}
+})
 MAX_ROWS = 100_000
 MAX_GROUPS = 64
 MAX_BINS = 64
 MAX_SERIES_POINTS = 100_000
+MAX_CATEGORIES = 500
 NAME = re.compile(r"^[a-zA-Z][a-zA-Z0-9_]{0,79}$")
 PERIOD = re.compile(r"^\d{4}(?:-\d{2}-\d{2})?$")
 
@@ -69,7 +72,10 @@ def text(value: Any, *, max_len: int = 160) -> str:
 
 
 def segment_value(value: Any) -> str:
-    if type(value) in (int, float):
+    if type(value) is int:
+        number(value)
+        return str(value)
+    if type(value) is float:
         return str(number(value))
     return text(value)
 
@@ -303,6 +309,8 @@ def frequency(rows: Any, *, x: str, segment: str | None = None,
         values = [segment_value(row[x]) for row in data
                   if row[availability] == "available"]
         frequencies = Counter(values)
+        require(len(frequencies) <= MAX_CATEGORIES,
+                "category cardinality requires a reviewed grouping strategy")
         n = len(values)
         base["series"].append({
             "label": label, "n": n, "missingness": counts,
@@ -344,7 +352,15 @@ def time_series(rows: Any, *, x: str, y: str, segment: str | None = None,
             require((type(raw) is int and 1000 <= raw <= 9999) or
                     (type(raw) is str and PERIOD.fullmatch(raw) is not None),
                     "period must be an explicit ISO date or four-digit year")
-            points.append({"period": str(raw),
+            period = str(raw)
+            try:
+                if len(period) == 4:
+                    require(1000 <= int(period) <= 9999, "invalid year")
+                else:
+                    date.fromisoformat(period)
+            except ValueError as exc:
+                raise ValueError("ARFI StatKit rejected: invalid ISO source period") from exc
+            points.append({"period": period,
                            "value": number(row[y]) if row[availability] == "available" else None,
                            "availability": row[availability]})
         points.sort(key=lambda z: z["period"])
