@@ -140,6 +140,10 @@ class StatisticalEligibilityTests(unittest.TestCase):
         grouped = request("census", "histogram", years=[2020, 2025],
                           segment="year")
         self.assertEqual(decide(grouped)["decision"], "qualified")
+        incorrectly_split_series = request("census", "time-series",
+                                            years=[2020, 2025], segment="year")
+        self.assertIn("UNSUPPORTED_TEMPORAL_SEGMENTATION",
+                      decide(incorrectly_split_series)["reasonCodes"])
 
     def test_bls_nonuniform_reference_period_must_not_be_normalized_silently(self):
         a = request("bls", "histogram")
@@ -203,7 +207,9 @@ class StatisticalEligibilityTests(unittest.TestCase):
         self.assertIn("CROSS_RELEASE_OPERATION_DENIED", decide(req)["reasonCodes"])
         req = request("census", "histogram")
         req["observationsSha256"] = "f" * 64
-        self.assertIn("IMMUTABLE_SOURCE_IDENTITY_MISMATCH", decide(req)["reasonCodes"])
+        denied_hash = decide(req)
+        self.assertIn("IMMUTABLE_SOURCE_IDENTITY_MISMATCH", denied_hash["reasonCodes"])
+        self.assertFalse(denied_hash["sourceIdentityVerified"])
         req = request("census", "histogram")
         req["sourceCommit"] = "f" * 40
         self.assertIn("IMMUTABLE_SOURCE_IDENTITY_MISMATCH", decide(req)["reasonCodes"])
@@ -263,6 +269,7 @@ class StatisticalEligibilityTests(unittest.TestCase):
                 "catalog/statistics/source-profiles/" + release + ".json",
                 "catalog/statistics/method-applicability.json",
                 "contracts/stat-method-registry.json",
+                "catalog/indicators/state-resident-population.json",
             ]
             for name in paths:
                 dest = root / name
@@ -288,6 +295,19 @@ class StatisticalEligibilityTests(unittest.TestCase):
             profile_path.write_text(json.dumps(p))
             with self.assertRaisesRegex(StatisticalProfileError, "availability"):
                 verify_profile(p, root=root, historical=False)
+
+    def test_statistical_semantics_are_not_redefined_by_signed_file_metadata(self):
+        p = profile("cdc")
+        p["measurement"]["family"] = "published-rate"
+        p["measurement"]["scale"] = "rate"
+        p["measurement"]["samplingDesign"] = "published-unadjusted-labor-survey-estimate"
+        p["measurement"]["publisherModelled"] = False
+        with self.assertRaisesRegex(StatisticalProfileError, "measurement family"):
+            verify_profile(p)
+        p = profile("bls")
+        p["coverage"]["sourcePeriodUniform"] = True
+        with self.assertRaisesRegex(StatisticalProfileError, "nonuniform"):
+            verify_profile(p)
 
     def test_same_request_same_fingerprint_and_no_cross_dataset_effects(self):
         a = request("census", "histogram")
