@@ -36,7 +36,7 @@ jobs:
         shell: bash
         run: |
           if test -f publication/index.json; then
-            python tools/validate.py
+            GITHUB_TOKEN="${{ secrets.GITHUB_TOKEN }}" python tools/validate.py --verify-review-online
           else
             echo "No approved release on this branch; initial catalog only."
           fi
