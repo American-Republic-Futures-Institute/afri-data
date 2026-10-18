@@ -71,8 +71,18 @@ class FoundationTests(unittest.TestCase):
         constant = valid(stat.histogram([{"x": 3, "availability": "available"}] * 10, x="x"))
         self.assertEqual(sum(p["count"] for p in constant["series"][0]["points"]), 10)
         no_data = valid(stat.histogram([{"x": None, "availability": "unknown"}], x="x"))
-        self.assertEqual(no_data["series"], [])
+        self.assertEqual(no_data["series"][0]["n"],0)
+        self.assertEqual(no_data["series"][0]["missingness"]["unknown"],1)
+        self.assertEqual(no_data["series"][0]["points"],[])
         self.assertTrue(any("No available" in x for x in no_data["limitations"]))
+        all_missing = valid(stat.histogram([
+            {"value": None, "group": "East", "availability": "not_available"},
+            {"value": None, "group": "West", "availability": "no_record"}
+        ],x="value",segment="group"))
+        self.assertEqual([x["label"] for x in all_missing["series"]],["East","West"])
+        self.assertEqual(all_missing["selection"]["missingness"]["not_available"],1)
+        self.assertEqual(all_missing["selection"]["missingness"]["no_record"],1)
+        self.assertEqual([x["n"] for x in all_missing["series"]],[0,0])
 
     def test_ecdf_preserves_duplicate_frequency_without_suggesting_population_inference(self):
         m = valid(stat.ecdf(self.records, x="value", segment="region"))
