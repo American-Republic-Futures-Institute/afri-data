@@ -85,3 +85,7 @@ Website repository: https://github.com/American-Republic-Futures-Institute/afri-
 - No automated cross-publisher trust scoring or claim that 501(c)(3) sources are intrinsically impartial.
 - Reviewed data publication and visual website integration are distinct activities.
 - Source materials may have their own reuse requirements; see DATA-RIGHTS.md.
+
+### Evidence release governance (D-10)
+
+The current published evidence has an independent [append-only review ledger](governance/index.json); its five historic entries document **owner authorization only** and **pending independent methodological review**. [D-10 governance and release-diff runbook](docs/D10-REVIEW-LEDGER.md) describes exact source binding, canonical revision reports, contributor/reviewer trust boundaries, and required operator gates. Independent review enrollment has not yet been authorized, so an empty designated-reviewer roster fails closed.
