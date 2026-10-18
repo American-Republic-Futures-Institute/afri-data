@@ -42,6 +42,17 @@ class ImmutableReplayTests(unittest.TestCase):
         self.assertEqual(index_before, index.read_bytes())
         self.assertEqual(initial["manifest"], replay["manifest"])
 
+    def test_historical_reviewer_cautions_survive_legacy_replay(self):
+        stage_generic(self.root)
+        manifest = self.root / "publication/releases/example-release/manifest.json"
+        record = json.loads(manifest.read_text(encoding="utf-8"))
+        record["interpretation"] = "Extended approved domain-review cautions retained verbatim."
+        manifest.write_text(json.dumps(record, sort_keys=True) + "\n", encoding="utf-8")
+        before = manifest.read_bytes()
+        replay = stage_generic(self.root)
+        self.assertTrue(replay.get("alreadyPublished"))
+        self.assertEqual(manifest.read_bytes(), before)
+
     def test_mutated_original_or_projection_never_reuses_published_release_id(self):
         stage_generic(self.root)
         folder = self.root / "publication/releases/example-release"
