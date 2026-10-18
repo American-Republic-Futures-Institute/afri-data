@@ -5,6 +5,7 @@ on:
     branches: [main]
 permissions:
   contents: read
+  pull-requests: read
 jobs:
   validation:
     name: Evidence catalog and integrity
@@ -27,6 +28,10 @@ jobs:
       - name: Refuse removal or modification of approved evidence across pull requests
         if: github.event_name == 'pull_request'
         run: python -m tools.release_transition --base origin/main
+      - name: Verify historical and independent evidence-review provenance
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python -m tools.review_governance --online
       - name: Verify published evidence if present
         shell: bash
         run: |
