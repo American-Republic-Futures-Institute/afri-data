@@ -413,6 +413,8 @@ def main():
         # cross-publisher GEOID reconciliation become an acceptance gate.
         from tools.cdc_county_join import validate_published_county_join
         result.update(validate_published_county_join(ROOT))
+        from tools.review_governance import validate_ledger
+        result.update(validate_ledger(ROOT, verify_online=False))
     print(json.dumps(result, sort_keys=True))
 
 
