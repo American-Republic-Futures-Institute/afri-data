@@ -245,6 +245,10 @@ def histogram(rows: Any, *, x: str, segment: str | None = None,
     observed = [number(row[x]) for _, items, _ in parts for row in items
                 if row[availability] == "available"]
     if not observed:
+        base["axis"] = {"x": x, "y": scale, "sharedBinEdges": True}
+        for label, _, counts in parts:
+            base["series"].append({"label": label, "n": 0,
+                                   "missingness": counts, "points": []})
         base["limitations"].append("No available observations; no bins constructed.")
         return base
     actual_bins = bins
