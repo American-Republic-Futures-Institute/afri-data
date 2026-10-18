@@ -111,6 +111,18 @@ class FoundationTests(unittest.TestCase):
         self.assertEqual(chart["series"][1]["points"][0]["category"], "3")
         self.assertNotIn("mean", chart["algorithm"]["parameters"])
 
+    def test_categories_preserve_type_identity_and_never_merge_numeric_with_text(self):
+        typed = [{"score": 2, "group": 1, "availability": "available"},
+                 {"score": 3, "group": "1", "availability": "available"}]
+        with self.assertRaisesRegex(ValueError, "mixed category types"):
+            stat.histogram(typed, x="score", segment="group")
+        with self.assertRaisesRegex(ValueError, "mixed category types"):
+            stat.boxplot(typed, x="score", segment="group")
+        frequencies = [{"rating": 1, "availability": "available"},
+                       {"rating": "1", "availability": "available"}]
+        with self.assertRaisesRegex(ValueError, "mixed category types"):
+            stat.frequency(frequencies, x="rating")
+
     def test_scatter_is_pairwise_description_not_statistical_association(self):
         rows = [{"population": a, "income": b, "region": c, "availability": "available"}
                 for a, b, c in [(100,20,"A"),(200,30,"A"),(150,35,"B")]]
