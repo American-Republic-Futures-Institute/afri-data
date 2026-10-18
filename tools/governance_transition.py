@@ -1,11 +1,10 @@
 """Append-only review-event and same-dataset release revision transition gate."""
 from __future__ import annotations
 
-import hashlib
 import json
 from pathlib import PurePosixPath
 
-from tools.release_diff import build_changeset, canonical_bytes, verify_changeset
+from tools.release_diff import verify_changeset
 
 
 def reject(ok, message):
@@ -61,7 +60,8 @@ def check_revisions(before_index: dict, after_index: dict,
     Callbacks read bytes from committed Git objects, not mutable working files.
     """
     old = {entry["releaseId"]: entry for entry in before_index["releases"]}
-    additions = sorted(e for e in after_index["releases"] if e["releaseId"] not in old)
+    additions = sorted((e for e in after_index["releases"] if e["releaseId"] not in old), 
+                       key=lambda entry: entry["releaseId"])
     before_m = {rid: load_old_manifest(rid) for rid in old}
     revisions = []
     for entry in additions:
