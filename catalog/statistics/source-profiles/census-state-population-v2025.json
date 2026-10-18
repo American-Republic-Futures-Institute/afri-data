@@ -43,7 +43,8 @@
       "jurisdiction-distribution-not-people"
     ],
     "allowedSegments": [
-      "year"
+      "year",
+      "fips"
     ]
   },
   "restrictions": {
