@@ -78,6 +78,7 @@ class GithubReviewerBoundaryTests(unittest.TestCase):
             "packetPath": "governance/packets/method-review.json",
             "packetSha256": hashlib.sha256(self.raw).hexdigest(),
             "reviewerLogin": "independent-statistician", "reviewId": 1234,
+            "submittedAt": "2026-10-18T00:00:00Z",
         }
         self.pr = {"user": {"login": "release-author"},
                    "head": {"sha": self.head, "repo": {
