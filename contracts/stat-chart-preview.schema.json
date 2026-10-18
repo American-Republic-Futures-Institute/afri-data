@@ -1,0 +1,846 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arfinstitute.org/contracts/stat-chart-preview-1.0.0.json",
+  "title": "ARFI-StatKit unsigned, non-publishable chart data contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "kind",
+    "version",
+    "chartType",
+    "fields",
+    "selection",
+    "algorithm",
+    "inputFingerprint",
+    "series",
+    "limitations",
+    "authority"
+  ],
+  "properties": {
+    "kind": {
+      "const": "ARFI-StatChartPreview/1.0.0"
+    },
+    "version": {
+      "const": "0.1.0"
+    },
+    "chartType": {
+      "enum": [
+        "histogram",
+        "ecdf",
+        "boxplot",
+        "frequency",
+        "scatter",
+        "time-series",
+        "interval"
+      ]
+    },
+    "fields": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "x",
+        "y",
+        "segment",
+        "availability",
+        "unit"
+      ],
+      "properties": {
+        "x": {
+          "type": "string",
+          "pattern": "^[a-zA-Z][a-zA-Z0-9_]{0,79}$"
+        },
+        "y": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-zA-Z][a-zA-Z0-9_]{0,79}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "segment": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-zA-Z][a-zA-Z0-9_]{0,79}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "availability": {
+          "type": "string",
+          "pattern": "^[a-zA-Z][a-zA-Z0-9_]{0,79}$"
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
+      }
+    },
+    "selection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "inputRows",
+        "selectedRows",
+        "filters",
+        "missingness"
+      ],
+      "properties": {
+        "inputRows": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "selectedRows": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "filters": {
+          "type": "object",
+          "maxProperties": 6,
+          "additionalProperties": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 100
+          }
+        },
+        "missingness": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "available",
+            "not_available",
+            "no_record",
+            "suppressed",
+            "not_applicable",
+            "unknown"
+          ],
+          "properties": {
+            "available": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "not_available": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "no_record": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "suppressed": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "not_applicable": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "unknown": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "algorithm": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "methodId",
+        "numpyVersion",
+        "parameters"
+      ],
+      "properties": {
+        "methodId": {
+          "enum": [
+            "numpy.histogram/1",
+            "numpy.unique-cumsum/1",
+            "numpy.quantile-linear-tukey/1",
+            "categorical-count/1",
+            "source-paired-points/1",
+            "source-period-points/1",
+            "publisher-supplied-bounds/1"
+          ]
+        },
+        "numpyVersion": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 30
+        },
+        "parameters": {
+          "type": "object",
+          "maxProperties": 8
+        }
+      }
+    },
+    "inputFingerprint": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "series": {
+      "type": "array",
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "label",
+          "n",
+          "missingness"
+        ],
+        "properties": {
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "n": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "missingness": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "available",
+              "not_available",
+              "no_record",
+              "suppressed",
+              "not_applicable",
+              "unknown"
+            ],
+            "properties": {
+              "available": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "not_available": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "no_record": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "suppressed": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "not_applicable": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "unknown": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          },
+          "points": {
+            "type": "array",
+            "maxItems": 100000,
+            "items": {
+              "type": "object"
+            }
+          },
+          "statistics": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "min",
+                  "max",
+                  "p10",
+                  "q1",
+                  "median",
+                  "q3",
+                  "p90",
+                  "iqr",
+                  "whiskerLow",
+                  "whiskerHigh",
+                  "outliers"
+                ],
+                "properties": {
+                  "min": {
+                    "type": "number"
+                  },
+                  "max": {
+                    "type": "number"
+                  },
+                  "p10": {
+                    "type": "number"
+                  },
+                  "q1": {
+                    "type": "number"
+                  },
+                  "median": {
+                    "type": "number"
+                  },
+                  "q3": {
+                    "type": "number"
+                  },
+                  "p90": {
+                    "type": "number"
+                  },
+                  "iqr": {
+                    "type": "number"
+                  },
+                  "whiskerLow": {
+                    "type": "number"
+                  },
+                  "whiskerHigh": {
+                    "type": "number"
+                  },
+                  "outliers": {
+                    "type": "array",
+                    "maxItems": 100000,
+                    "items": {
+                      "type": "number"
+                    }
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 10,
+      "items": {
+        "type": "string",
+        "minLength": 5,
+        "maxLength": 400
+      }
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceVerified",
+        "publicationAuthorized",
+        "crossSourceAuthorized",
+        "statisticalInferenceAuthorized",
+        "causalInferenceAuthorized"
+      ],
+      "properties": {
+        "sourceVerified": {
+          "const": false
+        },
+        "publicationAuthorized": {
+          "const": false
+        },
+        "crossSourceAuthorized": {
+          "const": false
+        },
+        "statisticalInferenceAuthorized": {
+          "const": false
+        },
+        "causalInferenceAuthorized": {
+          "const": false
+        }
+      }
+    },
+    "axis": {
+      "type": "object",
+      "maxProperties": 8
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "chartType": {
+            "const": "histogram"
+          }
+        },
+        "required": [
+          "chartType"
+        ]
+      },
+      "then": {
+        "properties": {
+          "algorithm": {
+            "properties": {
+              "methodId": {
+                "const": "numpy.histogram/1"
+              }
+            }
+          },
+          "series": {
+            "items": {
+              "allOf": [
+                {
+                  "required": [
+                    "points"
+                  ]
+                },
+                {
+                  "properties": {
+                    "points": {
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "low",
+                          "high",
+                          "count",
+                          "value"
+                        ],
+                        "properties": {
+                          "low": {
+                            "type": "number"
+                          },
+                          "high": {
+                            "type": "number"
+                          },
+                          "count": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "value": {
+                            "type": "number"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "chartType": {
+            "const": "ecdf"
+          }
+        },
+        "required": [
+          "chartType"
+        ]
+      },
+      "then": {
+        "properties": {
+          "algorithm": {
+            "properties": {
+              "methodId": {
+                "const": "numpy.unique-cumsum/1"
+              }
+            }
+          },
+          "series": {
+            "items": {
+              "allOf": [
+                {
+                  "required": [
+                    "points"
+                  ]
+                },
+                {
+                  "properties": {
+                    "points": {
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "x",
+                          "countAtX",
+                          "cumulative"
+                        ],
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "countAtX": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "cumulative": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "chartType": {
+            "const": "boxplot"
+          }
+        },
+        "required": [
+          "chartType"
+        ]
+      },
+      "then": {
+        "properties": {
+          "algorithm": {
+            "properties": {
+              "methodId": {
+                "const": "numpy.quantile-linear-tukey/1"
+              }
+            }
+          },
+          "series": {
+            "items": {
+              "allOf": [
+                {
+                  "required": [
+                    "statistics"
+                  ]
+                },
+                {
+                  "properties": {
+                    "statistics": {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "min",
+                            "max",
+                            "p10",
+                            "q1",
+                            "median",
+                            "q3",
+                            "p90",
+                            "iqr",
+                            "whiskerLow",
+                            "whiskerHigh",
+                            "outliers"
+                          ],
+                          "properties": {
+                            "min": {
+                              "type": "number"
+                            },
+                            "max": {
+                              "type": "number"
+                            },
+                            "p10": {
+                              "type": "number"
+                            },
+                            "q1": {
+                              "type": "number"
+                            },
+                            "median": {
+                              "type": "number"
+                            },
+                            "q3": {
+                              "type": "number"
+                            },
+                            "p90": {
+                              "type": "number"
+                            },
+                            "iqr": {
+                              "type": "number"
+                            },
+                            "whiskerLow": {
+                              "type": "number"
+                            },
+                            "whiskerHigh": {
+                              "type": "number"
+                            },
+                            "outliers": {
+                              "type": "array",
+                              "maxItems": 100000,
+                              "items": {
+                                "type": "number"
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "chartType": {
+            "const": "frequency"
+          }
+        },
+        "required": [
+          "chartType"
+        ]
+      },
+      "then": {
+        "properties": {
+          "algorithm": {
+            "properties": {
+              "methodId": {
+                "const": "categorical-count/1"
+              }
+            }
+          },
+          "series": {
+            "items": {
+              "allOf": [
+                {
+                  "required": [
+                    "points"
+                  ]
+                },
+                {
+                  "properties": {
+                    "points": {
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "category",
+                          "count",
+                          "value"
+                        ],
+                        "properties": {
+                          "category": {
+                            "type": "string"
+                          },
+                          "count": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "value": {
+                            "type": "number"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "chartType": {
+            "const": "scatter"
+          }
+        },
+        "required": [
+          "chartType"
+        ]
+      },
+      "then": {
+        "properties": {
+          "algorithm": {
+            "properties": {
+              "methodId": {
+                "const": "source-paired-points/1"
+              }
+            }
+          },
+          "series": {
+            "items": {
+              "allOf": [
+                {
+                  "required": [
+                    "points"
+                  ]
+                },
+                {
+                  "properties": {
+                    "points": {
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "x",
+                          "y"
+                        ],
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "chartType": {
+            "const": "time-series"
+          }
+        },
+        "required": [
+          "chartType"
+        ]
+      },
+      "then": {
+        "properties": {
+          "algorithm": {
+            "properties": {
+              "methodId": {
+                "const": "source-period-points/1"
+              }
+            }
+          },
+          "series": {
+            "items": {
+              "allOf": [
+                {
+                  "required": [
+                    "points"
+                  ]
+                },
+                {
+                  "properties": {
+                    "points": {
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "period",
+                          "value",
+                          "availability"
+                        ],
+                        "properties": {
+                          "period": {
+                            "type": "string",
+                            "minLength": 4,
+                            "maxLength": 10
+                          },
+                          "value": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          },
+                          "availability": {
+                            "enum": [
+                              "available",
+                              "not_available",
+                              "no_record",
+                              "suppressed",
+                              "not_applicable",
+                              "unknown"
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "chartType": {
+            "const": "interval"
+          }
+        },
+        "required": [
+          "chartType"
+        ]
+      },
+      "then": {
+        "properties": {
+          "algorithm": {
+            "properties": {
+              "methodId": {
+                "const": "publisher-supplied-bounds/1"
+              }
+            }
+          },
+          "series": {
+            "items": {
+              "allOf": [
+                {
+                  "required": [
+                    "points"
+                  ]
+                },
+                {
+                  "properties": {
+                    "points": {
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "category",
+                          "estimate",
+                          "lower",
+                          "upper"
+                        ],
+                        "properties": {
+                          "category": {
+                            "type": "string"
+                          },
+                          "estimate": {
+                            "type": "number"
+                          },
+                          "lower": {
+                            "type": "number"
+                          },
+                          "upper": {
+                            "type": "number"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,126 @@
+{
+  "schemaVersion": "1.0.0",
+  "status": "engineering-preview",
+  "publicationAuthorized": false,
+  "methods": [
+    {
+      "kind": "histogram",
+      "methodId": "numpy.histogram/1",
+      "version": "1.0.0",
+      "implementation": "NumPy 2.3.5 or explicit source-preserving Python grouping",
+      "supportedQuestion": "How are observed numeric values distributed across common bins?",
+      "sampleWeighting": "unsupported",
+      "significanceTesting": "unsupported",
+      "causalInference": "prohibited",
+      "independentReviewStatus": "pending",
+      "publicationAuthorized": false,
+      "flags": [
+        "synthetic-fixtures-only",
+        "no-input-source-authentication",
+        "no-method-certification"
+      ]
+    },
+    {
+      "kind": "ecdf",
+      "methodId": "numpy.unique-cumsum/1",
+      "version": "1.0.0",
+      "implementation": "NumPy 2.3.5 or explicit source-preserving Python grouping",
+      "supportedQuestion": "What share of observed values lies at or below a threshold?",
+      "sampleWeighting": "unsupported",
+      "significanceTesting": "unsupported",
+      "causalInference": "prohibited",
+      "independentReviewStatus": "pending",
+      "publicationAuthorized": false,
+      "flags": [
+        "synthetic-fixtures-only",
+        "no-input-source-authentication",
+        "no-method-certification"
+      ]
+    },
+    {
+      "kind": "boxplot",
+      "methodId": "numpy.quantile-linear-tukey/1",
+      "version": "1.0.0",
+      "implementation": "NumPy 2.3.5 or explicit source-preserving Python grouping",
+      "supportedQuestion": "What are the quantiles, spread and observed outlier candidates?",
+      "sampleWeighting": "unsupported",
+      "significanceTesting": "unsupported",
+      "causalInference": "prohibited",
+      "independentReviewStatus": "pending",
+      "publicationAuthorized": false,
+      "flags": [
+        "synthetic-fixtures-only",
+        "no-input-source-authentication",
+        "no-method-certification"
+      ]
+    },
+    {
+      "kind": "frequency",
+      "methodId": "categorical-count/1",
+      "version": "1.0.0",
+      "implementation": "NumPy 2.3.5 or explicit source-preserving Python grouping",
+      "supportedQuestion": "What are the observed counts/proportions of categorical outcomes?",
+      "sampleWeighting": "unsupported",
+      "significanceTesting": "unsupported",
+      "causalInference": "prohibited",
+      "independentReviewStatus": "pending",
+      "publicationAuthorized": false,
+      "flags": [
+        "synthetic-fixtures-only",
+        "no-input-source-authentication",
+        "no-method-certification"
+      ]
+    },
+    {
+      "kind": "scatter",
+      "methodId": "source-paired-points/1",
+      "version": "1.0.0",
+      "implementation": "NumPy 2.3.5 or explicit source-preserving Python grouping",
+      "supportedQuestion": "What are paired observed numeric values without statistical association claims?",
+      "sampleWeighting": "unsupported",
+      "significanceTesting": "unsupported",
+      "causalInference": "prohibited",
+      "independentReviewStatus": "pending",
+      "publicationAuthorized": false,
+      "flags": [
+        "synthetic-fixtures-only",
+        "no-input-source-authentication",
+        "no-method-certification"
+      ]
+    },
+    {
+      "kind": "time-series",
+      "methodId": "source-period-points/1",
+      "version": "1.0.0",
+      "implementation": "NumPy 2.3.5 or explicit source-preserving Python grouping",
+      "supportedQuestion": "How do original reported values vary over explicit periods, retaining gaps?",
+      "sampleWeighting": "unsupported",
+      "significanceTesting": "unsupported",
+      "causalInference": "prohibited",
+      "independentReviewStatus": "pending",
+      "publicationAuthorized": false,
+      "flags": [
+        "synthetic-fixtures-only",
+        "no-input-source-authentication",
+        "no-method-certification"
+      ]
+    },
+    {
+      "kind": "interval",
+      "methodId": "publisher-supplied-bounds/1",
+      "version": "1.0.0",
+      "implementation": "NumPy 2.3.5 or explicit source-preserving Python grouping",
+      "supportedQuestion": "Which intervals were supplied by the original publisher, without recomputation?",
+      "sampleWeighting": "unsupported",
+      "significanceTesting": "unsupported",
+      "causalInference": "prohibited",
+      "independentReviewStatus": "pending",
+      "publicationAuthorized": false,
+      "flags": [
+        "synthetic-fixtures-only",
+        "no-input-source-authentication",
+        "no-method-certification"
+      ]
+    }
+  ]
+}
