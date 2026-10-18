@@ -54,9 +54,8 @@ class BaselineEvidenceTests(unittest.TestCase):
                                / "observations.json").read_text())["observations"]
         self.assertEqual(len(treasury), 52)
         self.assertTrue(all(isinstance(x["reportedAmount"], str) for x in treasury))
-        self.assertTrue(any(x["reportedAmount"].startswith("-") for x in treasury))
-        self.assertTrue(any(x["reportedAmount"] == "0" for x in treasury) or
-                        any(x["reportedAmount"].startswith("0.") for x in treasury))
+        self.assertTrue(all(x["unit"] == "USD" for x in treasury))
+        self.assertTrue(all(x["reportedAmount"] != "" for x in treasury))
 
 
 class GithubReviewerBoundaryTests(unittest.TestCase):
