@@ -29,5 +29,6 @@
   "auditRef": "https://github.com/American-Republic-Futures-Institute/afri-data/commit/f9e9d3cdcab573d41526d2fb1893860774636c13",
   "recordKind": "historical_baseline",
   "predecessorDecisionId": null,
-  "reviewEvidence": null
+  "reviewEvidence": null,
+  "recordedAt": "2026-10-18T00:29:17Z"
 }
