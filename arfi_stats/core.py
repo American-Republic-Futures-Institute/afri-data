@@ -179,6 +179,15 @@ def model(kind: str, rows: Any, *, x: str, y: str | None = None,
     selected, summary, filters = validate_input(
         rows, columns=columns, segment=segment, availability=availability,
         where=where, unit=unit)
+    # Validate numeric data before canonical hashing: reject NaN/Infinity with
+    # a deterministic typed-input failure, rather than a JSON serialization error.
+    numeric_fields = ((x, y) if kind == "scatter" else (y,) if kind in
+                      ("time-series", "interval") else (x,) if kind in
+                      ("histogram", "ecdf", "boxplot") else ())
+    for row in selected:
+        if row[availability] == "available":
+            for key in numeric_fields:
+                number(row[key])
     measures = (y,) if kind in ("interval", "time-series") else columns
     series = grouped(selected, columns=measures, segment=segment, availability=availability)
     options = params or {}
@@ -388,6 +397,10 @@ def intervals(rows: Any, *, x: str, y: str, lower: str, upper: str,
                                           "intervalLabel": interval_label})
     require(all(lower in row and upper in row for row in selected),
             "publisher interval columns required for every selected record")
+    for row in selected:
+        if row[availability] == "available":
+            for key in (lower, upper):
+                number(row[key])
     # Bind the actual interval inputs to the fingerprint, not only center values.
     base["inputFingerprint"] = digest_input(
         selected, columns=(x, y, lower, upper), segment=segment,
