@@ -16,7 +16,7 @@ from . import boxplot, ecdf, frequency, histogram, intervals, scatter, time_seri
 MAX_BYTES = 16 * 1024 * 1024
 
 
-def read_json(path):
+def read_json(path, *, expected="list"):
     if path == "-":
         raw = sys.stdin.buffer.read(MAX_BYTES + 1)
     else:
@@ -39,8 +39,8 @@ def read_json(path):
         return obj
 
     value = json.loads(raw.decode("utf-8"), parse_constant=nonfinite, object_pairs_hook=pairs)
-    if not isinstance(value, list):
-        raise ValueError("Preview input must be a list of normalized observation objects")
+    if not isinstance(value, list if expected == "list" else dict):
+        raise ValueError("Invalid normalized JSON " + expected + " input")
     return value
 
 
@@ -48,7 +48,7 @@ def run(args):
     rows = read_json(args.input)
     where = None
     if args.where:
-        where = read_json(args.where)
+        where = read_json(args.where, expected="dict")
     common = {"segment": args.segment, "availability": args.availability,
               "where": where}
     if args.chart == "histogram":

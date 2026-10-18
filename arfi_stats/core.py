@@ -364,6 +364,8 @@ def time_series(rows: Any, *, x: str, y: str, segment: str | None = None,
                            "value": number(row[y]) if row[availability] == "available" else None,
                            "availability": row[availability]})
         points.sort(key=lambda z: z["period"])
+        require(len(set(len(z["period"]) for z in points)) <= 1,
+                "mixed temporal resolutions require a reviewed harmonization method")
         require(len(set(z["period"] for z in points)) == len(points),
                 "multiple observations per period require an approved aggregation method")
         base["series"].append({"label": label, "n": counts["available"],

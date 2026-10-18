@@ -91,8 +91,8 @@ class FoundationTests(unittest.TestCase):
         self.assertEqual(stats["median"], 3)
         self.assertEqual(stats["q1"], 2)
         self.assertEqual(stats["q3"], 4)
-        self.assertEqual(stats["p10"], 1.4)
-        self.assertEqual(stats["p90"], 13.6)
+        self.assertAlmostEqual(stats["p10"], 1.4)
+        self.assertAlmostEqual(stats["p90"], 13.6)
         self.assertEqual(stats["outliers"], [20.0])
         self.assertEqual(stats["max"], 20)
         self.assertEqual(box["algorithm"]["parameters"]["whisker"], "tukey-1.5-iqr")
@@ -138,6 +138,10 @@ class FoundationTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "invalid ISO"):
             stat.time_series([{"period": "2025-13-92", "score": 1,
                                "availability": "available"}], x="period", y="score")
+        with self.assertRaisesRegex(ValueError, "mixed temporal"):
+            stat.time_series([{"period":2025,"score":3,"availability":"available"},
+                              {"period":"2025-04-01","score":4,"availability":"available"}],
+                             x="period", y="score")
 
     def test_publisher_interval_display_never_fabricates_uncertainty(self):
         rows = [{"place": "A", "estimate": 4.5, "low95": 3.5, "high95": 5.3,
