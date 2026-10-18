@@ -187,7 +187,10 @@ def model(kind: str, rows: Any, *, x: str, y: str | None = None,
     for row in selected:
         if row[availability] == "available":
             for key in numeric_fields:
+                require(row[key] is not None, "available rows cannot carry null measures")
                 number(row[key])
+            if kind == "frequency":
+                segment_value(row[x])
     measures = (y,) if kind in ("interval", "time-series") else columns
     series = grouped(selected, columns=measures, segment=segment, availability=availability)
     options = params or {}
