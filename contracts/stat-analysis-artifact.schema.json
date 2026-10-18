@@ -1,0 +1,289 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "contracts/stat-analysis-artifact.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "status",
+    "sourceIdentity",
+    "request",
+    "requestSha256",
+    "computation",
+    "chart",
+    "quality",
+    "authority",
+    "artifactSha256"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0.0"
+    },
+    "kind": {
+      "const": "ARFI-StatAnalysisArtifact/1.0.0"
+    },
+    "status": {
+      "const": "synthetic-preview-not-approved"
+    },
+    "sourceIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceClass",
+        "fixtureId",
+        "inputSha256",
+        "inputRowCount",
+        "canonicalization",
+        "releaseId",
+        "sourceCommit"
+      ],
+      "properties": {
+        "sourceClass": {
+          "const": "caller-declared-synthetic"
+        },
+        "fixtureId": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]{2,79}$"
+        },
+        "inputSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "inputRowCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "canonicalization": {
+          "const": "sorted-json-utf8-v1"
+        },
+        "releaseId": {
+          "type": "null"
+        },
+        "sourceCommit": {
+          "type": "null"
+        }
+      }
+    },
+    "request": {
+      "$ref": "https://arfinstitute.org/contracts/stat-analysis-request-1.0.0.json"
+    },
+    "requestSha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "computation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "methodId",
+        "methodVersion",
+        "chartType",
+        "statkitVersion",
+        "pythonVersion",
+        "numpyVersion",
+        "coreSha256",
+        "runnerSha256",
+        "methodRegistrySha256",
+        "requirementsSha256",
+        "chartSha256",
+        "chartInputFingerprint",
+        "statkitInitSha256"
+      ],
+      "properties": {
+        "methodId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "methodVersion": {
+          "const": "1.0.0"
+        },
+        "chartType": {
+          "enum": [
+            "histogram",
+            "ecdf",
+            "boxplot",
+            "frequency",
+            "scatter",
+            "time-series",
+            "interval"
+          ]
+        },
+        "statkitVersion": {
+          "const": "0.1.0"
+        },
+        "pythonVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "numpyVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "coreSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "runnerSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "methodRegistrySha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "requirementsSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "chartSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "chartInputFingerprint": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "statkitInitSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "chart": {
+      "$ref": "https://arfinstitute.org/contracts/stat-chart-preview-1.0.0.json"
+    },
+    "quality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "availableRows",
+        "selectedRows",
+        "inputRows",
+        "missingness",
+        "unitOfAnalysis",
+        "denominator",
+        "context",
+        "publisherUncertaintyVerified",
+        "limitations"
+      ],
+      "properties": {
+        "availableRows": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "selectedRows": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "inputRows": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "missingness": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "available",
+            "not_available",
+            "no_record",
+            "suppressed",
+            "not_applicable",
+            "unknown"
+          ],
+          "properties": {
+            "available": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "not_available": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "no_record": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "suppressed": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "not_applicable": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "unknown": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "unitOfAnalysis": {
+          "const": "synthetic-observation"
+        },
+        "denominator": {
+          "type": "string",
+          "minLength": 12,
+          "maxLength": 1600
+        },
+        "context": {
+          "$ref": "https://arfinstitute.org/contracts/stat-analysis-request-1.0.0.json#/properties/context"
+        },
+        "publisherUncertaintyVerified": {
+          "const": false
+        },
+        "limitations": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 24,
+          "items": {
+            "type": "string",
+            "minLength": 12,
+            "maxLength": 1600
+          }
+        }
+      }
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "publicationAuthorized",
+        "sourceVerified",
+        "statisticalInferenceAuthorized",
+        "crossSourceAuthorized",
+        "causalInferenceAuthorized",
+        "independentReviewStatus"
+      ],
+      "properties": {
+        "publicationAuthorized": {
+          "const": false
+        },
+        "sourceVerified": {
+          "const": false
+        },
+        "statisticalInferenceAuthorized": {
+          "const": false
+        },
+        "crossSourceAuthorized": {
+          "const": false
+        },
+        "causalInferenceAuthorized": {
+          "const": false
+        },
+        "independentReviewStatus": {
+          "const": "not-applicable-to-synthetic-fixture"
+        }
+      }
+    },
+    "artifactSha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  },
+  "$id": "https://arfinstitute.org/contracts/stat-analysis-artifact-1.0.0.json"
+}

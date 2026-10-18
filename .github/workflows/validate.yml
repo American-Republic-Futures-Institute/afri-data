@@ -27,6 +27,20 @@ jobs:
         run: python -m unittest discover -s tests -v
       - name: Validate pinned statistical source profiles and eligibility registry
         run: python -m arfi_stats.eligibility --verify-profiles
+      - name: Deterministic synthetic statistical artifact generation and replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          for kind in histogram ecdf boxplot; do
+            artifact="$RUNNER_TEMP/stat02a-$kind.json"
+            python -m arfi_stats.artifacts produce \
+              --input examples/statkit-synthetic.json \
+              --request "examples/stat02a-$kind-request.json" \
+              --output "$artifact"
+            python -m arfi_stats.artifacts replay \
+              --input examples/statkit-synthetic.json \
+              --artifact "$artifact" > /dev/null
+          done
       - name: Verify candidate BLS dossier source fingerprints
         run: python -m tools.review_pilot_dossier --verify
       - name: Report human review activation blockers

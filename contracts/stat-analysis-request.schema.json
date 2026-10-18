@@ -1,0 +1,289 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "contracts/stat-analysis-request.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "source",
+    "method",
+    "fields",
+    "parameters",
+    "filters",
+    "context",
+    "controls"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0.0"
+    },
+    "kind": {
+      "const": "ARFI-StatSyntheticRequest/1.0.0"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceClass",
+        "fixtureId",
+        "releaseId",
+        "sourceCommit"
+      ],
+      "properties": {
+        "sourceClass": {
+          "const": "caller-declared-synthetic"
+        },
+        "fixtureId": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]{2,79}$"
+        },
+        "releaseId": {
+          "type": "null"
+        },
+        "sourceCommit": {
+          "type": "null"
+        }
+      }
+    },
+    "method": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chartType",
+        "methodId",
+        "version"
+      ],
+      "properties": {
+        "chartType": {
+          "enum": [
+            "histogram",
+            "ecdf",
+            "boxplot",
+            "frequency",
+            "scatter",
+            "time-series",
+            "interval"
+          ]
+        },
+        "methodId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "version": {
+          "const": "1.0.0"
+        }
+      }
+    },
+    "fields": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "x",
+        "y",
+        "segment",
+        "availability",
+        "unit"
+      ],
+      "properties": {
+        "x": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_]{0,79}$"
+        },
+        "y": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^[A-Za-z][A-Za-z0-9_]{0,79}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "segment": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^[A-Za-z][A-Za-z0-9_]{0,79}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "availability": {
+          "const": "availability"
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
+      }
+    },
+    "parameters": {
+      "type": "object",
+      "additionalProperties": false,
+      "maxProperties": 4,
+      "properties": {
+        "bins": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 64
+            },
+            {
+              "enum": [
+                "fd",
+                "auto",
+                "sqrt",
+                "sturges"
+              ]
+            }
+          ]
+        },
+        "scale": {
+          "enum": [
+            "count",
+            "proportion"
+          ]
+        },
+        "xUnit": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "lower": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_]{0,79}$"
+        },
+        "upper": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_]{0,79}$"
+        },
+        "intervalLabel": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        }
+      }
+    },
+    "filters": {
+      "type": "object",
+      "maxProperties": 6,
+      "propertyNames": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_]{0,79}$"
+      },
+      "additionalProperties": {
+        "type": "array",
+        "minItems": 1,
+        "maxItems": 100,
+        "items": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        }
+      }
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "unitOfAnalysis",
+        "targetPopulation",
+        "referencePopulation",
+        "denominator",
+        "timePeriod",
+        "uncertaintyTreatment",
+        "interpretation",
+        "qualifications"
+      ],
+      "properties": {
+        "unitOfAnalysis": {
+          "const": "synthetic-observation"
+        },
+        "targetPopulation": {
+          "type": "string",
+          "minLength": 12,
+          "maxLength": 1600
+        },
+        "referencePopulation": {
+          "type": "string",
+          "minLength": 12,
+          "maxLength": 1600
+        },
+        "denominator": {
+          "type": "string",
+          "minLength": 12,
+          "maxLength": 1600
+        },
+        "timePeriod": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "uncertaintyTreatment": {
+          "const": "none-estimated"
+        },
+        "interpretation": {
+          "type": "string",
+          "minLength": 12,
+          "maxLength": 1600
+        },
+        "qualifications": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 12,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 12,
+            "maxLength": 1600
+          }
+        }
+      }
+    },
+    "controls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "publicationAuthorized",
+        "sourceVerified",
+        "statisticalInferenceAuthorized",
+        "crossSourceAuthorized",
+        "causalInferenceAuthorized"
+      ],
+      "properties": {
+        "publicationAuthorized": {
+          "const": false
+        },
+        "sourceVerified": {
+          "const": false
+        },
+        "statisticalInferenceAuthorized": {
+          "const": false
+        },
+        "crossSourceAuthorized": {
+          "const": false
+        },
+        "causalInferenceAuthorized": {
+          "const": false
+        }
+      }
+    }
+  },
+  "$id": "https://arfinstitute.org/contracts/stat-analysis-request-1.0.0.json"
+}
