@@ -33,6 +33,7 @@ STATES = ("available", "not_available", "no_record",
 FIELD = re.compile(r"^[A-Za-z][A-Za-z0-9_]{0,79}$")
 RUNNER = Path(__file__).resolve()
 CORE = ROOT / "arfi_stats/core.py"
+INIT = ROOT / "arfi_stats/__init__.py"
 REGISTRY = ROOT / "contracts/stat-method-registry.json"
 LOCK = ROOT / "requirements.txt"
 SOURCE_UNVERIFIED = {
@@ -154,6 +155,10 @@ def validate_request(request: Any) -> None:
     # do not exist in the strict synthetic request schema.
     check(request["controls"] == SOURCE_UNVERIFIED,
           "source and publication approval cannot be requested in this contract")
+    lock = LOCK.read_text("utf-8")
+    versions = re.findall(r"(?m)^numpy==([0-9]+(?:\.[0-9]+){2})$", lock)
+    check(len(versions) == 1 and versions[0] == np.__version__,
+          "installed NumPy must match the exact reviewed requirements lock")
     registry = json.loads(REGISTRY.read_text("utf-8"))
     matches = [m for m in registry["methods"]
                if m["kind"] == kind and m["methodId"] == METHODS[kind]]
@@ -206,6 +211,7 @@ def computation_versions(request: dict, chart: dict) -> dict:
         "pythonVersion": platform.python_version(),
         "numpyVersion": np.__version__,
         "coreSha256": file_hash(CORE),
+        "statkitInitSha256": file_hash(INIT),
         "runnerSha256": file_hash(RUNNER),
         "methodRegistrySha256": file_hash(REGISTRY),
         "requirementsSha256": file_hash(LOCK),
