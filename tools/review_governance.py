@@ -95,6 +95,9 @@ def verify_github_approval(decision: dict, policy: dict, github_get=None) -> dic
     require(decision["methodologyStatus"] == "independent_reviewed"
             and decision["authorization"] == "owner_authorized",
             "only independently reviewed, owner-authorized decisions can be attested")
+    require(all(status in ("approved", "approved_with_cautions")
+                for status in decision["reviewScope"].values()),
+            "independent approval must explicitly cover all six decision scopes")
     evidence = decision.get("reviewEvidence")
     require(isinstance(evidence, dict) and evidence.get("repository") == REPO,
             "independent review evidence is missing")
@@ -120,7 +123,7 @@ def verify_github_approval(decision: dict, policy: dict, github_get=None) -> dic
     data = fetch(f"/repos/{REPO}/contents/{evidence['packetPath']}?ref={evidence['headSha']}")
     require(data.get("encoding") == "base64" and isinstance(data.get("content"), str),
             "reviewed packet cannot be authenticated")
-    raw = base64.b64decode(data["content"], validate=False)
+    raw = base64.b64decode("".join(data["content"].split()), validate=True)
     require(len(raw) <= 65536 and hashlib.sha256(raw).hexdigest() == evidence["packetSha256"],
             "reviewed packet fingerprint differs")
     require(json.loads(raw) == expected_packet(decision),
@@ -136,7 +139,8 @@ def verify_github_approval(decision: dict, policy: dict, github_get=None) -> dic
                                                       review.get("id", 0)))
     require(latest.get("id") == evidence["reviewId"] and
             latest.get("state") == "APPROVED" and
-            latest.get("commit_id") == evidence["headSha"],
+            latest.get("commit_id") == evidence["headSha"] and
+            latest.get("submitted_at") == evidence["submittedAt"],
             "review dismissed, superseded, missing, unapproved or for a stale head")
     return {"verification": "github_current_independent_approval",
             "reviewId": latest["id"], "reviewedHeadSha": evidence["headSha"]}
