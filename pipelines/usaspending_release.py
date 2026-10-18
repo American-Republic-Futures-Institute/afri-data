@@ -194,6 +194,14 @@ def stage(root:Path,original:bytes, request:bytes=REQUEST_BYTES)->dict:
                   "revised and place-of-performance is a reporting attribute."),
     )
     excluded=exclusion_report(original)
+    if outcome.get("alreadyPublished"):
+        # No post-processing or manifest write may mutate a verified baseline.
+        return {"releaseId":rid,"records":len(observations),
+                "sourceSha256":sha256(original).hexdigest(),
+                "requestSha256":sha256(request).hexdigest(),
+                "excludedGeographyCount":excluded["unmappedAndTerritoryCount"],
+                "excludedObligationTotalUSD":excluded["excludedObligationTotalUSD"],
+                "review":outcome["diff"],"alreadyPublished":True}
     folder=root/"publication/releases"/rid
     manifest_path=folder/"manifest.json"
     manifest=json.loads(manifest_path.read_text(encoding="utf-8"))

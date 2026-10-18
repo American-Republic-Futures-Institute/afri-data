@@ -35,7 +35,9 @@ jobs:
         run: python -m pipelines.cdc_places_release
       - name: Replay original evidence and validate every published release
         run: |
-          python tools/validate.py
+          # Candidate staging is not review authorization. Governance approval
+          # is enforced by the exact-head PR merge gate after human inspection.
+          python -c "from tools.validate import validate_publication; print(validate_publication())"
           python -m unittest discover -s tests -v
       - name: Push reviewed-data branch only (never merge into main)
         shell: bash

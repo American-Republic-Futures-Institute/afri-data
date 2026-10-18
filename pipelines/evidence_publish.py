@@ -69,6 +69,41 @@ def stage_release(root: Path, *, release_id: str, dataset_id: str,
                   warnings: str, first_year: int | None = None,
                   last_year: int | None = None) -> dict:
     """Writes a proposed release only to root; caller must validate and review."""
+    # A staging replay is not authority to rewrite a published release.
+    # Short-circuit an exact re-fetch *before* any I/O writes to the source tree.
+    existing_manifest_path = root / exact_release_path(release_id, "manifest.json")
+    if existing_manifest_path.exists():
+        previous = json.loads(existing_manifest_path.read_text(encoding="utf-8"))
+        previous_obs_path = existing_manifest_path.parent / "observations.json"
+        if not previous_obs_path.is_file():
+            raise ValueError("Approved release is missing original observations")
+        recorded = json.loads(previous_obs_path.read_text(encoding="utf-8"))
+        incoming_sources = [{
+            "role": role, "url": source_url, "bytes": len(original_bytes),
+            "sha256": hashlib.sha256(original_bytes).hexdigest(),
+            "archiveAsset": role + "Gzip",
+        } for role, source_url, original_bytes in originals]
+        same = (previous.get("releaseId") == release_id
+                and previous.get("datasetId") == dataset_id
+                and previous.get("status") == "published"
+                and previous.get("sourceFiles") == incoming_sources
+                and previous.get("method") == method
+                and previous.get("interpretation", "").startswith(warnings)
+                and previous.get("geography", {}).get("level") == geography
+                and previous.get("geography", {}).get("vintage") == geography_vintage
+                and previous.get("temporalCoverage", {}).get("vintage") == vintage
+                and previous.get("temporalCoverage", {}).get("firstYear") == (first_year or year)
+                and previous.get("temporalCoverage", {}).get("lastYear") == (last_year or year)
+                and recorded.get("datasetId") == dataset_id
+                and recorded.get("indicatorId") == indicator_id
+                and recorded.get("observations") == observations)
+        if not same:
+            raise ValueError("Existing approved release ID cannot be rewritten; stage a fresh versioned ID")
+        review_path = existing_manifest_path.parent / "review.json"
+        existing_review = (json.loads(review_path.read_text(encoding="utf-8"))
+                           if review_path.is_file() else {"reviewRequired": False})
+        return {"manifest": previous, "diff": existing_review, "alreadyPublished": True}
+
     folder = root / exact_release_path(release_id, "manifest.json")
     folder = folder.parent
     folder.mkdir(parents=True, exist_ok=True)

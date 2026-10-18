@@ -39,7 +39,9 @@ jobs:
           echo "RELEASE_ID=$(python -c 'import json; x=json.load(open("/tmp/usaspending-evidence.json"));print(x["releaseId"])')" >> "$GITHUB_ENV"
       - name: Check source archives and replay all published releases
         run: |
-          python -m tools.validate
+          # Candidate staging is not review authorization. Governance approval
+          # is enforced by the exact-head PR merge gate after human inspection.
+          python -c "from tools.validate import validate_publication; print(validate_publication())"
           python -m unittest discover -s tests -v
       - name: Stage evidence on a new human-reviewed branch only
         shell: bash
