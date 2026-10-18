@@ -53,8 +53,9 @@ def field(name: Any) -> str:
 
 
 def number(value: Any) -> float:
-    require(type(value) in (float, int) and math.isfinite(value),
-            "values must be finite numbers, not booleans, infinities or NaN")
+    require(type(value) in (float, int) and abs(value) <= 2**53 - 1 and
+            math.isfinite(value),
+            "values must be finite safe-range numbers, not booleans, infinities or NaN")
     require(abs(value) <= 2**53 - 1,
             "numeric values exceed the safe floating-point integer range")
     return float(value)
@@ -172,7 +173,8 @@ def model(kind: str, rows: Any, *, x: str, y: str | None = None,
     selected, summary, filters = validate_input(
         rows, columns=columns, segment=segment, availability=availability,
         where=where, unit=unit)
-    series = grouped(selected, columns=columns, segment=segment, availability=availability)
+    measures = (y,) if kind in ("interval", "time-series") else columns
+    series = grouped(selected, columns=measures, segment=segment, availability=availability)
     options = params or {}
     base = {
         "kind": CONTRACT, "version": VERSION, "chartType": kind,
@@ -366,6 +368,8 @@ def intervals(rows: Any, *, x: str, y: str, lower: str, upper: str,
                                   availability=availability, where=where, unit=unit,
                                   params={"lower": lower, "upper": upper,
                                           "intervalLabel": interval_label})
+    require(all(lower in row and upper in row for row in selected),
+            "publisher interval columns required for every selected record")
     # Bind the actual interval inputs to the fingerprint, not only center values.
     base["inputFingerprint"] = digest_input(
         selected, columns=(x, y, lower, upper), segment=segment,
