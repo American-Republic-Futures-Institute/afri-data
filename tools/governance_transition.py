@@ -47,12 +47,15 @@ def check_review_transition(prior, proposed, before_blobs, after_blobs):
             "newDecisions": new[len(old):]}
 
 
-def check_changeset_transition(prior_blobs, proposed_blobs):
+def check_changeset_transition(prior_blobs, proposed_blobs, expected_additions=None):
     """After first publication, a certified canonical change report is immutable."""
     for path, sha in prior_blobs.items():
         reject(proposed_blobs.get(path) == sha,
                "previous deterministic change report changed or was deleted: " + path)
     additions = sorted(set(proposed_blobs) - set(prior_blobs))
+    if expected_additions is not None:
+        reject(set(additions) == set(expected_additions),
+               "unreviewed, orphan or missing release-change report")
     for path in proposed_blobs:
         reject(path.startswith("governance/changesets/")
                and len(PurePosixPath(path).parts) == 3 and
