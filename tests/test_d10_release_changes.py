@@ -66,8 +66,10 @@ class DeterministicChangeSetTests(unittest.TestCase):
             verify_changeset(report, self.old_m, self.old_o, self.new_m, self.new_o)
         wrong = copy.deepcopy(self.new_m)
         wrong["datasetId"] = "other-publisher"
+        foreign = copy.deepcopy(self.new_o)
+        foreign["datasetId"] = "other-publisher"
         with self.assertRaisesRegex(ValueError, "cross-source"):
-            build_changeset(self.old_m, self.old_o, wrong, self.new_o)
+            build_changeset(self.old_m, self.old_o, wrong, foreign)
         wrong = copy.deepcopy(self.new_m)
         wrong["geography"]["joinKey"] = "other-id"
         with self.assertRaisesRegex(ValueError, "incompatible geography"):
