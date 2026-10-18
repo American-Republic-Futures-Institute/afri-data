@@ -119,7 +119,7 @@
         "unit": {
           "type": "string",
           "minLength": 1,
-          "maxLength": 300
+          "maxLength": 80
         }
       }
     },
@@ -154,7 +154,7 @@
         "xUnit": {
           "type": "string",
           "minLength": 1,
-          "maxLength": 300
+          "maxLength": 80
         },
         "lower": {
           "type": "string",
@@ -167,7 +167,7 @@
         "intervalLabel": {
           "type": "string",
           "minLength": 1,
-          "maxLength": 300
+          "maxLength": 160
         }
       }
     },
@@ -284,5 +284,6 @@
         }
       }
     }
-  }
+  },
+  "$id": "https://arfinstitute.org/contracts/stat-analysis-request-1.0.0.json"
 }
