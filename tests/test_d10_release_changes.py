@@ -124,6 +124,9 @@ class AppendOnlyGovernanceTests(unittest.TestCase):
                 {"governance/changesets/old--new.json": "modified"})
         with self.assertRaisesRegex(ValueError, "changed or was deleted"):
             check_changeset_transition(old, {})
+        with self.assertRaisesRegex(ValueError, "orphan"):
+            check_changeset_transition(old, {**old,
+                "governance/changesets/forged--next.json": "fake"}, set())
 
     def test_same_dataset_requires_predecessor_and_exact_changeset(self):
         a, observations = pkg("old", [row("01", "-3.00")])
