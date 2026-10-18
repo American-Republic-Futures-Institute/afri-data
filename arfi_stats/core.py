@@ -130,9 +130,12 @@ def validate_input(rows: Any, *, columns: tuple[str, ...], segment: str | None,
             segment_value(row[segment])
         summary[state] += 1
         selected.append(row)
-    require(len({segment_value(row[segment]) for row in selected}) <= MAX_GROUPS
-            if segment is not None else True,
-            "too many visible series")
+    if segment is not None:
+        classes = {type(row[segment]) for row in selected}
+        require(len(classes) <= 1,
+                "mixed category types cannot be merged into one segment identifier")
+        require(len({segment_value(row[segment]) for row in selected}) <= MAX_GROUPS,
+                "too many visible series")
     return selected, summary, filters
 
 
@@ -191,6 +194,11 @@ def model(kind: str, rows: Any, *, x: str, y: str | None = None,
                 number(row[key])
             if kind == "frequency":
                 segment_value(row[x])
+    if kind == "frequency":
+        observed_categories = {type(row[x]) for row in selected
+                               if row[availability] == "available"}
+        require(len(observed_categories) <= 1,
+                "mixed category types cannot share a frequency label")
     measures = (y,) if kind in ("interval", "time-series") else columns
     series = grouped(selected, columns=measures, segment=segment, availability=availability)
     options = params or {}
