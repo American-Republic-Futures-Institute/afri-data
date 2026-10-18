@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "1.0.0",
+  "decisionPaths": [
+    "governance/decisions/census-state-population-v2025-owner-authorization.json",
+    "governance/decisions/bls-laus-state-unemployment-2025-e1625280119b26c3-owner-authorization.json",
+    "governance/decisions/usaspending-fy2025-state-obligations-775e56a13e40db59-owner-authorization.json",
+    "governance/decisions/cdc-places-county-obesity-2025-ec00ab31716eccca-owner-authorization.json",
+    "governance/decisions/census-county-boundaries-2023-20m-479956f6e3cb1573-owner-authorization.json"
+  ]
+}
