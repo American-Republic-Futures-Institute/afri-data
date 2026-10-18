@@ -35,3 +35,7 @@ A 501(c)(3), university or public agency is not inherently neutral. Evaluate met
 ## Data rights
 
 Federal works are frequently public domain under 17 USC 105, with exceptions including third-party content. That does not grant automatic rights to redistribute nonprofit research, state/local collections or commercial aggregations. Code licensing does not apply to third-party evidence unless independently approved.
+
+## D-10 review decisions and release diffs
+
+Publication authorization and independent scientific-method review are separate evidence claims. The five existing releases have explicit historical **owner-authorized** decisions with independent review **pending**; no retroactive certification is asserted. For new decisions, immutable manifest/asset SHA-256 hashes, a prior source commit, append-only decision history, and externally verified GitHub reviewer events are checked separately. The independent reviewer roster is not yet configured. A GitHub merge or a passed CI workflow is not proof of review. See [D-10 operator and reviewer runbook](D10-REVIEW-LEDGER.md).
