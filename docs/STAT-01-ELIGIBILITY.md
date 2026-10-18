@@ -66,7 +66,7 @@ All three decisions have \`publicationAuthorized=false\`, \`crossSourceAuthorize
 
 - \`histogram\`, \`ecdf\`, \`boxplot\`: source-native numeric values and **geographic-unit** distributions only. No exact-money float model, individual-level inference, undocumented weighting, rate inference or automatic Bayesian adjustment.
 - \`frequency\`: normalized availability classes only. No arithmetic on arbitrary categorical values in the current published source profiles. Counting source status is not evidence that the geographical unit performs well.
-- \`time-series\`: source-native year and value columns only, at least two published comparable years, no interpolation, no mixing 11-month and 12-month BLS periods, and no repeated measures silently treated as independent.
+- \`time-series\`: source-native year and value columns only, at least two published comparable years, **explicit source-geography segmentation** (Census requires `segment=fips` so each jurisdiction has one observation per year), no interpolation, no mixing 11-month and 12-month BLS periods, and no repeated measures silently treated as independent.
 - \`interval\`: original publisher interval bounds only, currently supported by CDC PLACES. No significance test is computed.
 - \`scatter\`: registered as a data-agnostic primitive, but **not eligible for any of the four current source profiles** because none contains an independently admitted second numeric variable. W-12 remains necessary for all cross-release joins.
 
