@@ -1,0 +1,235 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Append-only GitHub-authenticated method decision event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "eventId",
+    "action",
+    "releaseId",
+    "candidateSha256",
+    "methodId",
+    "methodVersion",
+    "chartSha256",
+    "observationsSha256",
+    "sourceManifestSha256",
+    "sourceDecisionId",
+    "predecessorEventId",
+    "packetPath",
+    "packetSha256",
+    "reviewEvidence",
+    "reason",
+    "recordedAt"
+  ],
+  "properties": {
+    "contract": {
+      "const": "ARFI-StatMethodEvent/1.0.0"
+    },
+    "eventId": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "maxLength": 160
+    },
+    "action": {
+      "enum": [
+        "approved",
+        "revoked"
+      ]
+    },
+    "releaseId": {
+      "const": "census-state-population-v2025"
+    },
+    "candidateSha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "methodId": {
+      "enum": [
+        "numpy.histogram/1",
+        "numpy.unique-cumsum/1",
+        "numpy.quantile-linear-tukey/1"
+      ]
+    },
+    "methodVersion": {
+      "const": "1.0.0"
+    },
+    "chartSha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "observationsSha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "sourceManifestSha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "sourceDecisionId": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "maxLength": 160
+    },
+    "predecessorEventId": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "maxLength": 160
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "packetPath": {
+      "type": "string",
+      "pattern": "^governance/stat-methods/packets/[a-z0-9-]+\\.json$"
+    },
+    "packetSha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "reviewEvidence": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "repository",
+            "pullRequest",
+            "headSha",
+            "reviewerLogin",
+            "reviewId",
+            "submittedAt"
+          ],
+          "properties": {
+            "repository": {
+              "const": "American-Republic-Futures-Institute/afri-data"
+            },
+            "pullRequest": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "headSha": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{40}$"
+            },
+            "reviewerLogin": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9-]{1,39}$"
+            },
+            "reviewId": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "submittedAt": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\dZ$"
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "reason": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 24,
+          "maxLength": 4000
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "recordedAt": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\dZ$"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "action": {
+            "const": "approved"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "reviewEvidence": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "repository",
+              "pullRequest",
+              "headSha",
+              "reviewerLogin",
+              "reviewId",
+              "submittedAt"
+            ],
+            "properties": {
+              "repository": {
+                "const": "American-Republic-Futures-Institute/afri-data"
+              },
+              "pullRequest": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "headSha": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{40}$"
+              },
+              "reviewerLogin": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9-]{1,39}$"
+              },
+              "reviewId": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "submittedAt": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\dZ$"
+              }
+            }
+          },
+          "reason": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "action": {
+            "const": "revoked"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "reviewEvidence": {
+            "type": "null"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 24
+          },
+          "predecessorEventId": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            "maxLength": 160
+          }
+        }
+      }
+    }
+  ]
+}
