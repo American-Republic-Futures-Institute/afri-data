@@ -1,0 +1,69 @@
+"""Append-only Git transition for method review and immutable analytic releases."""
+from __future__ import annotations
+import argparse
+import json
+from tools.release_transition import git_bytes, git_blobs
+
+
+def require(ok, reason):
+    if not ok:
+        raise ValueError("STAT-02B.2 transition rejected: " + reason)
+
+
+def index(ref, name):
+    return json.loads(git_bytes("show", f"{ref}:{name}"))
+
+
+def check_append_only(before, after, key, old_files, new_files, prefix):
+    require(isinstance(before, dict) and isinstance(after, dict) and
+            before.get("schemaVersion") == after.get("schemaVersion") == "1.0.0",
+            "invalid indexed transition")
+    prior = before.get(key)
+    proposed = after.get(key)
+    require(type(prior) is list and type(proposed) is list and
+            proposed[:len(prior)] == prior, "published history was edited or reordered")
+    for path, sha in old_files.items():
+        require(path in new_files and new_files[path] == sha,
+                "immutable historical blob removed or modified: " + path)
+    registered = proposed
+    for path in new_files:
+        require(path.startswith(prefix), "unregistered file in approved prefix")
+    return registered[len(prior):]
+
+
+def verify_transition(base, head="HEAD"):
+    prior_methods = index(base, "governance/stat-methods/index.json")
+    newer_methods = index(head, "governance/stat-methods/index.json")
+    methods_old = git_blobs(base, "governance/stat-methods/events")
+    methods_new = git_blobs(head, "governance/stat-methods/events")
+    additions = check_append_only(prior_methods, newer_methods, "eventPaths",
+                                  methods_old, methods_new,
+                                  "governance/stat-methods/events/")
+    expected = {"governance/stat-methods/events/" +
+                p.split("/")[-1] for p in additions}
+    require(set(methods_new) - set(methods_old) == expected,
+            "new method decision missing from append-only index")
+    prior_publications = index(base, "publication/analytics/index.json")
+    next_publications = index(head, "publication/analytics/index.json")
+    old = git_blobs(base, "publication/analytics/releases")
+    new = git_blobs(head, "publication/analytics/releases")
+    pub_additions = check_append_only(prior_publications, next_publications,
+                                      "releases", old, new,
+                                      "publication/analytics/releases/")
+    require(all(type(entry) is dict and
+                entry.get("artifactPath") ==
+                "publication/analytics/releases/" + entry.get("releaseId", "") + "/artifact.json"
+                for entry in pub_additions), "new analytic entries need canonical paths")
+    require(set(new) - set(old) ==
+            {entry["artifactPath"] for entry in pub_additions},
+            "unregistered or missing publication artifacts")
+    return {"newMethodEvents": len(additions), "newAnalyticReleases": len(pub_additions),
+            "status": "append-only-history-preserved"}
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--base", default="origin/main")
+    args = parser.parse_args()
+    require(args.base == "origin/main", "only the exact canonical base is admitted")
+    print(json.dumps(verify_transition(args.base), sort_keys=True))
