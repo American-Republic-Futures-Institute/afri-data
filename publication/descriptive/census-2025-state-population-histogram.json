@@ -9,7 +9,7 @@
   "analysisProducer": "American Republic Futures Institute",
   "geography": "50 states, District of Columbia and Puerto Rico",
   "sourceYear": 2025,
-  "sourcePeriod": "July 1, 2025 estimates",
+  "sourcePeriod": "July 1, 2025",
   "sourceCommit": "2a54ab437e083a40ef995d12f4d46366a8eb2963",
   "sourceManifestSha256": "5ea73893a9d343f907979c67ac7fe4d7b85784483ff36df94d6311fc7499c4de",
   "observationsSha256": "e37483bbce3564f8737bc6db132cda90df1402e46237bbf42aaa69bf2b7b994d",
