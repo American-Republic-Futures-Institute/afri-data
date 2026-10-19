@@ -13,7 +13,7 @@ import sys
 from arfi_stats.artifacts import ROOT, hash_json
 from tools.stat_approval import checked, sha_bytes
 from tools.stat_founder import (
-    DECISION, OWNER, RELEASE, candidate, require, source_is_owner_authorized,
+    CONFLICT_PREFIX, DECISION, OWNER, RELEASE, candidate, require, source_is_owner_authorized,
 )
 
 PACKET_PATH = "governance/stat-founder/packets/census-2025-histogram.json"
@@ -129,7 +129,7 @@ def build_packet(disclosure: str):
         "unitOfAnalysis": "state-equivalent-jurisdiction",
         "approvalClass": "founder-reviewed-not-independent",
         "reviewScope": {field: "reviewed-with-cautions" for field in FIELDS},
-        "findings": {**FINDINGS, "conflictOfInterest": statement},
+        "findings": {**FINDINGS, "conflictOfInterest": CONFLICT_PREFIX + statement},
         "limitations": refs["limitations"],
         "reviewerLogin": OWNER,
     }
