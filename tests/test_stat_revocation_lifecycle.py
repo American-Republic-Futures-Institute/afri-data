@@ -12,7 +12,9 @@ from unittest.mock import patch
 
 from arfi_stats.artifacts import hash_json
 from arfi_stats.publication_gate import candidate_from_pilot
-from tools.stat_approval import assemble_approved_artifact, validate_publication
+from tools.stat_approval import (
+    assemble_approved_artifact, current_source_review, validate_publication,
+)
 
 
 class RevocationLifecycleTests(unittest.TestCase):
@@ -73,6 +75,54 @@ class RevocationLifecycleTests(unittest.TestCase):
                     json.dumps(publication_index), encoding="utf-8")
                 with self.assertRaisesRegex(ValueError, "immutable"):
                     validate_publication(root, online=True)
+
+    def test_archived_source_review_is_not_replaced_by_latest_pending_decision(self):
+        candidate = self.candidate
+        with tempfile.TemporaryDirectory() as location:
+            root = Path(location)
+            manifest = root / "publication/releases" / candidate["sourceIdentity"]["releaseId"]
+            manifest.mkdir(parents=True)
+            raw = b'{"source":"fixture-original"}'
+            (manifest / "manifest.json").write_bytes(raw)
+            governance = root / "governance/decisions"
+            governance.mkdir(parents=True)
+            source = {
+                "decisionId": "fixture-independent-source",
+                "releaseId": candidate["sourceIdentity"]["releaseId"],
+                "publicationKind": "indicator",
+                "authorization": "owner_authorized",
+                "methodologyStatus": "independent_reviewed",
+                "reviewEvidence": {"reviewId": 123},
+                "manifestSha256": hashlib.sha256(raw).hexdigest(),
+                "assetSha256": {
+                    "observations": candidate["sourceIdentity"]["observationsSha256"]
+                },
+            }
+            pending = dict(source, decisionId="fixture-withdrawn-source",
+                           methodologyStatus="pending", reviewEvidence=None)
+            for record in (source, pending):
+                (governance / (record["decisionId"] + ".json")).write_text(
+                    json.dumps(record), encoding="utf-8")
+            (root / "governance/index.json").write_text(json.dumps({
+                "decisionPaths": [
+                    "governance/decisions/fixture-independent-source.json",
+                    "governance/decisions/fixture-withdrawn-source.json"
+                ]
+            }), encoding="utf-8")
+            (root / "governance/reviewer-policy.json").write_text("{}",
+                                                                  encoding="utf-8")
+            with patch("tools.stat_approval.validate_ledger"), \
+                 patch("tools.stat_approval.verify_github_approval"):
+                with self.assertRaisesRegex(ValueError,
+                                             "source methodology has not"):
+                    current_source_review(root, candidate)
+                result = current_source_review(
+                    root, candidate,
+                    historical_decision_id="fixture-independent-source")
+                self.assertEqual(result["decisionId"], "fixture-independent-source")
+                with self.assertRaisesRegex(ValueError, "historical"):
+                    current_source_review(root, candidate,
+                                          historical_decision_id="invented-event")
 
     def test_current_method_issuance_cannot_reuse_revoked_history(self):
         from tools.stat_approval import StatisticalApprovalError, verified_method_event
