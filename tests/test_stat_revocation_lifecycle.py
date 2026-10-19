@@ -30,6 +30,7 @@ class RevocationLifecycleTests(unittest.TestCase):
             "action": "approved",
             "candidateSha256": digest,
             "methodId": candidate["methodIdentity"]["methodId"],
+            "sourceDecisionId": "fixture-source-independent",
         }
         revoked = {
             **approved,
@@ -120,7 +121,7 @@ class RevocationLifecycleTests(unittest.TestCase):
                     root, candidate,
                     historical_decision_id="fixture-independent-source")
                 self.assertEqual(result["decisionId"], "fixture-independent-source")
-                with self.assertRaisesRegex(ValueError, "historical"):
+                with self.assertRaisesRegex(ValueError, "archived"):
                     current_source_review(root, candidate,
                                           historical_decision_id="invented-event")
 
