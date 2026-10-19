@@ -55,11 +55,11 @@ class PublishedDistributionTests(unittest.TestCase):
                 lambda r:r.update(sourceYear=2024),
                 lambda r:r.update(observationsSha256="f"*64),
                 lambda r:r["chart"]["fields"].update(unit="USD"),
-                lambda r:r["chart"]["selection"]["missingness"].update(not_available=0),
+                lambda r:r["chart"]["selection"]["missingness"].update(not_available=(r["chart"]["selection"]["missingness"]["not_available"]+1)),
                 lambda r:r["chart"]["authority"].update(publicationAuthorized=True),
             ]
             if kind=="histogram":
-                changes.append(lambda r:r["chart"]["series"][0]["points"][0].update(count=0))
+                changes.append(lambda r:r["chart"]["series"][0]["points"][0].update(count=(r["chart"]["series"][0]["points"][0]["count"]+1)))
             if kind=="ecdf":
                 changes.append(lambda r:r["chart"]["series"][0]["points"][-1].update(cumulative=.8))
             if kind=="boxplot":
