@@ -1,0 +1,195 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arfinstitute.org/contracts/stat-governed-analysis-candidate-1.0.0.json",
+  "title": "STAT-02B unapproved candidate: never a public analytical publication",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "type",
+    "status",
+    "sourceIdentity",
+    "sourcePilot",
+    "pilotSha256",
+    "methodIdentity",
+    "methodApproval",
+    "interpretation",
+    "publicationAuthorized"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0.0"
+    },
+    "type": {
+      "const": "ARFI-GovernedAnalysisCandidate/1.0.0"
+    },
+    "status": {
+      "const": "candidate-unapproved"
+    },
+    "sourceIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "releaseId",
+        "indicatorId",
+        "sourceCommit",
+        "manifestGitBlobSha",
+        "observationsSha256",
+        "sourceRows",
+        "selectedYear",
+        "selectedJurisdictions",
+        "selectedInputSha256",
+        "sourceProfileSha256"
+      ],
+      "properties": {
+        "releaseId": {
+          "const": "census-state-population-v2025"
+        },
+        "indicatorId": {
+          "const": "state-resident-population"
+        },
+        "sourceCommit": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "manifestGitBlobSha": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "observationsSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "sourceRows": {
+          "const": 312
+        },
+        "selectedYear": {
+          "const": 2025
+        },
+        "selectedJurisdictions": {
+          "const": 52
+        },
+        "selectedInputSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "sourceProfileSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "sourcePilot": {
+      "type": "object",
+      "required": [
+        "kind",
+        "status",
+        "authority",
+        "sourceIdentity",
+        "artifactSha256"
+      ],
+      "properties": {
+        "kind": {
+          "const": "ARFI-StatSourcePilot/1.0.0"
+        },
+        "status": {
+          "const": "internal-source-bound-preview-not-publication-approved"
+        },
+        "authority": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "publicationAuthorized",
+            "crossSourceAuthorized",
+            "statisticalInferenceAuthorized",
+            "causalInferenceAuthorized",
+            "sourceIdentityVerified",
+            "independentReviewStatus"
+          ],
+          "properties": {
+            "publicationAuthorized": {
+              "const": false
+            },
+            "crossSourceAuthorized": {
+              "const": false
+            },
+            "statisticalInferenceAuthorized": {
+              "const": false
+            },
+            "causalInferenceAuthorized": {
+              "const": false
+            },
+            "sourceIdentityVerified": {
+              "const": true
+            },
+            "independentReviewStatus": {
+              "const": "not_independently_certified"
+            }
+          }
+        }
+      }
+    },
+    "pilotSha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "methodIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "methodId",
+        "methodVersion",
+        "chartSha256"
+      ],
+      "properties": {
+        "methodId": {
+          "enum": [
+            "numpy.histogram/1",
+            "numpy.unique-cumsum/1",
+            "numpy.quantile-linear-tukey/1"
+          ]
+        },
+        "methodVersion": {
+          "const": "1.0.0"
+        },
+        "chartSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "methodApproval": {
+      "type": "null"
+    },
+    "interpretation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "unitOfAnalysis",
+        "claimClass",
+        "limitations"
+      ],
+      "properties": {
+        "unitOfAnalysis": {
+          "const": "state-equivalent-jurisdiction"
+        },
+        "claimClass": {
+          "const": "descriptive-only"
+        },
+        "limitations": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 20,
+          "items": {
+            "type": "string",
+            "minLength": 12,
+            "maxLength": 1600
+          }
+        }
+      }
+    },
+    "publicationAuthorized": {
+      "const": false
+    }
+  }
+}
