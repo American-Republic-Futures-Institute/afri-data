@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import math
 import json
 from pathlib import Path
 
@@ -55,9 +56,15 @@ def strict_json(path):
         return value
     def finite(token):
         reject("non-finite JSON number " + token)
+    def bounded_float(token):
+        value = float(token)
+        if not math.isfinite(value):
+            reject("JSON number overflows finite range")
+        return value
     try:
         return json.loads(file.read_text("utf-8"),
-                          object_pairs_hook=unique, parse_constant=finite)
+                          object_pairs_hook=unique, parse_constant=finite,
+                          parse_float=bounded_float)
     except (UnicodeError, json.JSONDecodeError, OSError) as exc:
         raise AnalysisPublicationError("STAT-02B malformed JSON") from exc
 
@@ -94,7 +101,12 @@ def check_replay(candidate):
 def decision(candidate, *, reason, source_verified=False):
     # Never return an approval merely from a valid schema or self-declared
     # reviewer. Public output must go through a separate future signer.
-    request_hash = hash_json(candidate)
+    try:
+        request_hash = hash_json(candidate)
+    except (ValueError, TypeError, OverflowError):
+        # An invalid non-JSON input still gets a denial receipt. This hash
+        # is deliberately a fixed failure marker, not evidence identity.
+        request_hash = hashlib.sha256(b"noncanonical-denied-input").hexdigest()
     return {
         "schemaVersion": "1.0.0",
         "type": RESULT,
