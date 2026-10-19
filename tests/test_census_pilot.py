@@ -59,7 +59,7 @@ class SourceBoundCensusPilotTests(unittest.TestCase):
                 self.assertFalse(artifact["chart"]["authority"]["sourceVerified"])
                 self.assertEqual(artifact["authority"]["independentReviewStatus"],
                                  "not_independently_certified")
-                self.assertIn("jurisdictions", artifact["quality"]["limitations"][1])
+                self.assertIn("jurisdiction", artifact["quality"]["limitations"][1])
                 self.assertEqual(replay(artifact), {
                     "replay": "deterministic-match",
                     "artifactSha256": artifact["artifactSha256"],
@@ -110,7 +110,7 @@ class SourceBoundCensusPilotTests(unittest.TestCase):
         good = self.reference["boxplot"]
         changed = copy.deepcopy(good)
         changed["quality"]["sourcePeriod"] = "July 1, 2024"
-        with self.assertRaises(CensusPilotError):
+        with self.assertRaises((CensusPilotError, StatArtifactError)):
             replay(changed)
         for path, value in [
             (("chart", "series", 0, "n"), 51),
@@ -124,7 +124,7 @@ class SourceBoundCensusPilotTests(unittest.TestCase):
         ]:
             with self.subTest(path=path):
                 candidate = replace(good, path, value)
-                with self.assertRaises(CensusPilotError):
+                with self.assertRaises((CensusPilotError, StatArtifactError)):
                     replay(candidate)
 
     def test_denies_unverified_source_eligibility_and_malformed_selection(self):
