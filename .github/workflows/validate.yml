@@ -41,6 +41,15 @@ jobs:
               --input examples/statkit-synthetic.json \
               --artifact "$artifact" > /dev/null
           done
+      - name: Verify source-bound Census internal distribution pilot and replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          for kind in histogram ecdf boxplot; do
+            artifact="$RUNNER_TEMP/stat02a2-census-$kind.json"
+            python -m arfi_stats.census_pilot produce --kind "$kind" --output "$artifact"
+            python -m arfi_stats.census_pilot replay --artifact "$artifact" > /dev/null
+          done
       - name: Verify candidate BLS dossier source fingerprints
         run: python -m tools.review_pilot_dossier --verify
       - name: Report human review activation blockers
