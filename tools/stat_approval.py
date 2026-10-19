@@ -124,11 +124,24 @@ def current_source_review(root, candidate, *, github_get=None):
     return latest
 
 
-def verified_method_event(candidate, source, *, root=ROOT, github_get=None):
+def verified_method_event(candidate, source, *, root=ROOT, github_get=None,
+                          archived_event_id=None):
     """Authenticate separately approved method packet against LIVE GitHub events."""
     root = Path(root)
-    _events, latest = method_events(root)
-    event = latest.get(hash_json(candidate))
+    records, latest = method_events(root)
+    head = latest.get(hash_json(candidate))
+    if archived_event_id is not None:
+        require(head is not None and head["action"] == "revoked" and
+                head["predecessorEventId"] == archived_event_id,
+                "archived approval does not precede the current revocation")
+        matches = [record for record in records
+                   if record["eventId"] == archived_event_id and
+                   record["candidateSha256"] == hash_json(candidate) and
+                   record["action"] == "approved"]
+        require(len(matches) == 1, "historical approval event missing")
+        event = matches[0]
+    else:
+        event = head
     require(event is not None and event["action"] == "approved",
             "method review absent, revoked or superseded")
     checked(event, "stat-method-review-event.schema.json")
@@ -153,10 +166,12 @@ def verified_method_event(candidate, source, *, root=ROOT, github_get=None):
     reviewer = evidence["reviewerLogin"].lower()
     reviewer_eligible(policy, reviewer, evidence["submittedAt"])
     reviewer_eligible(policy, reviewer, event["recordedAt"])
-    # Also enforce current designation (revoked or expired => no new publication).
-    from datetime import datetime, timezone
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    reviewer_eligible(policy, reviewer, now)
+    # Preserve historical proof after reviewer expiration/revocation, but
+    # require current eligibility when issuing a NEW published analysis.
+    if archived_event_id is None:
+        from datetime import datetime, timezone
+        now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        reviewer_eligible(policy, reviewer, now)
     fetch = github_get or _api_fetch
     verify_branch_protection(policy, fetch)
     check_live_codeowners(fetch)
@@ -202,16 +217,8 @@ def verified_method_event(candidate, source, *, root=ROOT, github_get=None):
     return event
 
 
-def authorize(candidate, *, root=ROOT, github_get=None):
-    """Emit only after source + independent method approvals authenticate online."""
-    root = Path(root)
-    # Never use caller-supplied approval fields. This must remain the original
-    # false-authority candidate defined by STAT-02B phase 1.
-    from arfi_stats.publication_gate import check_schema
-    check_schema(candidate)
-    check_replay(candidate)
-    source = current_source_review(root, candidate, github_get=github_get)
-    method = verified_method_event(candidate, source, root=root, github_get=github_get)
+def assemble_approved_artifact(candidate, source_decision_id, method_event_id):
+    """Construct an exact wrapper; callers cannot bypass publication verification."""
     chart = candidate["sourcePilot"]["chart"]
     source_identity = candidate["sourceIdentity"]
     kind = candidate["sourcePilot"]["computation"]["chartType"]
@@ -220,8 +227,8 @@ def authorize(candidate, *, root=ROOT, github_get=None):
         "releaseId": "census-2025-" + kind + "-" + hash_json(candidate)[:16],
         "sourceReleaseId": source_identity["releaseId"],
         "candidateSha256": hash_json(candidate),
-        "methodEventId": method["eventId"],
-        "sourceDecisionId": source["decisionId"],
+        "methodEventId": method_event_id,
+        "sourceDecisionId": source_decision_id,
         "sourceCommit": source_identity["sourceCommit"],
         "observationsSha256": source_identity["observationsSha256"],
         "chartSha256": hash_json(chart),
@@ -243,14 +250,27 @@ def authorize(candidate, *, root=ROOT, github_get=None):
     return artifact
 
 
+def authorize(candidate, *, root=ROOT, github_get=None):
+    """Emit only after source + independent method approvals authenticate online."""
+    root = Path(root)
+    # Never use caller-supplied approval fields. This must remain the original
+    # false-authority candidate defined by STAT-02B phase 1.
+    from arfi_stats.publication_gate import check_schema
+    check_schema(candidate)
+    check_replay(candidate)
+    source = current_source_review(root, candidate, github_get=github_get)
+    method = verified_method_event(candidate, source, root=root, github_get=github_get)
+    return assemble_approved_artifact(candidate, source["decisionId"], method["eventId"])
+
+
 def validate_publication(root=ROOT, *, online=False, github_get=None):
     """Zero releases is allowed; every published release requires live authorization."""
     root = Path(root)
     index = checked(read(root / RELEASE_INDEX), "stat-analytics-index.schema.json")
-    _records, current = method_events(root)
-    # Authenticate *all* active method events before any new release exists;
-    # otherwise a false event could be silently staged ahead of publication.
-    for event in current.values():
+    records, current = method_events(root)
+    # Authenticate *all* approvals, including those later revoked;
+    # otherwise a forged approved+revoked event pair could bypass review.
+    for event in records:
         if event["action"] != "approved":
             continue
         require(online, "method events require independent online verification")
@@ -264,8 +284,12 @@ def validate_publication(root=ROOT, *, online=False, github_get=None):
         require(hash_json(candidate) == event["candidateSha256"],
                 "registered method candidate is not reproducible")
         source = current_source_review(root, candidate, github_get=github_get)
-        verified_method_event(candidate, source, root=root, github_get=github_get)
+        has_revocation = current[event["candidateSha256"]]["action"] == "revoked"
+        verified_method_event(candidate, source, root=root, github_get=github_get,
+                              archived_event_id=event["eventId"] if has_revocation else None)
     ids = set()
+    archived = 0
+    active = 0
     for entry in index["releases"]:
         rid = entry["releaseId"]
         require(rid not in ids, "duplicate analytical release")
@@ -283,15 +307,28 @@ def validate_publication(root=ROOT, *, online=False, github_get=None):
                     k: v for k, v in artifact.items() if k != "releaseSha256"}),
                 "analytical result digest invalid")
         require(online, "published statistical analysis must be reauthorized online")
-        generated = authorize(candidate_from_pilot(artifact["chartType"]),
-                              root=root, github_get=github_get)
+        head = current.get(artifact["candidateSha256"])
+        require(head is not None, "published analysis has no method review history")
+        candidate = candidate_from_pilot(artifact["chartType"])
+        require(hash_json(candidate) == artifact["candidateSha256"],
+                "published candidate is not reproducible")
+        if head["action"] == "revoked":
+            # Original approval was independently verified above; retain
+            # immutable history without treating it as current authority.
+            require(head["predecessorEventId"] == artifact["methodEventId"],
+                    "revocation must identify original published method event")
+            generated = assemble_approved_artifact(
+                candidate, artifact["sourceDecisionId"], artifact["methodEventId"])
+            archived += 1
+        else:
+            generated = authorize(candidate, root=root, github_get=github_get)
+            active += 1
         require(artifact == generated,
-                "analytical result no longer authorized, revoked or reproducible")
-        require(current[artifact["candidateSha256"]]["action"] == "approved",
-                "revoked method is not a currently valid published analysis")
+                "historical analytical release changed or cannot be reproduced")
     return {"schemaVersion": "1.0.0", "registeredAnalytics": len(ids),
-            "publicationAuthorized": bool(ids) and online,
-            "onlineApprovalChecked": online and bool(ids)}
+            "activeAnalytics": active, "revokedAnalytics": archived,
+            "publicationAuthorized": bool(active) and online,
+            "onlineApprovalChecked": online and bool(records)}
 
 
 def main(argv=None):
