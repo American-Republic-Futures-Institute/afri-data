@@ -11,6 +11,10 @@ def require(ok, reason):
 
 
 def index(ref, name):
+    listed = git_bytes("ls-tree", "--name-only", ref, "--", name)
+    if not listed.strip():
+        return {"schemaVersion": "1.0.0",
+                "eventPaths" if name.startswith("governance/") else "releases": []}
     return json.loads(git_bytes("show", f"{ref}:{name}"))
 
 
