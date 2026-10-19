@@ -7,10 +7,11 @@ No approval event or method ledger entry is created by this tool.
 from __future__ import annotations
 
 import argparse
+import base64
 import json
 import sys
 
-from arfi_stats.artifacts import ROOT, hash_json
+from arfi_stats.artifacts import ROOT, hash_json, canonical_bytes
 from tools.stat_approval import checked, sha_bytes
 from tools.stat_founder import (
     CONFLICT_PREFIX, DECISION, OWNER, RELEASE, candidate, require, source_is_owner_authorized,
@@ -140,13 +141,18 @@ def main(argv=None):
     parser = argparse.ArgumentParser(
         description="Generate exact founder Census review packet (NOT authorization)"
     )
-    parser.add_argument("command", choices=("inspect", "packet"))
+    parser.add_argument("command", choices=("inspect", "packet", "chart-fixture"))
     parser.add_argument("--conflict-disclosure", help="Founder's complete, truthful COI statement")
     args = parser.parse_args(argv)
-    if args.command == "inspect" and args.conflict_disclosure:
+    if args.command != "packet" and args.conflict_disclosure:
         parser.error("inspect takes no conflict disclosure")
     if args.command == "packet" and not args.conflict_disclosure:
         parser.error("packet requires an actual founder-provided --conflict-disclosure")
+    if args.command == "chart-fixture":
+        chart = candidate()["sourcePilot"]["chart"]
+        print("STAT_CHART_CANONICAL_BASE64=" +
+              base64.b64encode(canonical_bytes(chart)).decode("ascii"))
+        return 0
     result = evidence() if args.command == "inspect" else build_packet(args.conflict_disclosure)
     sys.stdout.write(json.dumps(result, indent=2, sort_keys=True,
                                 ensure_ascii=False, allow_nan=False) + "\n")
