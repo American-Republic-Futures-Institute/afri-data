@@ -50,6 +50,21 @@ jobs:
             python -m arfi_stats.census_pilot produce --kind "$kind" --output "$artifact"
             python -m arfi_stats.census_pilot replay --artifact "$artifact" > /dev/null
           done
+      - name: Verify STAT-02B rejects unpublished analytical candidates
+        shell: bash
+        run: |
+          set -euo pipefail
+          for kind in histogram ecdf boxplot; do
+            candidate="$RUNNER_TEMP/stat02b-$kind.json"
+            decision="$RUNNER_TEMP/stat02b-$kind-decision.json"
+            python -m arfi_stats.publication_gate candidate --kind "$kind" > "$candidate"
+            if python -m arfi_stats.publication_gate verify --input "$candidate" > "$decision"; then
+              echo "STAT-02B must refuse publication without real independent method review" >&2
+              exit 1
+            else
+              python -c 'import json,sys; v=json.load(open(sys.argv[1])); assert v["decision"]=="denied" and not v["publicationAuthorized"] and v["sourceReplayVerified"]' "$decision"
+            fi
+          done
       - name: Verify candidate BLS dossier source fingerprints
         run: python -m tools.review_pilot_dossier --verify
       - name: Report human review activation blockers
