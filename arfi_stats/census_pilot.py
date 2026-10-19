@@ -47,6 +47,25 @@ def require(condition: bool, message: str) -> None:
         raise CensusPilotError("STAT-02A.2 rejected: " + message)
 
 
+def _validate_rows(rows: list[dict]) -> None:
+    """Never allow malformed records to enter a source-bound computation."""
+    require(type(rows) is list and len(rows) == 52,
+            "exactly 52 source-bound state-equivalent estimates required")
+    fips = [row.get("fips") for row in rows if type(row) is dict]
+    require(len(fips) == 52 and len(set(fips)) == 52 and
+            fips == sorted(fips),
+            "selected state identities must be unique and canonical")
+    require(all(type(row) is dict and set(row) ==
+                {"fips", "year", "value", "availability"} and
+                type(row["fips"]) is str and len(row["fips"]) == 2 and
+                row["fips"].isdigit() and
+                type(row["year"]) is int and row["year"] == YEAR and
+                type(row["value"]) is int and 0 < row["value"] < 2**53 and
+                row["availability"] == "available"
+                for row in rows),
+            "a normalized 2025 published estimate is invalid")
+
+
 def _source():
     """Admit the actual, immutable source; never accept a caller-supplied file."""
     profile = verify_profile(load(PROFILE_PATH), root=ROOT, historical=True)
@@ -94,6 +113,7 @@ def _source():
          "availability": "available"}
         for row in sorted(chosen, key=lambda item: item["fips"])
     ]
+    _validate_rows(normalized)
     return profile, normalized
 
 
@@ -126,6 +146,7 @@ def produce(chart_type: str) -> dict:
     require(type(chart_type) is str and chart_type in CHART_TYPES,
             "method is outside the bounded Census pilot")
     profile, rows = _source()
+    _validate_rows(rows)
     request = _eligibility_request(profile, chart_type)
     decision = evaluate(request)
     check_schema(decision, "contracts/statistical-eligibility-decision.schema.json")
