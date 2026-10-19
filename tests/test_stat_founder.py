@@ -156,8 +156,11 @@ class FounderStatTests(unittest.TestCase):
                         verify_owner_approval(event,root=root,github_get=fake)
             file=root/event["packetPath"]
             file.write_text("{}")
-            with self.assertRaises(FounderReviewDenied):
-                verify_owner_approval(event,root=root,github_get=fetch)
+            with patch("tools.stat_founder.source_is_owner_authorized",
+                       return_value={"decisionId": DECISION,
+                                     "manifestSha256": "a" * 64}):
+                with self.assertRaises(FounderReviewDenied):
+                    verify_owner_approval(event,root=root,github_get=fetch)
 
     def test_revocation_is_append_only_and_disables_publication(self):
         with tempfile.TemporaryDirectory() as tmp:
