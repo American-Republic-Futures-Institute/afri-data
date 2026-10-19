@@ -10,7 +10,7 @@ from unittest.mock import patch
 
 from arfi_stats.artifacts import ROOT, hash_json
 from tools.stat_founder import (
-    verified_utc,
+    verified_utc, CONFLICT_PREFIX,
     DECISION, INDEX, OWNER, REPO, FounderReviewDenied, attestation, candidate,
     events, inspect, issue_release, source_is_owner_authorized,
     validate_owner_registry, verify_owner_approval,
@@ -51,11 +51,11 @@ class FounderStatTests(unittest.TestCase):
             "reviewScope": {k: "reviewed-with-cautions" for k in (
                 "rightsLicense", "methodology", "temporalInterpretation",
                 "geographicUniverse", "permittedPublicUses", "cautions")},
-            "findings": {k: "Review of this source and bounded descriptive method is documented."
+            "findings": {**{k: "Review of this source and bounded descriptive method is documented."
                          for k in ("rightsLicense", "methodology",
                                    "temporalInterpretation", "geographicUniverse",
-                                   "permittedPublicUses", "cautions",
-                                   "conflictOfInterest")},
+                                   "permittedPublicUses", "cautions")},
+                         "conflictOfInterest": CONFLICT_PREFIX + "There are no other interests disclosed in this synthetic test fixture."},
             "limitations": c["interpretation"]["limitations"],
             "reviewerLogin": OWNER,
         }

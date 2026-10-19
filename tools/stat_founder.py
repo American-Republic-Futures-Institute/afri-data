@@ -21,6 +21,12 @@ from tools.review_governance import REPO, _api_fetch, read
 from tools.stat_approval import checked, sha_bytes
 
 OWNER = "jmsbooth"  # Actual connected GitHub account, not an independent reviewer.
+CONFLICT_PREFIX = (
+    "The reviewer is the ARFI founder and sole institutional methodology "
+    "reviewer. This is a founder self-review without an independent evaluator; "
+    "the reviewer has an organizational interest in publishing the Institute's "
+    "analytical outputs. Additional declared interests: "
+)
 RELEASE = "census-state-population-v2025"
 DECISION = "census-state-population-v2025-owner-authorization"
 INDEX = "governance/stat-founder/index.json"
@@ -166,6 +172,7 @@ def verify_owner_approval(approved, *, root=ROOT, github_get=None):
         packet["methodId"] == c["methodIdentity"]["methodId"],
         packet["chartSha256"] == c["methodIdentity"]["chartSha256"],
         packet["limitations"] == c["interpretation"]["limitations"],
+        packet["findings"]["conflictOfInterest"].startswith(CONFLICT_PREFIX),
         all(packet["reviewScope"][key] in ("reviewed", "reviewed-with-cautions")
             for key in REVIEW_FIELDS),
     )), "review packet does not match source, method or limitations")

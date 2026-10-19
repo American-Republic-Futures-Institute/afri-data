@@ -73,6 +73,10 @@ jobs:
         env:
           ARFI_PUSH_BEFORE: ${{ github.event.before }}
         run: python -m tools.stat_transition --base "$ARFI_PUSH_BEFORE"
+      - name: Inspect canonical Census histogram candidate (no approval issued)
+        run: |
+          python -m tools.stat_founder_packet inspect
+          python -m tools.stat_founder_packet chart-fixture
       - name: Verify authenticated statistical publication registry
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
