@@ -28,6 +28,9 @@ RELEASE = "census-state-population-v2025"
 YEAR = 2025
 SCOPE = "internal-source-bound-preview-not-publication-approved"
 CHART_TYPES = ("histogram", "ecdf", "boxplot")
+# Census-state-equivalent scope: 50 states, District of Columbia and Puerto Rico.
+# Assert the entire authorized universe, never just the number of codes.
+STATE_EQUIVALENT_FIPS = frozenset(["01","02","04","05","06","08","09","10","11","12","13","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","44","45","46","47","48","49","50","51","53","54","55","56","72"])
 PROFILE_PATH = ROOT / PROFILES_DIR / (RELEASE + ".json")
 RUNNER = Path(__file__).resolve()
 NO_AUTHORITY = {
@@ -53,8 +56,8 @@ def _validate_rows(rows: list[dict]) -> None:
             "exactly 52 source-bound state-equivalent estimates required")
     fips = [row.get("fips") for row in rows if type(row) is dict]
     require(len(fips) == 52 and len(set(fips)) == 52 and
-            fips == sorted(fips),
-            "selected state identities must be unique and canonical")
+            fips == sorted(fips) and set(fips) == STATE_EQUIVALENT_FIPS,
+            "selected state identities must match the exact 52 jurisdiction universe")
     require(all(type(row) is dict and set(row) ==
                 {"fips", "year", "value", "availability"} and
                 type(row["fips"]) is str and len(row["fips"]) == 2 and
