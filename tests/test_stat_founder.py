@@ -10,6 +10,7 @@ from unittest.mock import patch
 
 from arfi_stats.artifacts import ROOT, hash_json
 from tools.stat_founder import (
+    verified_utc,
     DECISION, INDEX, OWNER, REPO, FounderReviewDenied, attestation, candidate,
     events, inspect, issue_release, source_is_owner_authorized,
     validate_owner_registry, verify_owner_approval,
@@ -162,6 +163,12 @@ class FounderStatTests(unittest.TestCase):
                 with self.assertRaises(FounderReviewDenied):
                     verify_owner_approval(event,root=root,github_get=fetch)
 
+    def test_invalid_calendar_and_future_event_clocks_are_denied(self):
+        for stamp in ("9999-99-99T99:99:99Z", "2099-01-01T00:00:00Z",
+                      "2026-02-30T00:00:00Z"):
+            with self.subTest(stamp=stamp), self.assertRaises(FounderReviewDenied):
+                verified_utc(stamp)
+
     def test_revocation_is_append_only_and_disables_publication(self):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp)
@@ -169,7 +176,7 @@ class FounderStatTests(unittest.TestCase):
             rev={**event,"action":"revoked","eventId":"founder-census-2025-revoked",
                  "predecessorEventId":event["eventId"],
                  "reason":"The methodological review has been withdrawn for this Census release.",
-                 "recordedAt":"2026-10-19T18:00:00Z"}
+                 "recordedAt":"2026-10-19T17:05:00Z"}
             p=root/("governance/stat-founder/events/"+rev["eventId"]+".json")
             p.write_text(json.dumps(rev),encoding="utf8")
             idx=root/INDEX
