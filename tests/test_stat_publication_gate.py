@@ -1,12 +1,14 @@
 """STAT-02B governance gate: no synthetic, forged or self-authorized publication."""
 import copy
+import json
 import unittest
 import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
 from arfi_stats.publication_gate import (
-    candidate_from_pilot, check_schema, evaluate,
+    AnalysisPublicationError, candidate_from_pilot, check_schema, evaluate,
+    strict_json,
 )
 from arfi_stats.artifacts import hash_json
 
@@ -93,6 +95,19 @@ class GovernedStatisticalPublicationTests(unittest.TestCase):
                          ["PROTECTION_OR_REVIEW_UNVERIFIED"])
         self.assertTrue(receipt["sourceReplayVerified"])
         self.assertFalse(receipt["publicationAuthorized"])
+
+    def test_json_overflow_fails_at_input_boundary_without_crash(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "malformed.json"
+            path.write_text('{"poisoned":1e999}', encoding="utf-8")
+            with self.assertRaisesRegex(AnalysisPublicationError, "overflows"):
+                strict_json(path)
+        candidate = copy.deepcopy(self.candidates["histogram"])
+        candidate["injected"] = float("inf")
+        response = evaluate(candidate)
+        self.assertEqual(response["decision"], "denied")
+        self.assertEqual(response["reasonCodes"], ["SCHEMA_REJECTED"])
+        self.assertFalse(response["publicationAuthorized"])
 
     def test_invalid_candidate_does_not_raise_or_become_approved(self):
         for bad in ({}, [], None, {"publicationAuthorized": True}):
