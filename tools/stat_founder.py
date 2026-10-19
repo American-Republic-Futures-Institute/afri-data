@@ -12,6 +12,7 @@ import argparse
 import base64
 import hashlib
 import json
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 from arfi_stats.artifacts import ROOT, hash_json
@@ -52,6 +53,19 @@ def attestation(packet_sha, candidate_sha, head_sha):
         "reviewedHead=" + head_sha,
         "decision=approve-descriptive-publication-only",
     )))
+
+
+def verified_utc(value):
+    """Refuse invalid and future UTC timestamps, including impossible calendar dates."""
+    require(type(value) is str, "event timestamp must be UTC")
+    try:
+        dt = datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ").replace(
+            tzinfo=timezone.utc)
+    except ValueError as exc:
+        raise FounderReviewDenied("invalid calendar UTC event timestamp") from exc
+    require(dt <= datetime.now(timezone.utc) + timedelta(minutes=5),
+            "event timestamp is in the future")
+    return dt
 
 
 def candidate():
@@ -97,6 +111,7 @@ def events(root=ROOT):
                 and not (root / path).is_symlink(),
                 "noncanonical founder review event path")
         record = checked(read(root / path), "stat-founder-method-event.schema.json")
+        verified_utc(record["recordedAt"])
         require(path == PREFIX + "events/" + record["eventId"] + ".json",
                 "founder event identifier or path was replaced")
         if records:
@@ -179,7 +194,7 @@ def verify_owner_approval(approved, *, root=ROOT, github_get=None):
             and comment.get("created_at") == comment.get("updated_at")
             and comment.get("body") == attestation(
                 approved["packetSha256"], digest, approved["packetCommit"])
-            and approved["recordedAt"] >= comment["created_at"],
+            and verified_utc(approved["recordedAt"]) >= verified_utc(comment["created_at"]),
             "founder has not authored an unchanged exact-scope approval")
     return approved
 
