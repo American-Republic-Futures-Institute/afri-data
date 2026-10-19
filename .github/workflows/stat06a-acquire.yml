@@ -1,0 +1,59 @@
+name: STAT-06A acquire official ACS income into candidate branch
+on:
+  push:
+    branches: [feat/stat06a-acs-income-publication]
+    paths:
+      - .github/workflows/stat06a-acquire.yml
+permissions:
+  contents: write
+jobs:
+  official-acquisition:
+    if: github.repository == 'American-Republic-Futures-Institute/afri-data'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Check Census acquisition availability without exposing credentials
+        id: source
+        shell: bash
+        run: |
+          if [ -n "$CENSUS_API_KEY" ]; then
+            echo 'configured=yes' >> "$GITHUB_OUTPUT"
+            echo '::notice::Census source acquisition credential is configured.'
+          else
+            echo 'configured=no' >> "$GITHUB_OUTPUT"
+            echo '::warning::CENSUS_API_KEY not configured; no source values will be generated or published.'
+          fi
+      - name: Install frozen validation dependencies
+        if: steps.source.outputs.configured == 'yes'
+        run: python -m pip install -r requirements.txt
+      - name: Acquire original Census bytes and stage source-reproduced release
+        if: steps.source.outputs.configured == 'yes'
+        run: python -m pipelines.census_acs_release
+      - name: Validate source publication and offline regression suite
+        if: steps.source.outputs.configured == 'yes'
+        run: |
+          python -m tools.validate
+          python -m unittest discover -s tests -v
+      - name: Commit original-source release to same review branch
+        if: steps.source.outputs.configured == 'yes'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add publication/
+          if git diff --cached --quiet; then
+            echo 'No source changes; existing publication already matches.'
+            exit 0
+          fi
+          git commit -m "data(stat06a): stage original verified Census ACS 2024 income release"
+          git push origin HEAD:refs/heads/feat/stat06a-acs-income-publication
