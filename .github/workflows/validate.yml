@@ -50,6 +50,8 @@ jobs:
             python -m arfi_stats.census_pilot produce --kind "$kind" --output "$artifact"
             python -m arfi_stats.census_pilot replay --artifact "$artifact" > /dev/null
           done
+      - name: Verify all STAT-05 geographic cohorts against immutable publisher sources
+        run: python -m tools.stat05_cohorts verify
       - name: Recompute and validate all nine published descriptive distributions
         run: python -m tools.stat04_descriptive verify
       - name: Reproduce published Census descriptive histogram (no independent review claimed)
