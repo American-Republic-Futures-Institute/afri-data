@@ -21,6 +21,22 @@ jobs:
         with:
           python-version: '3.12'
           cache: pip
+      - name: Inspect official public ACS summary file listings (no API key)
+        shell: bash
+        run: |
+          python - <<'PY'
+          from urllib.request import Request,urlopen
+          root='https://www2.census.gov/programs-surveys/acs/summary_file/2024/data/'
+          paths=['','5_year_entire_sf/','5_year_by_state/','5_year_seq_by_state/']
+          for path in paths:
+              try:
+                  with urlopen(Request(root+path,headers={'User-Agent':'ARFI-Research/1.0'}),timeout=20) as page:
+                      raw=page.read(9000).decode('utf8','replace')
+                      print('OFFICIAL_STATIC_PATH',path or '/',page.status,len(raw))
+                      print('LISTING_SNIPPET',raw[0:1800].replace('\\n',' '))
+              except Exception as exc:
+                  print('OFFICIAL_STATIC_UNAVAILABLE',path,type(exc).__name__,str(getattr(exc,'code','')))
+          PY
       - name: Check Census acquisition availability without exposing credentials
         id: source
         shell: bash
