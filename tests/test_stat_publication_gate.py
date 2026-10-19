@@ -1,6 +1,8 @@
 """STAT-02B governance gate: no synthetic, forged or self-authorized publication."""
 import copy
 import unittest
+import tempfile
+from pathlib import Path
 from unittest.mock import patch
 
 from arfi_stats.publication_gate import (
@@ -82,6 +84,15 @@ class GovernedStatisticalPublicationTests(unittest.TestCase):
         self.assertEqual(outcome["reasonCodes"],
                          ["INDEPENDENT_METHOD_APPROVAL_REQUIRED"])
         self.assertFalse(outcome["publicationAuthorized"])
+
+    def test_missing_governance_policy_fails_closed_with_denial_receipt(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            receipt = evaluate(self.candidates["histogram"], root=Path(temporary))
+        self.assertEqual(receipt["decision"], "denied")
+        self.assertEqual(receipt["reasonCodes"],
+                         ["PROTECTION_OR_REVIEW_UNVERIFIED"])
+        self.assertTrue(receipt["sourceReplayVerified"])
+        self.assertFalse(receipt["publicationAuthorized"])
 
     def test_invalid_candidate_does_not_raise_or_become_approved(self):
         for bad in ({}, [], None, {"publicationAuthorized": True}):
