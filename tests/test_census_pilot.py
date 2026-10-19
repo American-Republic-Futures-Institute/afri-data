@@ -139,12 +139,15 @@ class SourceBoundCensusPilotTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 produce("histogram")
         source_profile, rows = _source()
-        for mutation in ("duplicate", "missing", "invalid"):
+        for mutation in ("duplicate", "missing", "invalid", "substituted-fips"):
             candidate = copy.deepcopy(rows)
             if mutation == "duplicate":
                 candidate[1]["fips"] = candidate[0]["fips"]
             elif mutation == "missing":
                 candidate.pop()
+            elif mutation == "substituted-fips":
+                candidate[0]["fips"] = "03"  # Not a state-equivalent FIPS.
+                candidate.sort(key=lambda row: row["fips"])
             else:
                 candidate[0]["value"] = -1
             with self.subTest(mutation=mutation), patch(
