@@ -230,12 +230,11 @@ def validate_owner_registry(*, root=ROOT, github_get=None):
             and type(index["releases"]) is list and len(index["releases"]) <= 100,
             "founder reviewed release index invalid")
     paths = set()
-    if not index["releases"]:
-        require(not events(root),
-                "an event requires separate explicit publication or revocation acceptance")
-        return {"registered": 0, "active": 0,
-                "founderReviewed": False, "independentlyCertified": False}
     status = inspect(root=root, github_get=github_get)
+    if not index["releases"]:
+        return {"registered": 0, "active": 0,
+                "founderReviewed": status["publicationAuthorized"],
+                "independentlyCertified": False}
     active = 0
     for entry in index["releases"]:
         require(type(entry) is dict and
