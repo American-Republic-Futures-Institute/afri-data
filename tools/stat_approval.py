@@ -98,8 +98,9 @@ def method_events(root=ROOT):
     return records, latest
 
 
-def current_source_review(root, candidate, *, github_get=None):
-    """Require distinct independently reviewed source decision, not owner approval."""
+def current_source_review(root, candidate, *, github_get=None,
+                          historical_decision_id=None):
+    """Verify live current source approval, or the exact historic reviewed event."""
     root = Path(root)
     # Validate every published source and historical independent decision first.
     validate_ledger(root, verify_online=True, github_get=github_get)
@@ -110,6 +111,12 @@ def current_source_review(root, candidate, *, github_get=None):
                 d["releaseId"] == rid and d["publicationKind"] == "indicator"]
     require(bool(matching), "no source methodology decision exists")
     latest = matching[-1]
+    if historical_decision_id is not None:
+        historical = [d for d in matching
+                      if d["decisionId"] == historical_decision_id]
+        require(len(historical) == 1,
+                "archived analysis source review event missing")
+        latest = historical[0]
     require(latest["methodologyStatus"] == "independent_reviewed" and
             latest["authorization"] == "owner_authorized" and
             latest["reviewEvidence"] is not None,
@@ -283,8 +290,11 @@ def validate_publication(root=ROOT, *, online=False, github_get=None):
         candidate = candidate_from_pilot(names[event["methodId"]])
         require(hash_json(candidate) == event["candidateSha256"],
                 "registered method candidate is not reproducible")
-        source = current_source_review(root, candidate, github_get=github_get)
         has_revocation = current[event["candidateSha256"]]["action"] == "revoked"
+        source = current_source_review(
+            root, candidate, github_get=github_get,
+            historical_decision_id=event["sourceDecisionId"] if has_revocation
+            else None)
         verified_method_event(candidate, source, root=root, github_get=github_get,
                               archived_event_id=event["eventId"] if has_revocation else None)
     ids = set()
