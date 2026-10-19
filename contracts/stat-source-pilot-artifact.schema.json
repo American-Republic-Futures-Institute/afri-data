@@ -1,0 +1,456 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arfinstitute.org/contracts/stat-source-pilot-artifact-1.0.0.json",
+  "title": "Internal source-verified Census jurisdiction pilot. Not an approved statistical publication.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "status",
+    "sourceIdentity",
+    "analysisRequest",
+    "eligibility",
+    "computation",
+    "chart",
+    "quality",
+    "authority",
+    "artifactSha256"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0.0"
+    },
+    "kind": {
+      "const": "ARFI-StatSourcePilot/1.0.0"
+    },
+    "status": {
+      "const": "internal-source-bound-preview-not-publication-approved"
+    },
+    "sourceIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "releaseId",
+        "indicatorId",
+        "sourceCommit",
+        "manifestGitBlobSha",
+        "observationsSha256",
+        "sourceRows",
+        "selectedYear",
+        "selectedJurisdictions",
+        "selectedInputSha256",
+        "sourceProfileSha256"
+      ],
+      "properties": {
+        "releaseId": {
+          "const": "census-state-population-v2025"
+        },
+        "indicatorId": {
+          "const": "state-resident-population"
+        },
+        "sourceCommit": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "manifestGitBlobSha": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "observationsSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "sourceRows": {
+          "const": 312
+        },
+        "selectedYear": {
+          "const": 2025
+        },
+        "selectedJurisdictions": {
+          "const": 52
+        },
+        "selectedInputSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "sourceProfileSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "analysisRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "releaseId",
+        "methodId",
+        "sourceCommit",
+        "observationsSha256",
+        "intent",
+        "x",
+        "y",
+        "segment",
+        "unitOfAnalysis",
+        "periodYears",
+        "otherReleaseIds",
+        "operations",
+        "acknowledgedQualifiers"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "1.0.0"
+        },
+        "releaseId": {
+          "const": "census-state-population-v2025"
+        },
+        "methodId": {
+          "enum": [
+            "numpy.histogram/1",
+            "numpy.unique-cumsum/1",
+            "numpy.quantile-linear-tukey/1"
+          ]
+        },
+        "sourceCommit": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "observationsSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "intent": {
+          "const": "descriptive-preview"
+        },
+        "x": {
+          "const": "value"
+        },
+        "y": {
+          "type": "null"
+        },
+        "segment": {
+          "type": "null"
+        },
+        "unitOfAnalysis": {
+          "const": "geographic-units"
+        },
+        "periodYears": {
+          "const": [
+            2025
+          ]
+        },
+        "otherReleaseIds": {
+          "const": []
+        },
+        "operations": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "impute",
+            "sampleWeight",
+            "perCapita",
+            "shrinkage",
+            "newInterval",
+            "deriveRate",
+            "excludeSourceBuckets",
+            "requireUniformPeriods"
+          ],
+          "properties": {
+            "impute": {
+              "const": false
+            },
+            "sampleWeight": {
+              "const": false
+            },
+            "perCapita": {
+              "const": false
+            },
+            "shrinkage": {
+              "const": false
+            },
+            "newInterval": {
+              "const": false
+            },
+            "deriveRate": {
+              "const": false
+            },
+            "excludeSourceBuckets": {
+              "const": false
+            },
+            "requireUniformPeriods": {
+              "const": false
+            }
+          }
+        },
+        "acknowledgedQualifiers": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 10,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        }
+      }
+    },
+    "eligibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "type",
+        "releaseId",
+        "methodId",
+        "decision",
+        "reasonCodes",
+        "methodApplicable",
+        "sourceIdentityVerified",
+        "publicationAuthorized",
+        "crossSourceAuthorized",
+        "statisticalInferenceAuthorized",
+        "causalInferenceAuthorized",
+        "reviewStatus",
+        "requestFingerprint"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "1.0.0"
+        },
+        "type": {
+          "const": "ARFI-StatisticalMethodEligibility/1.0.0"
+        },
+        "releaseId": {
+          "const": "census-state-population-v2025"
+        },
+        "methodId": {
+          "enum": [
+            "numpy.histogram/1",
+            "numpy.unique-cumsum/1",
+            "numpy.quantile-linear-tukey/1"
+          ]
+        },
+        "decision": {
+          "const": "qualified"
+        },
+        "reasonCodes": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "uniqueItems": true,
+          "contains": {
+            "const": "UNWEIGHTED_JURISDICTIONS_NOT_RESIDENTS"
+          },
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 180
+          }
+        },
+        "methodApplicable": {
+          "const": true
+        },
+        "sourceIdentityVerified": {
+          "const": true
+        },
+        "publicationAuthorized": {
+          "const": false
+        },
+        "crossSourceAuthorized": {
+          "const": false
+        },
+        "statisticalInferenceAuthorized": {
+          "const": false
+        },
+        "causalInferenceAuthorized": {
+          "const": false
+        },
+        "reviewStatus": {
+          "const": "not_independently_certified"
+        },
+        "requestFingerprint": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "computation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chartType",
+        "methodId",
+        "methodVersion",
+        "statkitVersion",
+        "pythonVersion",
+        "numpyVersion",
+        "coreSha256",
+        "eligibilitySha256",
+        "validatorSha256",
+        "runnerSha256",
+        "requirementsSha256",
+        "methodRegistrySha256",
+        "methodApplicabilitySha256",
+        "chartSha256"
+      ],
+      "properties": {
+        "chartType": {
+          "enum": [
+            "histogram",
+            "ecdf",
+            "boxplot"
+          ]
+        },
+        "methodId": {
+          "enum": [
+            "numpy.histogram/1",
+            "numpy.unique-cumsum/1",
+            "numpy.quantile-linear-tukey/1"
+          ]
+        },
+        "methodVersion": {
+          "const": "1.0.0"
+        },
+        "statkitVersion": {
+          "const": "0.1.0"
+        },
+        "pythonVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "numpyVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "coreSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "eligibilitySha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "validatorSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "runnerSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "requirementsSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "methodRegistrySha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "methodApplicabilitySha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "chartSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "chart": {
+      "$ref": "https://arfinstitute.org/contracts/stat-chart-preview-1.0.0.json"
+    },
+    "quality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "unitOfAnalysis",
+        "targetPopulation",
+        "denominator",
+        "publisherUncertaintyAvailable",
+        "sourcePeriod",
+        "sourceCaveats",
+        "limitations"
+      ],
+      "properties": {
+        "unitOfAnalysis": {
+          "const": "state-equivalent-jurisdiction"
+        },
+        "targetPopulation": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "denominator": {
+          "const": "52 state-equivalent estimates, not individual residents"
+        },
+        "publisherUncertaintyAvailable": {
+          "const": false
+        },
+        "sourcePeriod": {
+          "const": "July 1, 2025"
+        },
+        "sourceCaveats": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          }
+        },
+        "limitations": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 20,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          }
+        }
+      }
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "publicationAuthorized",
+        "crossSourceAuthorized",
+        "statisticalInferenceAuthorized",
+        "causalInferenceAuthorized",
+        "sourceIdentityVerified",
+        "independentReviewStatus"
+      ],
+      "properties": {
+        "publicationAuthorized": {
+          "const": false
+        },
+        "crossSourceAuthorized": {
+          "const": false
+        },
+        "statisticalInferenceAuthorized": {
+          "const": false
+        },
+        "causalInferenceAuthorized": {
+          "const": false
+        },
+        "sourceIdentityVerified": {
+          "const": true
+        },
+        "independentReviewStatus": {
+          "const": "not_independently_certified"
+        }
+      }
+    },
+    "artifactSha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  }
+}
