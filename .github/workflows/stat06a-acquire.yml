@@ -37,6 +37,21 @@ jobs:
               except Exception as exc:
                   print('OFFICIAL_STATIC_UNAVAILABLE',path,type(exc).__name__,str(getattr(exc,'code','')))
           PY
+      - name: Check anonymous official ACS data access (no credentials)
+        shell: bash
+        run: |
+          python - <<'PY'
+          from urllib.request import Request,urlopen
+          from urllib.error import HTTPError,URLError
+          from pipelines.census_acs_release import PUBLIC_URL
+          try:
+              with urlopen(Request(PUBLIC_URL,headers={'Accept':'application/json','User-Agent':'ARFI-Research/1.0'}),timeout=25) as f:
+                  payload=f.read(500000)
+                  print('ACS_ANONYMOUS_ACCESS',f.status,'length',len(payload))
+                  print('ACS_ANONYMOUS_SCHEMA',payload[:140].decode('utf8','replace'))
+          except Exception as e:
+              print('ACS_ANONYMOUS_UNAVAILABLE',type(e).__name__,getattr(e,'code',''))
+          PY
       - name: Check Census acquisition availability without exposing credentials
         id: source
         shell: bash
