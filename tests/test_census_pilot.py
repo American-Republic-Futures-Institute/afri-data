@@ -12,7 +12,7 @@ from jsonschema import Draft202012Validator
 from referencing import Registry, Resource
 
 from arfi_stats import METHODS
-from arfi_stats.artifacts import ROOT, hash_json
+from arfi_stats.artifacts import ROOT, StatArtifactError, hash_json
 from arfi_stats.census_pilot import (
     CHART_TYPES, CensusPilotError, _source, main, produce, replay,
 )
@@ -165,7 +165,7 @@ class SourceBoundCensusPilotTests(unittest.TestCase):
                                    "--output", str(path)]), 0)
             self.assertTrue(path.exists())
             self.assertEqual(main(["replay", "--artifact", str(path)]), 0)
-            with self.assertRaises(FileExistsError):
+            with self.assertRaises(StatArtifactError):
                 main(["produce", "--kind", "ecdf", "--output", str(path)])
         with self.assertRaises(CensusPilotError):
             main(["produce", "--kind", "histogram",
