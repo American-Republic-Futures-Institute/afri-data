@@ -36,6 +36,7 @@ class CensusFounderPacketTests(unittest.TestCase):
         self.assertIn("Freedman-Diaconis", packet["findings"]["methodology"])
         self.assertIn("Puerto Rico", packet["findings"]["geographicUniverse"])
         self.assertIn("July 1, 2025", packet["findings"]["temporalInterpretation"])
+        self.assertIn("ARFI founder and sole institutional", packet["findings"]["conflictOfInterest"])
         self.assertEqual(packet["sourceManifestSha256"],
                          evidence()["sourceManifestSha256"])
 
