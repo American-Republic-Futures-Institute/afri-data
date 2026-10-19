@@ -47,6 +47,17 @@ def verify_transition(base, head="HEAD"):
                 p.split("/")[-1] for p in additions}
     require(set(methods_new) - set(methods_old) == expected,
             "new method decision missing from append-only index")
+    # Packet review is against an exact historical PR HEAD. Once a packet has
+    # appeared in repository history its bytes must be immutable as well.
+    previous_packets = git_blobs(base, "governance/stat-methods/packets")
+    next_packets = git_blobs(head, "governance/stat-methods/packets")
+    for path, sha in previous_packets.items():
+        require(next_packets.get(path) == sha,
+                "reviewed statistical packet modified or removed: " + path)
+    for path in next_packets:
+        require(path.startswith("governance/stat-methods/packets/") and
+                path.endswith(".json") and ".." not in path,
+                "unsafe statistical review packet location")
     prior_publications = index(base, "publication/analytics/index.json")
     next_publications = index(head, "publication/analytics/index.json")
     old = git_blobs(base, "publication/analytics/releases")
