@@ -1,0 +1,193 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Separate authenticated statistical method review packet; not a source-only approval",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "releaseId",
+    "candidateSha256",
+    "methodId",
+    "methodVersion",
+    "chartSha256",
+    "observationsSha256",
+    "sourceManifestSha256",
+    "sourceDecisionId",
+    "unitOfAnalysis",
+    "periodYear",
+    "allowPublicDescription",
+    "crossSourceAuthorized",
+    "statisticalInferenceAuthorized",
+    "causalInferenceAuthorized",
+    "reviewScope",
+    "reviewFindings",
+    "limitations"
+  ],
+  "properties": {
+    "contract": {
+      "const": "ARFI-StatMethodPacket/1.0.0"
+    },
+    "releaseId": {
+      "const": "census-state-population-v2025"
+    },
+    "candidateSha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "methodId": {
+      "enum": [
+        "numpy.histogram/1",
+        "numpy.unique-cumsum/1",
+        "numpy.quantile-linear-tukey/1"
+      ]
+    },
+    "methodVersion": {
+      "const": "1.0.0"
+    },
+    "chartSha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "observationsSha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "sourceManifestSha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "sourceDecisionId": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "maxLength": 160
+    },
+    "unitOfAnalysis": {
+      "const": "state-equivalent-jurisdiction"
+    },
+    "periodYear": {
+      "const": 2025
+    },
+    "allowPublicDescription": {
+      "const": true
+    },
+    "crossSourceAuthorized": {
+      "const": false
+    },
+    "statisticalInferenceAuthorized": {
+      "const": false
+    },
+    "causalInferenceAuthorized": {
+      "const": false
+    },
+    "reviewScope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rightsLicense",
+        "methodology",
+        "temporalInterpretation",
+        "geographicUniverse",
+        "permittedPublicUses",
+        "cautions"
+      ],
+      "properties": {
+        "rightsLicense": {
+          "enum": [
+            "approved",
+            "approved_with_cautions"
+          ]
+        },
+        "methodology": {
+          "enum": [
+            "approved",
+            "approved_with_cautions"
+          ]
+        },
+        "temporalInterpretation": {
+          "enum": [
+            "approved",
+            "approved_with_cautions"
+          ]
+        },
+        "geographicUniverse": {
+          "enum": [
+            "approved",
+            "approved_with_cautions"
+          ]
+        },
+        "permittedPublicUses": {
+          "enum": [
+            "approved",
+            "approved_with_cautions"
+          ]
+        },
+        "cautions": {
+          "enum": [
+            "approved",
+            "approved_with_cautions"
+          ]
+        }
+      }
+    },
+    "reviewFindings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rightsLicense",
+        "methodology",
+        "temporalInterpretation",
+        "geographicUniverse",
+        "permittedPublicUses",
+        "cautions",
+        "conflictOfInterest"
+      ],
+      "properties": {
+        "rightsLicense": {
+          "type": "string",
+          "minLength": 24,
+          "maxLength": 4000
+        },
+        "methodology": {
+          "type": "string",
+          "minLength": 24,
+          "maxLength": 4000
+        },
+        "temporalInterpretation": {
+          "type": "string",
+          "minLength": 24,
+          "maxLength": 4000
+        },
+        "geographicUniverse": {
+          "type": "string",
+          "minLength": 24,
+          "maxLength": 4000
+        },
+        "permittedPublicUses": {
+          "type": "string",
+          "minLength": 24,
+          "maxLength": 4000
+        },
+        "cautions": {
+          "type": "string",
+          "minLength": 24,
+          "maxLength": 4000
+        },
+        "conflictOfInterest": {
+          "type": "string",
+          "minLength": 24,
+          "maxLength": 4000
+        }
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 20,
+      "items": {
+        "type": "string",
+        "minLength": 12,
+        "maxLength": 1600
+      }
+    }
+  }
+}
