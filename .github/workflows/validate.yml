@@ -68,11 +68,23 @@ jobs:
       - name: Enforce immutable statistical review and publication transitions
         if: github.event_name == 'pull_request'
         run: python -m tools.stat_transition --base origin/main
+      - name: Refuse removal of founder or independent statistical history on main pushes
+        if: github.event_name == 'push'
+        env:
+          ARFI_PUSH_BEFORE: ${{ github.event.before }}
+        run: python -m tools.stat_transition --base "$ARFI_PUSH_BEFORE"
       - name: Verify authenticated statistical publication registry
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ARFI_GOVERNANCE_READ_TOKEN: ${{ secrets.ARFI_GOVERNANCE_READ_TOKEN }}
         run: python -m tools.stat_approval verify
+      - name: Verify explicit founder-review provenance and publication registry
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ARFI_GOVERNANCE_READ_TOKEN: ${{ secrets.ARFI_GOVERNANCE_READ_TOKEN }}
+        run: |
+          python -m tools.stat_founder verify
+          python -m tools.stat_founder registry
       - name: Verify candidate BLS dossier source fingerprints
         run: python -m tools.review_pilot_dossier --verify
       - name: Report human review activation blockers

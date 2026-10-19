@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Founder-authenticated method decision: never independent methodology approval",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "eventId",
+    "action",
+    "candidateSha256",
+    "packetPath",
+    "packetSha256",
+    "packetCommit",
+    "approvalPr",
+    "approvalCommentId",
+    "reviewerLogin",
+    "predecessorEventId",
+    "reason",
+    "recordedAt"
+  ],
+  "properties": {
+    "contract": {
+      "const": "ARFI-FounderStatMethodEvent/1.0.0"
+    },
+    "eventId": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "maxLength": 160
+    },
+    "action": {
+      "enum": [
+        "approved",
+        "revoked"
+      ]
+    },
+    "candidateSha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "packetPath": {
+      "type": "string",
+      "pattern": "^governance/stat-founder/packets/[a-z0-9-]+\\.json$"
+    },
+    "packetSha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "packetCommit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "approvalPr": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "approvalCommentId": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "reviewerLogin": {
+      "const": "jmsbooth"
+    },
+    "predecessorEventId": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+          "maxLength": 160
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "reason": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 32,
+          "maxLength": 4000
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "recordedAt": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\dZ$"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "action": {
+            "const": "approved"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "predecessorEventId": {
+            "type": "null"
+          },
+          "reason": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "action": {
+            "const": "revoked"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "predecessorEventId": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            "maxLength": 160
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 32,
+            "maxLength": 4000
+          }
+        }
+      }
+    }
+  ]
+}
