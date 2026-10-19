@@ -40,10 +40,11 @@ The reviewer is ARFI's founder and sole reviewer; therefore the organizational a
 ## Exact production steps after founder supplies the conflicts statement
 
 1. On the current canonical data commit run `python -m tools.stat_founder_packet inspect`. Confirm 2025 and the 52 jurisdictions, source digest and reproduced chart digest.
-2. Run `python -m tools.stat_founder_packet packet --conflict-disclosure '<YOUR TRUTHFUL COMPLETE STATEMENT>' > governance/stat-founder/packets/census-2025-histogram.json`.
-3. Review the method and every source statement. Submit the **packet-only** PR containing this JSON.
-4. Once the PR HEAD is final, compute its exact raw `packetSha256`, candidate hash and HEAD SHA, and personally post **only** the exact `ARFI-FOUNDER-METHOD-APPROVAL/1.0.0` attestation from `tools.stat_founder.attestation` on that PR.
-5. Issue a subsequent authenticated governance event PR and then a **separate** publication PR. Founder review permits descriptive owner-reviewed publication, **never** independent certification.
-6. Only after separate immutable publication and read-only website API acceptance may the Census Distribution Workbench be publicly linked.
+2. Create the packet directory: `mkdir -p governance/stat-founder/packets` (the shell opens redirection files before invoking Python).
+3. Run `python -m tools.stat_founder_packet packet --conflict-disclosure '<YOUR TRUTHFUL COMPLETE STATEMENT>' > governance/stat-founder/packets/census-2025-histogram.json`.
+4. Review the method and every source statement. Submit the **packet-only** PR containing this JSON.
+5. Once the PR HEAD is final, compute its exact raw `packetSha256`, candidate hash and HEAD SHA, and personally post **only** the exact `ARFI-FOUNDER-METHOD-APPROVAL/1.0.0` attestation from `tools.stat_founder.attestation` on that PR.
+6. Issue a subsequent authenticated governance event PR and then a **separate** publication PR. Founder review permits descriptive owner-reviewed publication, **never** independent certification.
+7. Only after separate immutable publication and read-only website API acceptance may the Census Distribution Workbench be publicly linked.
 
 No approval, statistical release or website evidence pin change is included in this preparation dossier.
