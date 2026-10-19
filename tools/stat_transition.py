@@ -2,6 +2,8 @@
 from __future__ import annotations
 import argparse
 import json
+import re
+import subprocess
 from tools.release_transition import git_bytes, git_blobs
 
 
@@ -119,5 +121,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--base", default="origin/main")
     args = parser.parse_args()
-    require(args.base == "origin/main", "only the exact canonical base is admitted")
+    require(args.base == "origin/main" or
+            bool(re.fullmatch(r"[0-9a-f]{40}", args.base)),
+            "only current main or an exact GitHub push-before SHA is admitted")
+    if args.base != "origin/main":
+        ancestor = subprocess.run(("git", "merge-base", "--is-ancestor",
+                                   args.base, "HEAD"), check=False)
+        require(ancestor.returncode == 0,
+                "push predecessor is not an ancestor of the new main commit")
     print(json.dumps(verify_transition(args.base), sort_keys=True))
