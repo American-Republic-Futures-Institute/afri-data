@@ -73,8 +73,8 @@ def source_is_owner_authorized(c, root=ROOT):
             c["sourceIdentity"]["observationsSha256"],
             "published evidence no longer matches the original owner decision")
     require(c["sourceIdentity"]["selectedJurisdictions"] == 52 and
-            c["analysisRequest"]["periodYears"] == [2025] and
-            c["computation"]["methodId"] == "numpy.histogram/1",
+            c["sourcePilot"]["analysisRequest"]["periodYears"] == [2025] and
+            c["sourcePilot"]["computation"]["methodId"] == "numpy.histogram/1",
             "unexpected jurisdiction, year or statistical method")
     return record
 
