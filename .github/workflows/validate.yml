@@ -50,6 +50,8 @@ jobs:
             python -m arfi_stats.census_pilot produce --kind "$kind" --output "$artifact"
             python -m arfi_stats.census_pilot replay --artifact "$artifact" > /dev/null
           done
+      - name: Reproduce published Census descriptive histogram (no independent review claimed)
+        run: python -m tools.verify_census_descriptive
       - name: Verify STAT-02B rejects unpublished analytical candidates
         shell: bash
         run: |
