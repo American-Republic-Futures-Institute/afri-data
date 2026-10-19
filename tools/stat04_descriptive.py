@@ -12,6 +12,7 @@ import json
 from pathlib import Path
 
 from arfi_stats import METHODS, histogram, ecdf, boxplot
+from arfi_stats.eligibility import evaluate
 from arfi_stats.artifacts import ROOT, canonical_bytes, hash_json, schema_check
 from arfi_stats.census_pilot import produce as census_pilot, STATE_EQUIVALENT_FIPS
 from tools.stat_profile_validate import verify_profile, load
@@ -179,6 +180,40 @@ def _cdc():
             "CDC missingness ledger or geography-only Loving County changed")
     return profile, result, manifest_sha, 3143, 0, 187
 
+def verify_method_applicability(profile, kind):
+    """Technical source/method compatibility; not a human publication approval."""
+    req = {
+        "schemaVersion": "1.0.0",
+        "releaseId": profile["identity"]["releaseId"],
+        "methodId": METHODS[kind],
+        "sourceCommit": profile["identity"]["sourceCommit"],
+        "observationsSha256": profile["identity"]["observationsSha256"],
+        "intent": "descriptive-preview",
+        "x": "value", "y": None, "segment": None,
+        "unitOfAnalysis": "geographic-units",
+        "periodYears": [DATASETS[
+            "bls" if profile["measurement"]["family"] == "published-rate" else "cdc"
+        ]["sourceYear"]],
+        "otherReleaseIds": [],
+        "operations": {
+            "impute": False, "sampleWeight": False, "perCapita": False,
+            "shrinkage": False, "newInterval": False, "deriveRate": False,
+            "excludeSourceBuckets": False, "requireUniformPeriods": False,
+        },
+        "acknowledgedQualifiers": list(profile["coverage"]["qualifierCodes"]),
+    }
+    decision = evaluate(req, historical=True)
+    require(decision["decision"] in ("qualified", "permitted") and
+            decision["methodApplicable"] is True and
+            decision["sourceIdentityVerified"] is True and
+            decision["reviewStatus"] == "not_independently_certified" and
+            all(decision[x] is False for x in (
+                "publicationAuthorized", "statisticalInferenceAuthorized",
+                "causalInferenceAuthorized", "crossSourceAuthorized"
+            )), "source/method is ineligible under existing applicability registry")
+    return decision
+
+
 def make(dataset, kind):
     require(dataset in DATASETS and kind in KINDS, "unsupported descriptive request")
     spec = DATASETS[dataset]
@@ -191,11 +226,12 @@ def make(dataset, kind):
         manifest_sha = hashlib.sha256(path.read_bytes()).hexdigest()
         source_commit = source["sourceCommit"]
         observation_sha = source["observationsSha256"]
-        source_rows, excluded, unavailable = 52, 0, 0
+        source_rows, excluded, unavailable = source["sourceRows"], 0, 0
     else:
         profile, normalized, manifest_sha, source_rows, excluded, unavailable = (
             _bls() if dataset == "bls" else _cdc()
         )
+        verify_method_applicability(profile, kind)
         source_commit = profile["identity"]["sourceCommit"]
         observation_sha = profile["identity"]["observationsSha256"]
         opts = dict(x="value", availability="availability", unit="percent")
