@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Immutable independently reviewed descriptive analysis; original preview remains nonauthoritative",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "releaseId",
+    "sourceReleaseId",
+    "candidateSha256",
+    "methodEventId",
+    "sourceDecisionId",
+    "sourceCommit",
+    "observationsSha256",
+    "chartSha256",
+    "chartType",
+    "methodId",
+    "sourceYear",
+    "unitOfAnalysis",
+    "limitations",
+    "chart",
+    "authority",
+    "releaseSha256"
+  ],
+  "properties": {
+    "contract": {
+      "const": "ARFI-ApprovedStatAnalysis/1.0.0"
+    },
+    "releaseId": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "maxLength": 160
+    },
+    "sourceReleaseId": {
+      "const": "census-state-population-v2025"
+    },
+    "candidateSha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "methodEventId": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "maxLength": 160
+    },
+    "sourceDecisionId": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "maxLength": 160
+    },
+    "sourceCommit": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$"
+    },
+    "observationsSha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "chartSha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "chartType": {
+      "enum": [
+        "histogram",
+        "ecdf",
+        "boxplot"
+      ]
+    },
+    "methodId": {
+      "enum": [
+        "numpy.histogram/1",
+        "numpy.unique-cumsum/1",
+        "numpy.quantile-linear-tukey/1"
+      ]
+    },
+    "sourceYear": {
+      "const": 2025
+    },
+    "unitOfAnalysis": {
+      "const": "state-equivalent-jurisdiction"
+    },
+    "limitations": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 20,
+      "items": {
+        "type": "string",
+        "minLength": 12,
+        "maxLength": 1600
+      }
+    },
+    "chart": {
+      "type": "object"
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "publicationAuthorized",
+        "statisticalInferenceAuthorized",
+        "crossSourceAuthorized",
+        "causalInferenceAuthorized"
+      ],
+      "properties": {
+        "publicationAuthorized": {
+          "const": true
+        },
+        "statisticalInferenceAuthorized": {
+          "const": false
+        },
+        "crossSourceAuthorized": {
+          "const": false
+        },
+        "causalInferenceAuthorized": {
+          "const": false
+        }
+      }
+    },
+    "releaseSha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  }
+}
