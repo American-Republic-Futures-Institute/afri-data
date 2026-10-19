@@ -262,6 +262,18 @@ def make(dataset, kind):
         "chart": chart,
     }
 
+def validate_artifact(dataset, kind, data):
+    require(dataset in DATASETS and kind in KINDS,
+            "unsupported descriptive dataset and chart combination")
+    expected = make(dataset, kind)
+    require(type(data) is dict and set(data) == set(expected) and
+            data == expected, "data/method/numeric mismatch for " +
+            DATASETS[dataset]["idPrefix"] + "-" + kind)
+    require(hash_json(data["chart"]) == data["chartSha256"],
+            "embedded chart digest differs from original replay")
+    return expected
+
+
 def verify():
     # Retain the prior histogram as an immutable STAT-03 release.
     from tools.verify_census_descriptive import verify as verify_old
@@ -274,10 +286,7 @@ def verify():
             path = file_for(dataset, kind)
             require(path.is_file(), "missing versioned chart " + str(path))
             data = json.loads(path.read_bytes())
-            expected = make(dataset, kind)
-            require(data == expected, "data/method/numeric mismatch for " + path.name)
-            require(hash_json(data["chart"]) == data["chartSha256"],
-                    "embedded chart digest mismatch for " + path.name)
+            validate_artifact(dataset, kind, data)
             found.append(data["id"])
     return {"reproducible": len(found)+1, "new": found}
 
