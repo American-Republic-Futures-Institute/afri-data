@@ -54,8 +54,13 @@ def verify(artifact=None):
         "chart": original["chart"],
     }
     if type(art) is not dict or set(art) != EXACT_FIELDS or art != expected:
+        differences = [
+            key for key in sorted(set(expected) | set(art))
+            if art.get(key) != expected.get(key)
+        ]
         raise ValueError(
-            "STAT-03: descriptive artifact differs from the exact Census source replay"
+            "STAT-03: descriptive artifact differs from the exact Census source replay "
+            "at " + ",".join(differences)
         )
     points = art["chart"]["series"][0]["points"]
     if not (art["selectedJurisdictions"] == 52 and
