@@ -248,6 +248,23 @@ def validate_publication(root=ROOT, *, online=False, github_get=None):
     root = Path(root)
     index = checked(read(root / RELEASE_INDEX), "stat-analytics-index.schema.json")
     _records, current = method_events(root)
+    # Authenticate *all* active method events before any new release exists;
+    # otherwise a false event could be silently staged ahead of publication.
+    for event in current.values():
+        if event["action"] != "approved":
+            continue
+        require(online, "method events require independent online verification")
+        names = {
+            "numpy.histogram/1": "histogram",
+            "numpy.unique-cumsum/1": "ecdf",
+            "numpy.quantile-linear-tukey/1": "boxplot",
+        }
+        require(event["methodId"] in names, "unregistered analytical method")
+        candidate = candidate_from_pilot(names[event["methodId"]])
+        require(hash_json(candidate) == event["candidateSha256"],
+                "registered method candidate is not reproducible")
+        source = current_source_review(root, candidate, github_get=github_get)
+        verified_method_event(candidate, source, root=root, github_get=github_get)
     ids = set()
     for entry in index["releases"]:
         rid = entry["releaseId"]
