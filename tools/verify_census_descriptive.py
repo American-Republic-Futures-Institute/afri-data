@@ -15,7 +15,7 @@ EXACT_FIELDS = {
     "schemaVersion", "type", "id", "publicationStatus", "reviewStatus",
     "dataset", "publisher", "analysisProducer", "geography", "sourceYear",
     "sourcePeriod", "sourceCommit", "sourceManifestSha256",
-    "observationsSha256", "candidateSha256", "chartSha256", "unitOfAnalysis",
+    "observationsSha256", "chartSha256", "unitOfAnalysis",
     "populationWeighted", "selectedJurisdictions", "method",
     "limitations", "chart",
 }
@@ -39,7 +39,6 @@ def verify(artifact=None):
         "sourceCommit": original["sourceIdentity"]["sourceCommit"],
         "sourceManifestSha256": "5ea73893a9d343f907979c67ac7fe4d7b85784483ff36df94d6311fc7499c4de",
         "observationsSha256": original["sourceIdentity"]["observationsSha256"],
-        "candidateSha256": hash_json(candidate),
         "chartSha256": hash_json(original["chart"]),
         "unitOfAnalysis": "state-equivalent-jurisdiction",
         "populationWeighted": False,
@@ -62,6 +61,8 @@ def verify(artifact=None):
             "STAT-03: descriptive artifact differs from the exact Census source replay "
             "at " + ",".join(differences)
         )
+    if hash_json(art["chart"]) != art["chartSha256"]:
+        raise ValueError("STAT-03: embedded chart does not match its canonical SHA")
     points = art["chart"]["series"][0]["points"]
     if not (art["selectedJurisdictions"] == 52 and
             sum(point["count"] for point in points) == 52 and
@@ -76,7 +77,6 @@ def verify(artifact=None):
         "id": ID,
         "jurisdictions": 52,
         "bins": len(points),
-        "candidateSha256": expected["candidateSha256"],
         "chartSha256": expected["chartSha256"],
         "reviewStatus": expected["reviewStatus"],
     }
