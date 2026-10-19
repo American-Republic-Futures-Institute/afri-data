@@ -65,6 +65,14 @@ jobs:
               python -c 'import json,sys; v=json.load(open(sys.argv[1])); assert v["decision"]=="denied" and not v["publicationAuthorized"] and v["sourceReplayVerified"]' "$decision"
             fi
           done
+      - name: Enforce immutable statistical review and publication transitions
+        if: github.event_name == 'pull_request'
+        run: python -m tools.stat_transition --base origin/main
+      - name: Verify authenticated statistical publication registry
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ARFI_GOVERNANCE_READ_TOKEN: ${{ secrets.ARFI_GOVERNANCE_READ_TOKEN }}
+        run: python -m tools.stat_approval verify
       - name: Verify candidate BLS dossier source fingerprints
         run: python -m tools.review_pilot_dossier --verify
       - name: Report human review activation blockers
