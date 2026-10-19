@@ -220,12 +220,70 @@ def issue_release(*, root=ROOT, github_get=None):
     return origin
 
 
+
+def validate_owner_registry(*, root=ROOT, github_get=None):
+    """Registered artifacts survive withdrawal as history, never current releases."""
+    root = Path(root)
+    index = read(root / OUTPUT_INDEX)
+    require(type(index) is dict and set(index) == {"schemaVersion", "releases"}
+            and index["schemaVersion"] == "1.0.0"
+            and type(index["releases"]) is list and len(index["releases"]) <= 100,
+            "founder reviewed release index invalid")
+    paths = set()
+    if not index["releases"]:
+        require(not events(root),
+                "an event requires separate explicit publication or revocation acceptance")
+        return {"registered": 0, "active": 0,
+                "founderReviewed": False, "independentlyCertified": False}
+    status = inspect(root=root, github_get=github_get)
+    active = 0
+    for entry in index["releases"]:
+        require(type(entry) is dict and
+                set(entry) == {"releaseId", "artifactPath", "artifactSha256"}
+                and type(entry["releaseId"]) is str
+                and entry["artifactPath"] ==
+                "publication/analytics/founder-releases/" +
+                entry["releaseId"] + "/artifact.json"
+                and entry["artifactPath"] not in paths
+                and type(entry["artifactSha256"]) is str,
+                "founder publication index entry invalid")
+        paths.add(entry["artifactPath"])
+        artifact_path = root / entry["artifactPath"]
+        require(not artifact_path.is_symlink(),
+                "founder analytical artifact cannot be a symlink")
+        raw = artifact_path.read_bytes()
+        require(len(raw) <= 600000 and sha_bytes(raw) == entry["artifactSha256"],
+                "historical analytical artifact bytes altered")
+        artifact = checked(json.loads(raw),
+                           "stat-founder-reviewed-analysis.schema.json")
+        require(artifact["releaseId"] == entry["releaseId"] and
+                artifact["releaseSha256"] == hash_json({
+                    k: v for k, v in artifact.items() if k != "releaseSha256"
+                }), "published founder analytical result digest invalid")
+        c = candidate()
+        from tools.stat_approval import assemble_approved_artifact
+        base = assemble_approved_artifact(c, DECISION, events(root)[0]["eventId"])
+        base["contract"] = CONTRACT
+        base["releaseId"] = "founder-" + base["releaseId"]
+        base["authority"] = {**base["authority"],
+            "provenanceClass": "founder-reviewed-not-independent",
+            "independentlyCertified": False}
+        base["releaseSha256"] = hash_json({
+            k: v for k, v in base.items() if k != "releaseSha256"
+        })
+        require(base == artifact, "founder analysis no longer reproduces")
+        active += 1 if status["publicationAuthorized"] else 0
+    return {"registered": len(paths), "active": active,
+            "founderReviewed": active > 0, "independentlyCertified": False}
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument("command", choices=("verify", "issue"))
+    parser.add_argument("command", choices=("verify", "issue", "registry"))
     args = parser.parse_args(argv)
     try:
-        result = inspect() if args.command == "verify" else issue_release()
+        result = (inspect() if args.command == "verify" else
+                  validate_owner_registry() if args.command == "registry" else issue_release())
     except (ValueError, OSError, KeyError, TypeError, json.JSONDecodeError) as exc:
         print(json.dumps({"status": "denied",
                           "publicationAuthorized": False,
