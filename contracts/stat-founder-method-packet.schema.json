@@ -1,0 +1,179 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Founder-reviewed descriptive statistical methodology packet. NOT independent certification.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "sourceReleaseId",
+    "sourceDecisionId",
+    "candidateSha256",
+    "methodId",
+    "methodVersion",
+    "chartSha256",
+    "observationsSha256",
+    "sourceManifestSha256",
+    "periodYear",
+    "unitOfAnalysis",
+    "approvalClass",
+    "reviewScope",
+    "findings",
+    "limitations",
+    "reviewerLogin"
+  ],
+  "properties": {
+    "contract": {
+      "const": "ARFI-FounderStatMethodPacket/1.0.0"
+    },
+    "sourceReleaseId": {
+      "const": "census-state-population-v2025"
+    },
+    "sourceDecisionId": {
+      "const": "census-state-population-v2025-owner-authorization"
+    },
+    "candidateSha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "methodId": {
+      "const": "numpy.histogram/1"
+    },
+    "methodVersion": {
+      "const": "1.0.0"
+    },
+    "chartSha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "observationsSha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "sourceManifestSha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "periodYear": {
+      "const": 2025
+    },
+    "unitOfAnalysis": {
+      "const": "state-equivalent-jurisdiction"
+    },
+    "approvalClass": {
+      "const": "founder-reviewed-not-independent"
+    },
+    "reviewScope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rightsLicense",
+        "methodology",
+        "temporalInterpretation",
+        "geographicUniverse",
+        "permittedPublicUses",
+        "cautions"
+      ],
+      "properties": {
+        "rightsLicense": {
+          "enum": [
+            "reviewed",
+            "reviewed-with-cautions"
+          ]
+        },
+        "methodology": {
+          "enum": [
+            "reviewed",
+            "reviewed-with-cautions"
+          ]
+        },
+        "temporalInterpretation": {
+          "enum": [
+            "reviewed",
+            "reviewed-with-cautions"
+          ]
+        },
+        "geographicUniverse": {
+          "enum": [
+            "reviewed",
+            "reviewed-with-cautions"
+          ]
+        },
+        "permittedPublicUses": {
+          "enum": [
+            "reviewed",
+            "reviewed-with-cautions"
+          ]
+        },
+        "cautions": {
+          "enum": [
+            "reviewed",
+            "reviewed-with-cautions"
+          ]
+        }
+      }
+    },
+    "findings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rightsLicense",
+        "methodology",
+        "temporalInterpretation",
+        "geographicUniverse",
+        "permittedPublicUses",
+        "cautions",
+        "conflictOfInterest"
+      ],
+      "properties": {
+        "rightsLicense": {
+          "type": "string",
+          "minLength": 32,
+          "maxLength": 4000
+        },
+        "methodology": {
+          "type": "string",
+          "minLength": 32,
+          "maxLength": 4000
+        },
+        "temporalInterpretation": {
+          "type": "string",
+          "minLength": 32,
+          "maxLength": 4000
+        },
+        "geographicUniverse": {
+          "type": "string",
+          "minLength": 32,
+          "maxLength": 4000
+        },
+        "permittedPublicUses": {
+          "type": "string",
+          "minLength": 32,
+          "maxLength": 4000
+        },
+        "cautions": {
+          "type": "string",
+          "minLength": 32,
+          "maxLength": 4000
+        },
+        "conflictOfInterest": {
+          "type": "string",
+          "minLength": 32,
+          "maxLength": 4000
+        }
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 20,
+      "items": {
+        "type": "string",
+        "minLength": 12,
+        "maxLength": 1600
+      }
+    },
+    "reviewerLogin": {
+      "const": "jmsbooth"
+    }
+  }
+}
