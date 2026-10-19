@@ -43,7 +43,7 @@ jobs:
           python - <<'PY'
           from urllib.request import Request,urlopen
           from urllib.error import HTTPError,URLError
-          from pipelines.census_acs_release import PUBLIC_URL
+          PUBLIC_URL='https://api.census.gov/data/2024/acs/acs5?get=NAME%2CB19013_001E%2CB19013_001M&for=state%3A%2A'
           try:
               with urlopen(Request(PUBLIC_URL,headers={'Accept':'application/json','User-Agent':'ARFI-Research/1.0'}),timeout=25) as f:
                   payload=f.read(500000)
