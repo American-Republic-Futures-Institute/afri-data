@@ -131,9 +131,9 @@ def evaluate(candidate, *, root=ROOT):
     # Source approval, even when achieved, is not approval to use a
     # statistical estimator. Never bootstrap authorization from a publisher
     # source decision or from the internal preview eligibility result.
-    policy = read(Path(root) / "governance/reviewer-policy.json")
     try:
-        roster = validate_reviewer_policy(policy)
+        policy = read(Path(root) / "governance/reviewer-policy.json")
+        validate_reviewer_policy(policy)
     except (ValueError, OSError, KeyError):
         return decision(candidate, reason="PROTECTION_OR_REVIEW_UNVERIFIED",
                         source_verified=True)
