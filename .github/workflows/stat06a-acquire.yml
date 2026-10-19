@@ -26,8 +26,8 @@ jobs:
         run: |
           python - <<'PY'
           from urllib.request import Request,urlopen
-          root='https://www2.census.gov/programs-surveys/acs/summary_file/2024/data/'
-          paths=['','5_year_entire_sf/','5_year_by_state/','5_year_seq_by_state/']
+          root='https://www2.census.gov/programs-surveys/acs/summary_file/2024/'
+          paths=['','sequence-based-SF/','sequence-based-SF/data/','sequence-based-SF/data/5_year_by_state/','sequence-based-SF/data/5_year_entire_sf/']
           for path in paths:
               try:
                   with urlopen(Request(root+path,headers={'User-Agent':'ARFI-Research/1.0'}),timeout=20) as page:
