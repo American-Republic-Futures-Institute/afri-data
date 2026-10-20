@@ -122,7 +122,7 @@ def parse_acs_table_based_income(original: bytes) -> list[dict]:
             "value":estimate,"marginOfError":moe,
             "status":"not_available" if estimate is None else "available",
             "unit":"USD","statistic":"survey_estimate",
-            "sourceVariables":[ESTIMATE,MOE],
+            "sourceVariables":["B19013_E001","B19013_M001"],
         })
     if found!=set(FIPS) or len(rows)!=52:
         raise ValueError("ACS 2024 publisher coverage differs from 52 state-equivalents")
