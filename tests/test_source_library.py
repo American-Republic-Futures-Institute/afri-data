@@ -47,6 +47,16 @@ class SourceLibraryTests(unittest.TestCase):
         self.assertTrue(all(d["dateField"] == "record_date" for d in monthly))
         self.assertEqual(len({d["id"] for d in registered["datasets"]}), 11)
 
+    def test_large_original_outlay_history_has_explicit_bounded_budget(self):
+        from tools.source_library import ROOT, CATALOG, MAX_PAGES, PAGE_SIZE
+        import json
+        official = json.loads((ROOT / CATALOG).read_text())
+        validate_catalog(official)
+        monthly = next(x for x in official["datasets"] if x["id"] == "treasury-monthly-outlays")
+        self.assertEqual(monthly["maxRows"], 450000)
+        self.assertGreaterEqual(MAX_PAGES * PAGE_SIZE, monthly["maxRows"])
+        self.assertLessEqual(monthly["maxRows"], 500000)
+
     def test_source_registration_is_allowlisted_and_rejects_redirect_targets(self):
         baseline = catalog()
         validate_catalog(baseline)
