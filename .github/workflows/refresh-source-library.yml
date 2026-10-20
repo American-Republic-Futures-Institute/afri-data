@@ -1,0 +1,73 @@
+name: Weekly authoritative source library refresh
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '13 11 * * 1'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/refresh-source-library.yml'
+      - 'catalog/source-library/**'
+      - 'tools/source_library.py'
+      - 'tests/test_source_library.py'
+permissions:
+  contents: write
+concurrency:
+  group: weekly-official-source-library
+  cancel-in-progress: false
+jobs:
+  refresh:
+    if: github.repository == 'American-Republic-Futures-Institute/afri-data'
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check source pipeline before acquisition
+        run: python -m unittest discover -s tests -p 'test_source_library.py' -v
+      - name: Restore persistent source-library branch and reconcile source code
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          if git ls-remote --exit-code --heads origin data/source-library >/dev/null 2>&1; then
+            git fetch origin refs/heads/data/source-library
+            git switch -C data/source-library FETCH_HEAD
+            git merge --no-edit origin/main
+          else
+            git switch -c data/source-library
+          fi
+      - name: Fetch authoritative Treasury histories and update changed yearly partitions
+        run: python -m tools.source_library
+      - name: Independently verify every retained source partition
+        run: python -m tools.source_library --verify
+      - name: Publish validated source copies to the rolling data branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add -- publication/source-library/
+          if ! git diff --cached --quiet; then
+            git commit -m "data: refresh Treasury source-library yearly partitions"
+          fi
+          git push origin HEAD:refs/heads/data/source-library
+      - name: Surface publisher failures instead of silently claiming full freshness
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          status=json.loads(Path("publication/source-library/health.json").read_text())
+          print("Source refresh:",status["succeeded"],"of",status["attempted"],"succeeded")
+          print("Last checked:",status["checkedAt"])
+          for key,value in status["failed"].items():
+              print(f"::warning title=Government source temporarily unavailable::{key}: {value}")
+          if status["failed"]:
+              raise SystemExit("Partial source refresh. Successful feeds were published, failed feeds retained their last valid versions.")
+          PY
