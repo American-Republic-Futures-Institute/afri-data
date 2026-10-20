@@ -76,6 +76,66 @@
       "unit": "source units",
       "maxRows": 70000,
       "sourcePage": "https://fiscaldata.treasury.gov/datasets/daily-treasury-statement/"
+    },
+    {
+      "id": "treasury-monthly-budget-summary",
+      "title": "Monthly Federal Receipts, Outlays and Deficit/Surplus",
+      "domain": "public-finance",
+      "description": "Monthly Treasury Statement summary receipts, outlays and budget surplus or deficit, preserving the original published classification and reporting period.",
+      "endpoint": "v1/accounting/mts/mts_table_1",
+      "dateField": "record_date",
+      "preferredField": null,
+      "unit": "source-reported USD millions",
+      "maxRows": 110000,
+      "sourcePage": "https://fiscaldata.treasury.gov/datasets/monthly-treasury-statement/"
+    },
+    {
+      "id": "treasury-monthly-budget-financing",
+      "title": "Monthly Federal Budget and Financing Results",
+      "domain": "public-finance",
+      "description": "Monthly Treasury Statement budget and off-budget receipts, outlays and financing entries, retained in publisher hierarchy.",
+      "endpoint": "v1/accounting/mts/mts_table_2",
+      "dateField": "record_date",
+      "preferredField": null,
+      "unit": "source-reported USD millions",
+      "maxRows": 110000,
+      "sourcePage": "https://fiscaldata.treasury.gov/datasets/monthly-treasury-statement/"
+    },
+    {
+      "id": "treasury-monthly-receipts-outlays",
+      "title": "Monthly Federal Receipts and Outlays",
+      "domain": "public-finance",
+      "description": "Original Monthly Treasury Statement receipts and outlays totals and source classifications; no ARFI-derived aggregates.",
+      "endpoint": "v1/accounting/mts/mts_table_3",
+      "dateField": "record_date",
+      "preferredField": null,
+      "unit": "source-reported USD millions",
+      "maxRows": 110000,
+      "sourcePage": "https://fiscaldata.treasury.gov/datasets/monthly-treasury-statement/"
+    },
+    {
+      "id": "treasury-monthly-receipts",
+      "title": "Federal Receipts by Source",
+      "domain": "public-finance",
+      "description": "Treasury monthly receipts by category, retaining original department and classification rows rather than recomputing totals.",
+      "endpoint": "v1/accounting/mts/mts_table_4",
+      "dateField": "record_date",
+      "preferredField": null,
+      "unit": "source-reported USD millions",
+      "maxRows": 110000,
+      "sourcePage": "https://fiscaldata.treasury.gov/datasets/monthly-treasury-statement/"
+    },
+    {
+      "id": "treasury-monthly-outlays",
+      "title": "Federal Outlays by Function",
+      "domain": "public-finance",
+      "description": "Treasury monthly outlays by function and source classification, with original subtotals kept distinct.",
+      "endpoint": "v1/accounting/mts/mts_table_5",
+      "dateField": "record_date",
+      "preferredField": null,
+      "unit": "source-reported USD millions",
+      "maxRows": 110000,
+      "sourcePage": "https://fiscaldata.treasury.gov/datasets/monthly-treasury-statement/"
     }
   ]
 }

@@ -2,6 +2,7 @@
 import copy
 import json
 from pathlib import Path
+from tools.source_library import ROOT, CATALOG
 import tempfile
 import unittest
 
@@ -37,6 +38,15 @@ def rows():
 
 
 class SourceLibraryTests(unittest.TestCase):
+    def test_real_registry_accepts_monthly_treasury_tables_and_avoids_unverified_hosts(self):
+        registered = json.loads((ROOT / CATALOG).read_text("utf-8"))
+        validate_catalog(registered)
+        self.assertEqual(len(registered["datasets"]), 11)
+        monthly = [d for d in registered["datasets"] if "/accounting/mts/" in d["endpoint"]]
+        self.assertEqual(len(monthly), 5)
+        self.assertTrue(all(d["dateField"] == "record_date" for d in monthly))
+        self.assertEqual(len({d["id"] for d in registered["datasets"]}), 11)
+
     def test_source_registration_is_allowlisted_and_rejects_redirect_targets(self):
         baseline = catalog()
         validate_catalog(baseline)
