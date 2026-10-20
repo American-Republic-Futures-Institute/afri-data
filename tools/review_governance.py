@@ -176,6 +176,7 @@ def is_source_reproduced_acs_income(item: dict, manifest: dict, root: Path) -> b
     publisher bytes/rows are checked here, and again by validate_publication.
     """
     import gzip
+    import io
     from pipelines.census_acs_release import STATIC_URL, project
 
     rid = item.get("releaseId", "")
@@ -217,12 +218,16 @@ def is_source_reproduced_acs_income(item: dict, manifest: dict, root: Path) -> b
             and rid == "census-acs5-state-income-2024-" + source["sha256"][:16]
             and isinstance(source.get("bytes"), int)
             and 0 < source["bytes"] <= 22_000_000
+            and isinstance(assets.get("originalDataGzip"), dict)
+            and assets["originalDataGzip"].get("path") == "originalData.gz"
+            and isinstance(assets.get("observations"), dict)
+            and assets["observations"].get("path") == "observations.json"
             and assets["observations"].get("rows") == 52):
         return False
     folder = root / "publication/releases" / rid
     try:
         archived = (folder / assets["originalDataGzip"]["path"]).read_bytes()
-        with gzip.GzipFile(fileobj=__import__("io").BytesIO(archived)) as zipped:
+        with gzip.GzipFile(fileobj=io.BytesIO(archived)) as zipped:
             original = zipped.read(22_000_001)
         if not original or len(original) != source["bytes"] or len(original) > 22_000_000:
             return False
