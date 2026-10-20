@@ -1,0 +1,81 @@
+{
+  "schemaVersion": "1.0.0",
+  "publisher": "U.S. Department of the Treasury, Bureau of the Fiscal Service",
+  "publisherApi": "https://api.fiscaldata.treasury.gov/services/api/fiscal_service/",
+  "refreshCadence": "weekly",
+  "datasetClass": "source-native-unreviewed",
+  "datasets": [
+    {
+      "id": "treasury-debt-to-penny",
+      "title": "Debt to the Penny",
+      "domain": "public-finance",
+      "description": "Daily outstanding federal debt, debt held by the public and intragovernmental holdings. Original Treasury monetary fields are preserved as published.",
+      "endpoint": "v2/accounting/od/debt_to_penny",
+      "dateField": "record_date",
+      "preferredField": "tot_pub_debt_out_amt",
+      "unit": "USD",
+      "maxRows": 30000,
+      "sourcePage": "https://fiscaldata.treasury.gov/datasets/debt-to-the-penny/"
+    },
+    {
+      "id": "treasury-average-interest-rates",
+      "title": "Average Interest Rates on U.S. Treasury Securities",
+      "domain": "public-finance",
+      "description": "Original Treasury monthly average-interest-rate records by security classification; percentages remain publisher records.",
+      "endpoint": "v2/accounting/od/avg_interest_rates",
+      "dateField": "record_date",
+      "preferredField": "avg_interest_rate_amt",
+      "unit": "percent",
+      "maxRows": 70000,
+      "sourcePage": "https://fiscaldata.treasury.gov/datasets/average-interest-rates-treasury-securities/"
+    },
+    {
+      "id": "treasury-operating-cash-balance",
+      "title": "Daily Treasury Operating Cash Balance",
+      "domain": "public-finance",
+      "description": "Daily Treasury Statement operating cash account balances; values are published in millions of dollars.",
+      "endpoint": "v1/accounting/dts/operating_cash_balance",
+      "dateField": "record_date",
+      "preferredField": "close_today_bal",
+      "unit": "USD millions",
+      "maxRows": 70000,
+      "sourcePage": "https://fiscaldata.treasury.gov/datasets/daily-treasury-statement/"
+    },
+    {
+      "id": "treasury-debt-subject-to-limit",
+      "title": "Daily Debt Subject to Statutory Limit",
+      "domain": "public-finance",
+      "description": "Original Daily Treasury Statement records on federal debt subject to limit; avoid interpreting them as Treasury debt-to-the-penny totals.",
+      "endpoint": "v1/accounting/dts/debt_subject_to_limit",
+      "dateField": "record_date",
+      "preferredField": null,
+      "unit": "source units",
+      "maxRows": 70000,
+      "sourcePage": "https://fiscaldata.treasury.gov/datasets/daily-treasury-statement/"
+    },
+    {
+      "id": "treasury-federal-tax-deposits",
+      "title": "Daily Federal Tax Deposits",
+      "domain": "public-finance",
+      "description": "Federal tax deposits reported in the Daily Treasury Statement; raw published classifications and units retained.",
+      "endpoint": "v1/accounting/dts/federal_tax_deposits",
+      "dateField": "record_date",
+      "preferredField": null,
+      "unit": "source units",
+      "maxRows": 90000,
+      "sourcePage": "https://fiscaldata.treasury.gov/datasets/daily-treasury-statement/"
+    },
+    {
+      "id": "treasury-income-tax-refunds-issued",
+      "title": "Daily Income Tax Refunds Issued",
+      "domain": "public-finance",
+      "description": "Refund amounts and counts as reported in the Daily Treasury Statement, retaining publisher categorizations.",
+      "endpoint": "v1/accounting/dts/income_tax_refunds_issued",
+      "dateField": "record_date",
+      "preferredField": null,
+      "unit": "source units",
+      "maxRows": 70000,
+      "sourcePage": "https://fiscaldata.treasury.gov/datasets/daily-treasury-statement/"
+    }
+  ]
+}
