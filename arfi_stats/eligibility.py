@@ -170,7 +170,7 @@ def evaluate(request, *, root=ROOT, historical=True):
             qualify("SOURCE_NATIVE_VALUES_REQUIRE_CONTEXT")
             if measure["family"] == "survey-median":
                 qualify("ACS_FIVE_YEAR_POOLED_NOT_ANNUAL")
-                qualify("PUBLISHER_90_PERCENT_MOE_NOT_NEW_INTERVAL")
+                qualify("PUBLISHER_NINETY_PERCENT_MOE_NOT_NEW_INTERVAL")
                 qualify("UNWEIGHTED_STATES_NOT_HOUSEHOLDS")
             if measure["publisherModelled"]:
                 qualify("PUBLISHER_MODELED_NOT_DIRECT_OBSERVATIONS")
