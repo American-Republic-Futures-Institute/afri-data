@@ -23,6 +23,26 @@ jobs:
         run: python -m pip install -r requirements.txt
       - name: Acquire official B19013 original and stage state income release
         run: python -m pipelines.census_acs_release
+      - name: Inspect archived publisher fingerprint and selected state coverage
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from pipelines.census_acs_release import ROOT
+          p=json.loads((ROOT/'publication/index.json').read_text())
+          e=next(x for x in p['releases'] if x['indicatorId']=='state-median-household-income')
+          folder=ROOT/'publication/releases'/e['releaseId']
+          m=json.loads((folder/'manifest.json').read_text())
+          o=json.loads((folder/'observations.json').read_text())['observations']
+          assert len(o)==52 and m['sourceFiles'][0]['role']=='originalData'
+          assert m['sourceFiles'][0]['url'].startswith('https://www2.census.gov/')
+          print('STAT06A_RELEASE_ID',e['releaseId'])
+          print('STAT06A_SOURCE_SHA256',m['sourceFiles'][0]['sha256'])
+          print('STAT06A_AVAILABLE',sum(x['status']=='available' for x in o))
+          print('STAT06A_UNAVAILABLE',sum(x['status']=='not_available' for x in o))
+          print('STAT06A_PREVIEW',[(x['geoid'],x['value'],x['marginOfError']) for x in o[:2]])
+          PY
       - name: Validate complete source publication and original-byte replay
         run: python tools/validate.py
       - name: Run all offline data publication and security tests
