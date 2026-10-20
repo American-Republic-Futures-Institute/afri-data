@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "1.0.0",
+  "type": "ARFI-DataProductRecipe",
+  "productId": "state-population-income-context-2025-2024",
+  "inputs": [
+    {
+      "releaseId": "census-state-population-v2025",
+      "sourceCommit": "2a54ab437e083a40ef995d12f4d46366a8eb2963",
+      "observationsSha256": "e37483bbce3564f8737bc6db132cda90df1402e46237bbf42aaa69bf2b7b994d",
+      "geographyKey": "fips",
+      "selectionYear": 2025,
+      "temporalInterpretation": "Census July 1 2025 resident population point-in-time estimate",
+      "measurementUnit": "persons"
+    },
+    {
+      "releaseId": "census-acs5-state-income-2024-b25a176b0e6c339b",
+      "sourceCommit": "2ec1e1e950fc2c0135cb1d577a084afccdfa61d7",
+      "observationsSha256": "574ade5747c8a070ddf14704962a8bc4aabce7835312b5eca3b43394aa45cfd4",
+      "geographyKey": "geoid",
+      "selectionYear": 2024,
+      "temporalInterpretation": "Census ACS 2020-2024 pooled five-year household income median in inflation-adjusted 2024 dollars",
+      "measurementUnit": "USD"
+    }
+  ],
+  "compatibility": {
+    "geographyLevel": "state",
+    "geographyIdentity": "census-fips",
+    "boundaryVintages": [
+      2025,
+      2024
+    ],
+    "temporalAlignment": "separate-source-native-periods",
+    "populationComparability": "not-asserted",
+    "expectedCardinality": "one-to-one",
+    "missingnessPolicy": "preserve-explicit-null-and-omissions",
+    "uncertaintyPolicy": "preserve-publisher-native-uncertainty",
+    "acceptedRisks": [
+      "Population is a July 1, 2025 snapshot; household income is the 2020-2024 pooled ACS survey median, so no same-period statistical inference is permitted.",
+      "2025 reference state geometry and ACS 2024 state FIPS crosswalk must be verified; median household income is neither additive nor a per-person value."
+    ]
+  },
+  "operation": {
+    "kind": "source-preserving-join",
+    "joinType": "inner",
+    "preserveSourceColumns": true,
+    "formulas": []
+  },
+  "authority": {
+    "status": "candidate-only",
+    "publicPublicationAuthorized": false,
+    "crossSourceStatisticalDerivationAuthorized": false,
+    "causalInferenceAuthorized": false
+  }
+}
