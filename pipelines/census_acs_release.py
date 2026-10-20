@@ -93,8 +93,8 @@ def main():
     args=parser.parse_args()
     if args.source_file is not None:
         original=args.source_file.read_bytes()
-        if len(original)>1_000_000:
-            raise SystemExit("Source file exceeds approved ACS response limit")
+        if len(original)>22_000_000:
+            raise SystemExit("Source file exceeds approved ACS original-table limit")
     else:
         # Key-free official table-based summary download, not the authenticated API.
         original=acquire_static()
