@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ARFI candidate curated data product; not public approval",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "type",
+    "productId",
+    "recipeSha256",
+    "inputIdentities",
+    "output",
+    "quality",
+    "authority"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0.0"
+    },
+    "type": {
+      "const": "ARFI-DerivedDataProduct"
+    },
+    "productId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{3,100}$"
+    },
+    "recipeSha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "inputIdentities": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "releaseId",
+          "sourceCommit",
+          "observationsSha256"
+        ],
+        "properties": {
+          "releaseId": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "sourceCommit": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{40}$"
+          },
+          "observationsSha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "observationsSha256",
+        "rowCount",
+        "geographyKey",
+        "lineageColumns"
+      ],
+      "properties": {
+        "observationsSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "rowCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "geographyKey": {
+          "const": "fips"
+        },
+        "lineageColumns": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "quality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "unmatchedInputGeographies",
+        "missingSourceValues",
+        "duplicateKeys",
+        "omissionLedger"
+      ],
+      "properties": {
+        "unmatchedInputGeographies": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[0-9]{2}(?:[0-9]{3})?$"
+          }
+        },
+        "missingSourceValues": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "duplicateKeys": {
+          "const": 0
+        },
+        "omissionLedger": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "publicPublicationAuthorized",
+        "statisticalInferenceAuthorized",
+        "causalInferenceAuthorized"
+      ],
+      "properties": {
+        "status": {
+          "const": "unreviewed-candidate"
+        },
+        "publicPublicationAuthorized": {
+          "const": false
+        },
+        "statisticalInferenceAuthorized": {
+          "const": false
+        },
+        "causalInferenceAuthorized": {
+          "const": false
+        }
+      }
+    }
+  }
+}
