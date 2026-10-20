@@ -17,7 +17,7 @@ def source(release, indicator, vintage, unit, period, code="geoid"):
     entry={"releaseId":release,"indicatorId":indicator,"status":"published"}
     inp={"releaseId":release,"sourceCommit":"a"*40,
          "observationsSha256":hashlib.sha256(raw).hexdigest(),
-         "geographyKey":code,"temporalInterpretation":period,"measurementUnit":unit}
+         "geographyKey":code,"selectionYear":2024,"temporalInterpretation":period,"measurementUnit":unit}
     return entry, (manifest,raw), inp
 
 
@@ -84,6 +84,12 @@ class CurationContractTests(unittest.TestCase):
         sources[release]=(manifest,updated)
         recipe["inputs"][0]["observationsSha256"]=hashlib.sha256(updated).hexdigest()
         with self.assertRaisesRegex(CurationError,"one observation"):validate_recipe(recipe,idx,sources)
+
+    def test_source_period_selection_rejects_unpublished_year(self):
+        idx,sources,recipe,_=example()
+        recipe["inputs"][0]["selectionYear"]=2026
+        with self.assertRaisesRegex(CurationError,"No published rows"):
+            validate_recipe(recipe,idx,sources)
 
     def test_derivations_and_fabricated_approval_fail_at_schema_boundary(self):
         idx,sources,recipe,product=example()
