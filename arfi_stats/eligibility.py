@@ -168,6 +168,10 @@ def evaluate(request, *, root=ROOT, historical=True):
             deny("METHOD_INPUT_CONTRACT_UNRECOGNIZED")
         if not denials and req != "categorical-availability":
             qualify("SOURCE_NATIVE_VALUES_REQUIRE_CONTEXT")
+            if measure["family"] == "survey-median":
+                qualify("ACS_FIVE_YEAR_POOLED_NOT_ANNUAL")
+                qualify("PUBLISHER_NINETY_PERCENT_MOE_NOT_NEW_INTERVAL")
+                qualify("UNWEIGHTED_STATES_NOT_HOUSEHOLDS")
             if measure["publisherModelled"]:
                 qualify("PUBLISHER_MODELED_NOT_DIRECT_OBSERVATIONS")
             if not coverage["sourcePeriodUniform"]:
@@ -222,6 +226,7 @@ def quality_report(release_id, *, root=ROOT, historical=True):
             "denominatorAvailability": measure["denominatorAvailability"],
             "publisherModelled": measure["publisherModelled"],
             "publisherIntervalAvailable": measure["intervalFields"] is not None,
+            "publisherMarginOfError": measure.get("marginOfError"),
             "referencePeriodsUniform": coverage["sourcePeriodUniform"],
             "sourceRows": coverage["sourceRows"],
             "availableRows": coverage["availableRows"],

@@ -1,0 +1,71 @@
+{
+  "schemaVersion": "1.0.0",
+  "type": "ARFI-StatisticalSourceProfile",
+  "reviewStatus": "not_independently_certified",
+  "identity": {
+    "releaseId": "census-acs5-state-income-2024-b25a176b0e6c339b",
+    "datasetId": "census-acs5-state-income-2024",
+    "indicatorId": "state-median-household-income",
+    "sourceCommit": "2ec1e1e950fc2c0135cb1d577a084afccdfa61d7",
+    "manifestPath": "publication/releases/census-acs5-state-income-2024-b25a176b0e6c339b/manifest.json",
+    "manifestGitBlobSha": "a88717b65435620c16a8853230cc8984b8205da6",
+    "observationsSha256": "574ade5747c8a070ddf14704962a8bc4aabce7835312b5eca3b43394aa45cfd4"
+  },
+  "measurement": {
+    "family": "survey-median",
+    "scale": "monetary-estimate",
+    "unit": "USD",
+    "valueField": "value",
+    "geographyField": "geoid",
+    "yearField": "year",
+    "statusField": "status",
+    "intervalFields": null,
+    "exactAmountField": null,
+    "marginOfError": {
+      "field": "marginOfError",
+      "confidenceLevel": 0.9,
+      "kind": "publisher-survey-margin-of-error"
+    },
+    "observationUnit": "One published ACS five-year household income median estimate per state-equivalent geography.",
+    "targetPopulation": "Households represented by the Census 2020-2024 five-year ACS B19013 median income estimator for 50 states, DC and Puerto Rico.",
+    "samplingDesign": "acs-five-year-household-survey",
+    "denominatorAvailability": "none-published",
+    "publisherModelled": false
+  },
+  "coverage": {
+    "geography": "state",
+    "geographyVintage": 2024,
+    "firstYear": 2024,
+    "lastYear": 2024,
+    "temporalKind": "acs-five-year-pooled",
+    "sourceRows": 52,
+    "availableRows": 52,
+    "explicitUnavailableRows": 0,
+    "knownOmittedSourceBuckets": 0,
+    "sourcePeriodUniform": true,
+    "qualifierCodes": [
+      "acs-five-year-pooled",
+      "publisher-90-percent-moe",
+      "household-median-not-additive",
+      "inflation-adjusted-2024-usd"
+    ],
+    "allowedSegments": [
+      "geoid"
+    ]
+  },
+  "restrictions": {
+    "crossReleaseDerivation": false,
+    "causalInference": false,
+    "imputation": false,
+    "genericShrinkage": false,
+    "computeNewIntervals": false,
+    "populationWeighting": false,
+    "exactMoneyByFloat": false
+  },
+  "caveats": [
+    "The year field marks the 2024 ACS five-year release; observations pool 2020-2024 responses, not single-year 2024 measures.",
+    "Publisher B19013_M001 is a 90% margin of error. It is not a standard deviation or a recomputed interval; do not add or subtract it to generate an unreviewed interval product.",
+    "State household medians are not additive, and a histogram across jurisdictions is not a household-weighted or person-level distribution.",
+    "Source has 52 state-equivalent records including Puerto Rico; unavailable observations, if present in future vintages, require paired null estimate/MOE."
+  ]
+}
