@@ -29,7 +29,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Check source pipeline before acquisition
-        run: python -m unittest -v tests.test_source_library
+        run: python -m unittest discover -s tests -p 'test_source_library.py' -v
       - name: Restore persistent source-library branch and reconcile source code
         shell: bash
         run: |
