@@ -132,6 +132,34 @@ class ACSPublicationTests(unittest.TestCase):
             with self.subTest(value=value),self.assertRaisesRegex(ValueError,"CENSUS_API_KEY"):
                 acquire(value)
 
+    def test_source_only_governance_classification_cannot_assert_independent_review(self):
+        from tools.review_governance import is_source_reproduced_acs_income
+        info=stage(self.root,fixture_acs())
+        folder=self.root/"publication/releases"/info["releaseId"]
+        manifest=json.loads((folder/"manifest.json").read_text())
+        index=json.loads((self.root/"publication/index.json").read_text())
+        item=next(x for x in index["releases"]
+                  if x["releaseId"]==info["releaseId"])
+        self.assertTrue(is_source_reproduced_acs_income(item,manifest,self.root))
+        import copy
+        for edit in (
+            lambda d:d["manifest"].update(publishedSource="Other publisher"),
+            lambda d:d["manifest"]["sourceFiles"][0].update(url="https://example.org/fake.dat"),
+            lambda d:d["manifest"]["sourceFiles"][0].update(sha256="a"*64),
+            lambda d:d["manifest"]["geography"].update(features=51),
+            lambda d:d["manifest"].update(interpretation="independently reviewed"),
+            lambda d:d["item"].update(indicatorId="other-metric"),
+        ):
+            copies={"item":copy.deepcopy(item),"manifest":copy.deepcopy(manifest)}
+            edit(copies)
+            self.assertFalse(is_source_reproduced_acs_income(
+                copies["item"],copies["manifest"],self.root))
+        archive=folder/"originalData.gz"
+        original=archive.read_bytes()
+        archive.write_bytes(gzip.compress(b"untrusted source"))
+        self.assertFalse(is_source_reproduced_acs_income(item,manifest,self.root))
+        archive.write_bytes(original)
+
     def test_rehashed_value_tampering_fails_original_source_replay(self):
         info=stage(self.root,fixture_acs())
         folder=self.root/"publication/releases"/info["releaseId"]
