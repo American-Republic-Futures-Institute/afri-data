@@ -1,0 +1,299 @@
+"""Weekly source-native Treasury backfill for ARFI's public source library.
+
+Not an analytical/statistical approval lane. Writes only publication/source-library.
+Historical years are preserved in Git; the current branch exposes publisher revisions.
+"""
+from __future__ import annotations
+
+import argparse
+from datetime import datetime, timezone, timedelta
+import hashlib
+import json
+from pathlib import Path
+import re
+import time
+from urllib.error import HTTPError, URLError
+from urllib.parse import urlencode
+from urllib.request import Request, build_opener, HTTPRedirectHandler
+
+ROOT = Path(__file__).resolve().parents[1]
+CATALOG = Path("catalog/source-library/treasury-fiscaldata.json")
+OUTPUT = Path("publication/source-library")
+BASE = "https://api.fiscaldata.treasury.gov/services/api/fiscal_service/"
+PAGE_SIZE = 1000
+MAX_PAGES = 120
+MAX_PAGE_BYTES = 7_000_000
+MAX_YEAR_BYTES = 7_000_000
+ID = re.compile(r"^[a-z][a-z0-9-]{3,70}$")
+ENDPOINT = re.compile(r"^v[12]/accounting/(?:od|dts)/[a-z0-9_]{2,75}$")
+DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+HEX = re.compile(r"^[0-9a-f]{64}$")
+
+
+class SourceLibraryError(ValueError):
+    pass
+
+
+def assert_that(value, reason):
+    if not value:
+        raise SourceLibraryError(reason)
+
+
+def canonical(obj):
+    return (json.dumps(obj, sort_keys=True, separators=(",", ":"),
+                       ensure_ascii=True, allow_nan=False) + "\n").encode("utf-8")
+
+
+def digest(content):
+    return hashlib.sha256(content).hexdigest()
+
+
+def validate_catalog(catalog):
+    assert_that(catalog.get("schemaVersion") == "1.0.0" and
+                catalog.get("publisherApi") == BASE and
+                catalog.get("refreshCadence") == "weekly" and
+                catalog.get("datasetClass") == "source-native-unreviewed",
+                "Unrecognized source mirror catalog")
+    datasets = catalog.get("datasets")
+    assert_that(isinstance(datasets, list) and 1 <= len(datasets) <= 30,
+                "Source count not bounded")
+    seen = set()
+    for item in datasets:
+        assert_that(isinstance(item, dict), "Source descriptor malformed")
+        key = item.get("id")
+        assert_that(isinstance(key, str) and ID.fullmatch(key) and key not in seen,
+                    "Duplicate or unsafe source ID")
+        seen.add(key)
+        assert_that(isinstance(item.get("endpoint"), str) and
+                    ENDPOINT.fullmatch(item["endpoint"]) and
+                    item.get("dateField") == "record_date" and
+                    isinstance(item.get("sourcePage"), str) and
+                    item["sourcePage"].startswith("https://fiscaldata.treasury.gov/datasets/"),
+                    "Unapproved federal origin or endpoint")
+        assert_that(isinstance(item.get("title"), str) and
+                    4 <= len(item["title"]) <= 110 and
+                    isinstance(item.get("description"), str) and
+                    20 <= len(item["description"]) <= 450 and
+                    isinstance(item.get("unit"), str) and len(item["unit"]) <= 40 and
+                    (item.get("preferredField") is None or
+                     re.fullmatch(r"[a-z_]{3,70}", item["preferredField"])) and
+                    type(item.get("maxRows")) is int and
+                    1 <= item["maxRows"] <= 120000,
+                    "Invalid source metric, description or row ceiling")
+
+
+class NoRedirects(HTTPRedirectHandler):
+    def redirect_request(self, request, fp, code, message, headers, newurl):
+        raise SourceLibraryError("Treasury redirect not allowed")
+
+
+def acquire(url, opener=None):
+    assert_that(url.startswith(BASE) and "@" not in url and "#" not in url,
+                "Unapproved upstream URL")
+    opener = opener or build_opener(NoRedirects())
+    request = Request(url, headers={
+        "User-Agent": "ARFI-Source-Library/1.0 (https://www.arfinstitute.org/)",
+        "Accept": "application/json", "Accept-Encoding": "identity",
+    })
+    last = None
+    for attempt in range(3):
+        try:
+            with opener.open(request, timeout=40) as response:
+                assert_that(response.geturl() == url, "Unexpected Treasury redirect")
+                header_size = response.headers.get("Content-Length")
+                if header_size is not None:
+                    assert_that(int(header_size) <= MAX_PAGE_BYTES,
+                                "Publisher payload exceeds byte ceiling")
+                data = response.read(MAX_PAGE_BYTES + 1)
+                assert_that(0 < len(data) <= MAX_PAGE_BYTES,
+                            "Publisher payload empty or oversized")
+                return json.loads(data.decode("utf-8"))
+        except (HTTPError, URLError, TimeoutError, OSError) as exc:
+            last = exc
+            if attempt < 2:
+                time.sleep(1 + attempt)
+    raise SourceLibraryError("Treasury acquisition failed: " + str(last))
+
+
+def pages(spec, opener=None):
+    """Full available publisher history; pagination never silently truncates."""
+    endpoint = spec["endpoint"]
+    result = []
+    declared_total = None
+    for number in range(1, MAX_PAGES + 1):
+        params = urlencode({"format": "json", "sort": "record_date",
+                            "page[number]": str(number),
+                            "page[size]": str(PAGE_SIZE)})
+        url = BASE + endpoint + "?" + params
+        doc = acquire(url, opener=opener)
+        assert_that(isinstance(doc, dict) and isinstance(doc.get("data"), list),
+                    "Unexpected Treasury API response")
+        meta = doc.get("meta") or {}
+        assert_that(isinstance(meta, dict), "Malformed source pagination metadata")
+        if declared_total is None and "total-count" in meta:
+            declared_total = int(meta["total-count"])
+        rows = doc["data"]
+        assert_that(len(rows) <= PAGE_SIZE, "Treasury page exceeded requested size")
+        assert_that(rows or number > 1, "No source records returned")
+        for row in rows:
+            assert_that(isinstance(row, dict) and 1 <= len(row) <= 160 and
+                        all(isinstance(k, str) and re.fullmatch(r"[a-z0-9_]{1,90}", k)
+                            for k in row) and
+                        all(v is None or type(v) in (str, int, float, bool)
+                            for v in row.values()),
+                        "Malformed original publisher record")
+            date = row.get(spec["dateField"])
+            assert_that(type(date) is str and DATE.fullmatch(date),
+                        "Unrecognized source record date")
+            try:
+                when = datetime.strptime(date, "%Y-%m-%d").date()
+            except ValueError:
+                raise SourceLibraryError("Invalid Gregorian source date") from None
+            assert_that(when.year >= 1900 and
+                        when <= datetime.now(timezone.utc).date() + timedelta(days=1),
+                        "Unexpected future or pre-1900 publication date")
+        result.extend(rows)
+        assert_that(len(result) <= spec["maxRows"],
+                    "Source exceeds configured safe-history ceiling")
+        if len(rows) < PAGE_SIZE:
+            if declared_total is not None:
+                assert_that(len(result) == declared_total,
+                            "Treasury API returned incomplete history")
+            break
+    else:
+        raise SourceLibraryError("Unbounded Treasury pagination; not publishing partial history")
+    assert_that(len(set(canonical(row) for row in result)) == len(result),
+                "Duplicate Treasury rows across publisher pages")
+    return sorted(result, key=lambda r: (r[spec["dateField"]], canonical(r)))
+
+
+def partition(spec, records):
+    groups = {}
+    for row in records:
+        year = int(row[spec["dateField"]][:4])
+        groups.setdefault(year, []).append(row)
+    partitions = []
+    blobs = {}
+    for year in sorted(groups):
+        doc = {"schemaVersion": "1.0.0", "sourceClass": "official-raw-values",
+               "datasetId": spec["id"], "year": year,
+               "dateField": spec["dateField"], "records": groups[year]}
+        payload = canonical(doc)
+        assert_that(len(payload) <= MAX_YEAR_BYTES,
+                    "Annual source partition exceeds GitHub-serving limit")
+        path = f"publication/source-library/data/{spec['id']}/{year}.json"
+        parts = groups[year]
+        partitions.append({"year": year, "path": path, "sha256": digest(payload),
+                           "bytes": len(payload), "rows": len(parts),
+                           "firstDate": parts[0][spec["dateField"]],
+                           "lastDate": parts[-1][spec["dateField"]]})
+        blobs[path] = payload
+    assert_that(bool(partitions), "Source has no dated records")
+    return partitions, blobs
+
+
+def verify(root=ROOT):
+    index_path = Path(root) / OUTPUT / "index.json"
+    index = json.loads(index_path.read_text("utf-8"))
+    assert_that(index.get("schemaVersion") == "1.0.0" and
+                index.get("sourceClass") == "automated-official-source-copy" and
+                isinstance(index.get("datasets"), list) and index["datasets"],
+                "No verified source library")
+    for entry in index["datasets"]:
+        assert_that(ID.fullmatch(entry["id"]) and
+                    isinstance(entry.get("partitions"), list), "Invalid source metadata")
+        total = 0
+        years = set()
+        for part in entry["partitions"]:
+            year = part["year"]
+            assert_that(type(year) is int and 1900 <= year <= 2150 and year not in years and
+                        part["path"] == f"publication/source-library/data/{entry['id']}/{year}.json",
+                        "Unrecognized or duplicate annual partition")
+            years.add(year)
+            payload = (Path(root) / part["path"]).read_bytes()
+            assert_that(len(payload) == part["bytes"] and digest(payload) == part["sha256"] and
+                        HEX.fullmatch(part["sha256"]), "Source partition digest mismatch")
+            doc = json.loads(payload)
+            assert_that(doc["datasetId"] == entry["id"] and doc["year"] == year and
+                        len(doc["records"]) == part["rows"], "Source partition record mismatch")
+            total += part["rows"]
+        assert_that(total == entry["rowCount"], "Source dataset row-count mismatch")
+    return {"datasets": len(index["datasets"]),
+            "records": sum(d["rowCount"] for d in index["datasets"])}
+
+
+def refresh(root=ROOT, catalog=None, loader=pages, now=None):
+    root = Path(root)
+    catalog = catalog or json.loads((root / CATALOG).read_text("utf-8"))
+    validate_catalog(catalog)
+    checked_at = now or datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+    directory = root / OUTPUT
+    old_file = directory / "index.json"
+    old = json.loads(old_file.read_text("utf-8")) if old_file.exists() else {"datasets": []}
+    previous = {d["id"]: d for d in old.get("datasets", [])}
+    fresh, failures = {}, {}
+    for spec in catalog["datasets"]:
+        try:
+            records = loader(spec)
+            assert_that(isinstance(records, list) and records, "Empty publisher result")
+            records.sort(key=lambda r: (r[spec["dateField"]], canonical(r)))
+            partitions, blobs = partition(spec, records)
+            if spec["id"] in previous:
+                prior = previous[spec["id"]]["rowCount"]
+                assert_that(len(records) >= prior * .8,
+                            "Publisher history shrank unexpectedly; keeping prior snapshot")
+            for path, payload in blobs.items():
+                target = root / path
+                target.parent.mkdir(parents=True, exist_ok=True)
+                if not target.is_file() or target.read_bytes() != payload:
+                    target.write_bytes(payload)
+            fresh[spec["id"]] = {
+                "id": spec["id"], "title": spec["title"], "domain": spec["domain"],
+                "description": spec["description"], "sourcePage": spec["sourcePage"],
+                "publisher": catalog["publisher"], "endpoint": BASE + spec["endpoint"],
+                "dateField": spec["dateField"], "preferredField": spec["preferredField"],
+                "unit": spec["unit"], "refreshCadence": "weekly",
+                "rowCount": len(records), "firstDate": partitions[0]["firstDate"],
+                "latestDate": partitions[-1]["lastDate"],
+                "partitions": partitions, "sourceClass": "source-native-unreviewed",
+            }
+        except (ValueError, RuntimeError, KeyError, TypeError, OSError) as exc:
+            failures[spec["id"]] = str(exc)[:250]
+            if spec["id"] in previous:
+                fresh[spec["id"]] = previous[spec["id"]]
+    # Do not publish the source mirror if all new source acquisitions failed.
+    assert_that(len(fresh) > 0 and len(failures) < len(catalog["datasets"]),
+                "All authoritative source acquisitions failed; previous publication preserved")
+    index = {"schemaVersion": "1.0.0",
+             "sourceClass": "automated-official-source-copy",
+             "sourceSystem": "U.S. Treasury Fiscal Data API",
+             "refreshCadence": "weekly",
+             "datasets": [fresh[id] for id in sorted(fresh)]}
+    directory.mkdir(parents=True, exist_ok=True)
+    contents = canonical(index)
+    if not old_file.is_file() or old_file.read_bytes() != contents:
+        old_file.write_bytes(contents)
+    health = {"schemaVersion": "1.0.0", "checkedAt": checked_at,
+              "attempted": len(catalog["datasets"]),
+              "succeeded": len(catalog["datasets"]) - len(failures),
+              "failed": failures,
+              "nextExpectedCheck": "within 7 days of last successful scheduled run"}
+    (directory / "health.json").write_bytes(canonical(health))
+    verification = verify(root)
+    return {**verification, "failedSources": failures,
+            "checkedAt": checked_at}
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--verify", action="store_true",
+                        help="Verify retained GitHub source bytes and checksums")
+    args = parser.parse_args()
+    result = verify() if args.verify else refresh()
+    print(json.dumps(result, sort_keys=True))
+    if result.get("failedSources"):
+        print("WARNING: One or more source feeds failed; previously published datasets kept.")
+
+
+if __name__ == "__main__":
+    main()
