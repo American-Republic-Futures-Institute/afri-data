@@ -45,6 +45,8 @@ jobs:
           PY
       - name: Validate complete source publication and original-byte replay
         run: python tools/validate.py
+      - name: Verify published originals cannot implicitly acquire method eligibility
+        run: python -m arfi_stats.eligibility --verify-profiles
       - name: Run all offline data publication and security tests
         run: python -m unittest discover -s tests -v
       - name: Add original official publisher bytes to the existing PR branch
