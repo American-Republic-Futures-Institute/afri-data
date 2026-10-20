@@ -1,38 +1,43 @@
-name: STAT-06A inspect official 2024 ACS table-based source
+name: STAT-06A stage original publisher B19013 into candidate PR
 on:
   push:
     branches: [feat/stat06a-acs-income-publication]
     paths:
       - .github/workflows/stat06a-acquire.yml
 permissions:
-  contents: read
+  contents: write
 jobs:
-  official-source-inspection:
+  ingest-official-census-source:
     if: github.repository == 'American-Republic-Futures-Institute/afri-data'
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 18
     steps:
       - uses: actions/checkout@v4
-      - name: Inspect published B19013 table-based raw CSV rows
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install pinned evidence dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Acquire official B19013 original and stage state income release
+        run: python -m pipelines.census_acs_release
+      - name: Validate complete source publication and original-byte replay
+        run: python tools/validate.py
+      - name: Run all offline data publication and security tests
+        run: python -m unittest discover -s tests -v
+      - name: Add original official publisher bytes to the existing PR branch
         shell: bash
         run: |
-          python - <<'PY'
-          import io,csv,hashlib
-          from urllib.request import Request,urlopen
-          url='https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/data/5YRData/acsdt5y2024-b19013.dat'
-          request=Request(url,headers={'User-Agent':'ARFI-Public-Data-Observatory/1.0','Accept':'text/plain,*/*','Accept-Encoding':'identity'})
-          with urlopen(request,timeout=55) as f:
-              print('SOURCE_HTTP',f.status,'content-type',f.headers.get('Content-Type'))
-              raw=f.read(22000000)
-              print('SOURCE_URL',f.geturl(),'SOURCE_BYTES',len(raw),'SHA256',hashlib.sha256(raw).hexdigest())
-          reader=csv.reader(io.StringIO(raw.decode('utf-8-sig')))
-          for i,row in enumerate(reader):
-              if i<5:print('SOURCE_HEADER_ROW',i,repr(row[:12])[:600])
-              if i>100:break
-          print('SOURCE_FIRST_700',repr(raw[:700]))
-          selected=[line.decode('utf8','replace') for line in raw.splitlines()
-                    if line.startswith(b'0400000US')]
-          print('SOURCE_STATE_0400000US_ROWS',len(selected))
-          print('SOURCE_STATE_GEOIDS',[x.split('|')[0] for x in selected])
-          print('SOURCE_STATE_SAMPLES',selected[:5],selected[-4:])
-          PY
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add publication/
+          if git diff --cached --quiet; then
+            echo "No changed source evidence to commit."
+            exit 0
+          fi
+          git commit -m "data(stat06a): publish original official 2024 ACS B19013 evidence candidate"
+          git push origin HEAD:refs/heads/feat/stat06a-acs-income-publication
+          echo "::notice::Original publisher archive and derived income/MOE records committed to open PR #51."
