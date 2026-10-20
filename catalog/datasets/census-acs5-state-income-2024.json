@@ -5,7 +5,7 @@
   "kind": "survey",
   "stage": "integration-ready",
   "geography": "state",
-  "sourceUrl": "https://api.census.gov/data/2024/acs/acs5?get=NAME%2CB19013_001E%2CB19013_001M&for=state%3A%2A",
+  "sourceUrl": "https://www2.census.gov/programs-surveys/acs/summary_file/2024/table-based-SF/data/5YRData/acsdt5y2024-b19013.dat",
   "methodologyUrl": "https://www.census.gov/programs-surveys/acs/technical-documentation.html",
   "temporalCoverage": {
     "vintage": 2024,
@@ -13,17 +13,17 @@
     "endYear": 2024
   },
   "sourceVariables": [
-    "NAME",
-    "B19013_001E",
-    "B19013_001M",
-    "state"
+    "GEO_ID",
+    "B19013_E001",
+    "B19013_M001"
   ],
   "limitations": [
     "Five-year ACS estimate pools survey responses for 2020–2024 and is expressed in 2024 inflation-adjusted dollars.",
     "B19013_001M is an ACS margin of error, not a standard deviation or an independent statistic.",
-    "Data API requires a Census API key for live acquisition, which must remain a workflow secret.",
+    "Official table-based 2024 ACS five-year B19013 Summary File is publicly downloadable without an API key; original pipe-delimited source bytes are archived in the release.",
     "Missing and suppressed estimates are never silently replaced by zeros.",
     "Longitudinal comparisons with overlapping ACS five-year periods require additional statistical care."
   ],
-  "licenseStatus": "us-federal-public-domain"
+  "licenseStatus": "us-federal-public-domain",
+  "notes": "Official table-based Summary File's B19013_E001 estimate and B19013_M001 margin of error correspond to ACS API variables B19013_001E and B19013_001M; GEO_ID 0400000USxx selects 50 states, DC and Puerto Rico. All source geography rows are preserved in original archive, with only 52 state-equivalent observations projected."
 }

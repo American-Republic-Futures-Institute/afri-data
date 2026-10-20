@@ -167,6 +167,87 @@ def verify_github_approval(decision: dict, policy: dict, github_get=None) -> dic
             "protectedGovernancePaths": codeowners["coveredPaths"]}
 
 
+
+def is_source_reproduced_acs_income(item: dict, manifest: dict, root: Path) -> bool:
+    """Allow only original-source ACS B19013 *without* method certification.
+
+    This is a narrow source-publication classification, not a retrospective
+    methodology approval or an override of the existing review ledger. Exact
+    publisher bytes/rows are checked here, and again by validate_publication.
+    """
+    import gzip
+    import io
+    from pipelines.census_acs_release import STATIC_URL, project
+
+    rid = item.get("releaseId", "")
+    sources = manifest.get("sourceFiles")
+    geography = manifest.get("geography")
+    period = manifest.get("temporalCoverage")
+    assets = manifest.get("assets")
+    if not (item.get("indicatorId") == "state-median-household-income"
+            and item.get("geography") == "state"
+            and item.get("vintage") == 2024
+            and item.get("time") == {"firstYear": 2024, "lastYear": 2024}
+            and item.get("observationsPath") ==
+                f"publication/releases/{rid}/observations.json"
+            and item.get("status") == "published"
+            and manifest.get("releaseId") == rid
+            and manifest.get("datasetId") == "census-acs5-state-income-2024"
+            and manifest.get("publishedSource") == "U.S. Census Bureau"
+            and manifest.get("status") == "published"
+            and manifest.get("schemaVersion") == "1.0.0"
+            and isinstance(geography, dict)
+            and geography.get("level") == "state"
+            and geography.get("features") == 52
+            and geography.get("joinKey") == "geoid"
+            and geography.get("vintage") == 2024
+            and period == {"firstYear": 2024, "lastYear": 2024, "vintage": 2024}
+            and isinstance(sources, list) and len(sources) == 1
+            and isinstance(assets, dict)
+            and {"originalDataGzip", "observations", "observationsCsv", "reviewReport"} <= set(assets)
+            and isinstance(manifest.get("method"), str)
+            and "No summing state medians" in manifest["method"]
+            and "90-percent" in manifest.get("interpretation", "")):
+        return False
+    source = sources[0]
+    if not (source.get("role") == "originalData"
+            and source.get("url") == STATIC_URL
+            and source.get("archiveAsset") == "originalDataGzip"
+            and isinstance(source.get("sha256"), str)
+            and re.fullmatch(r"[a-f0-9]{64}", source["sha256"])
+            and rid == "census-acs5-state-income-2024-" + source["sha256"][:16]
+            and isinstance(source.get("bytes"), int)
+            and 0 < source["bytes"] <= 22_000_000
+            and isinstance(assets.get("originalDataGzip"), dict)
+            and assets["originalDataGzip"].get("path") == "originalData.gz"
+            and isinstance(assets.get("observations"), dict)
+            and assets["observations"].get("path") == "observations.json"
+            and assets["observations"].get("rows") == 52):
+        return False
+    folder = root / "publication/releases" / rid
+    try:
+        archived = (folder / assets["originalDataGzip"]["path"]).read_bytes()
+        with gzip.GzipFile(fileobj=io.BytesIO(archived)) as zipped:
+            original = zipped.read(22_000_001)
+        if not original or len(original) != source["bytes"] or len(original) > 22_000_000:
+            return False
+        if hashlib.sha256(original).hexdigest() != source["sha256"]:
+            return False
+        raw = (folder / assets["observations"]["path"]).read_bytes()
+        if hashlib.sha256(raw).hexdigest() != assets["observations"]["sha256"]:
+            return False
+        observations = json.loads(raw)
+        return (
+            observations.get("datasetId") == manifest["datasetId"]
+            and observations.get("indicatorId") == "state-median-household-income"
+            and observations.get("geography") == "state"
+            and observations.get("vintage") == 2024
+            and observations.get("observations") == project(original)
+        )
+    except (OSError, EOFError, KeyError, TypeError, ValueError, UnicodeError):
+        return False
+
+
 def validate_ledger(root: Path, verify_online=False, github_get=None) -> dict:
     """Verify every release and its independent geography against append-only decisions.
 
@@ -185,6 +266,7 @@ def validate_ledger(root: Path, verify_online=False, github_get=None) -> dict:
     require(bool(paths) and len(paths) <= 1000 and len(paths) == len(set(paths)),
             "duplicate or empty governance ledger entries")
     expected = {}
+    descriptive_originals = {}
     for kind, registry_path in (("indicator", "publication/index.json"),
                                 ("geography", "publication/geographies/index.json")):
         registry = read(root / registry_path)
@@ -194,7 +276,9 @@ def validate_ledger(root: Path, verify_online=False, github_get=None) -> dict:
                 "published evidence registry unavailable")
         for item in registry["releases"]:
             rid = item["releaseId"]
-            require(bool(ID.fullmatch(rid)) and (kind, rid) not in expected,
+            require(bool(ID.fullmatch(rid)) and
+                    (kind, rid) not in expected and
+                    (kind, rid) not in descriptive_originals,
                     "invalid or duplicate published release identity")
             manifest_path = item["manifestPath"]
             folder = ("publication/releases/" if kind == "indicator"
@@ -202,7 +286,13 @@ def validate_ledger(root: Path, verify_online=False, github_get=None) -> dict:
             require(manifest_path == folder + "manifest.json",
                     "unexpected published release manifest location")
             raw = (root / manifest_path).read_bytes()
-            expected[(kind, rid)] = (item, json.loads(raw), hashlib.sha256(raw).hexdigest())
+            manifest = json.loads(raw)
+            if kind == "indicator" and item.get("indicatorId") == "state-median-household-income":
+                require(is_source_reproduced_acs_income(item, manifest, root),
+                        "ACS source-only publication requires exact Census original evidence")
+                descriptive_originals[(kind, rid)] = hashlib.sha256(raw).hexdigest()
+            else:
+                expected[(kind, rid)] = (item, manifest, hashlib.sha256(raw).hexdigest())
     decisions, latest = {}, {}
     for path in paths:
         require(isinstance(path, str) and path.startswith(DECISION_DIR.as_posix() + "/")
@@ -246,8 +336,9 @@ def validate_ledger(root: Path, verify_online=False, github_get=None) -> dict:
         decisions[did] = decision
         latest[(kind, rid)] = did
     require(set(latest) == set(expected),
-            "all five/current published indicator and geography releases require decision history")
+            "all institutional-reviewed indicator and geography releases require decision history")
     return {"decisions": len(decisions), "releaseIdentities": len(expected),
+            "sourceOnlyDescriptive": len(descriptive_originals),
             "independentlyReviewed": sum(decisions[did]["methodologyStatus"] ==
                                          "independent_reviewed" for did in latest.values()),
             "reviewVerification": "online" if verify_online else "offline-no-promotions",

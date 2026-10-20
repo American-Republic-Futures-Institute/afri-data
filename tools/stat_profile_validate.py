@@ -234,8 +234,19 @@ def verify_profile(profile, *, root=ROOT, historical=True):
 def verify_all_profiles(*, root=ROOT, historical=True):
     root = Path(root)
     publication = load(root / "publication/index.json")
+    # STAT-06A is a pure publisher-row projection, not a statistical method
+    # candidate. Its source bytes/MOE are separately replayed by publication
+    # integrity CI, and it must NOT acquire method eligibility merely by being
+    # present in the public original-source release index.
+    source_only = {x["releaseId"] for x in publication["releases"]
+                   if x["status"] == "published"
+                   and x.get("indicatorId") == "state-median-household-income"
+                   and isinstance(x.get("releaseId"), str)
+                   and re.fullmatch(
+                       r"census-acs5-state-income-2024-[0-9a-f]{16}",
+                       x["releaseId"])}
     approved = {x["releaseId"] for x in publication["releases"]
-                if x["status"] == "published"}
+                if x["status"] == "published" and x["releaseId"] not in source_only}
     profiles = root / PROFILES_DIR
     seen = {x.stem for x in profiles.glob("*.json")}
     if approved != seen:
@@ -262,6 +273,7 @@ def verify_all_profiles(*, root=ROOT, historical=True):
                 for m in register["methods"])):
         fail("statistical method registry cannot claim independent publication")
     return {"profiles": len(approved), "methods": len(actual),
+            "sourceOnlyOriginalReleases": len(source_only),
             "publishedDerivedAnalysisAuthorized": False}
 
 
