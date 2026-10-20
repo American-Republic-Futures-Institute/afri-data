@@ -30,4 +30,9 @@ jobs:
               if i<5:print('SOURCE_HEADER_ROW',i,repr(row[:12])[:600])
               if i>100:break
           print('SOURCE_FIRST_700',repr(raw[:700]))
+          selected=[line.decode('utf8','replace') for line in raw.splitlines()
+                    if line.startswith(b'0400000US')]
+          print('SOURCE_STATE_0400000US_ROWS',len(selected))
+          print('SOURCE_STATE_GEOIDS',[x.split('|')[0] for x in selected])
+          print('SOURCE_STATE_SAMPLES',selected[:5],selected[-4:])
           PY
