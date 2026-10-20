@@ -1,7 +1,9 @@
 """Secure reproducible acquisition and staging for official ACS 2024 state income.
 
-The API key is used for transport only; it is forbidden in output artifacts,
-provenance URLs and logs. This pipeline never merges published data into main.
+Downloads Census's public table-based 5-year B19013 Summary File without an
+API key. Archives all publisher bytes, projects only 52 state-equivalent rows,
+and records estimate, original margin of error and suppression status.
+This pipeline never merges its candidate release into main.
 """
 from __future__ import annotations
 
@@ -15,7 +17,7 @@ import tempfile
 from urllib.parse import urlencode
 
 from pipelines.census_acs_income import (
-    ACS_YEAR, ESTIMATE, MOE, OFFICIAL_URL, parse_acs_state_income,
+    ACS_YEAR, ESTIMATE, MOE, OFFICIAL_URL, parse_acs_state_income, parse_acs_table_based_income,
 )
 from pipelines.census_state_population import FIPS
 from pipelines.evidence_publish import stage_release
@@ -25,12 +27,14 @@ from tools.validate import validate_publication
 ROOT = Path(__file__).resolve().parents[1]
 PUBLIC_QUERY = urlencode({"get":f"NAME,{ESTIMATE},{MOE}","for":"state:*"})
 PUBLIC_URL = f"{OFFICIAL_URL}?{PUBLIC_QUERY}"
+STATIC_URL = ("https://www2.census.gov/programs-surveys/acs/summary_file/2024/"
+              "table-based-SF/data/5YRData/acsdt5y2024-b19013.dat")
 DATASET_ID = "census-acs5-state-income-2024"
 INDICATOR_ID = "state-median-household-income"
 
 
 def project(original: bytes) -> list[dict]:
-    rows = parse_acs_state_income(original)
+    rows = parse_acs_table_based_income(original)
     geographic_ids={row["geoid"] for row in rows}
     if geographic_ids != FIPS:
         raise ValueError("ACS coverage differs from the 52 approved state and equivalent identifiers")
@@ -49,16 +53,19 @@ def stage(root: Path, original: bytes) -> dict:
         publisher_name="U.S. Census Bureau",
         geography="state",year=ACS_YEAR,vintage=ACS_YEAR,
         geography_vintage=2024,first_year=2024,last_year=2024,
-        observations=rows,originals=[("originalData",PUBLIC_URL,original)],
-        method=("Use the official 2024 five-year ACS Detailed Table B19013; "
-                "preserve state GEOID strings, B19013_001E estimate, B19013_001M "
-                "margin of error, source suppression codes, and separate "
-                "published statistical status. Reference period is 2020–2024, "
-                "with dollar values expressed in inflation-adjusted 2024 USD."),
-        warnings=("These are five-year ACS survey estimates, "
-                  "not a single-calendar-year income census. 2020–2024 "
-                  "pooled periods, median income MOE and response suppression "
-                  "require explicit display. Do not use absent values as zero."),
+        observations=rows,originals=[("originalData",STATIC_URL,original)],
+        method=("Source: official Census 2024 ACS five-year table-based Summary File B19013; "
+                "select only original 0400000USxx publisher geographies. "
+                "Preserve the GEO_ID, B19013_E001 estimate and B19013_M001 "
+                "margin of error, equivalent to API B19013_001E/B19013_001M. "
+                "No summing state medians, recalculating uncertainty, or imputation. "
+                "Reference period 2020-2024, inflation-adjusted 2024 USD."),
+        warnings=("ACS 2020-2024 pooled survey estimate in 2024 inflation-adjusted USD; "
+                  "not a single-year 2024 income measurement. Census B19013 published "
+                  "margin of error is a 90-percent survey MOE, not a standard "
+                  "deviation or a newly computed confidence interval. "
+                  "Unavailable and suppressed values remain null, never zero. "
+                  "State medians are not additive or household-weighted."),
     )
     return {"releaseId":rid, "records":len(rows),
             "sourceSha256":sha256(original).hexdigest(),
@@ -74,6 +81,11 @@ def acquire(key: str) -> bytes:
     return download_official(remote,host="api.census.gov",limit=1_000_000)
 
 
+def acquire_static() -> bytes:
+    """Acquire only the official publisher-hosted immutable 2024 B19013 table file."""
+    return download_official(STATIC_URL,host="www2.census.gov",limit=22_000_000)
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source-file",type=Path)
@@ -84,10 +96,8 @@ def main():
         if len(original)>1_000_000:
             raise SystemExit("Source file exceeds approved ACS response limit")
     else:
-        key=os.environ.get("CENSUS_API_KEY","")
-        if not key:
-            raise SystemExit("CENSUS_API_KEY workflow secret required for live Census ACS acquisition")
-        original=acquire(key)
+        # Key-free official table-based summary download, not the authenticated API.
+        original=acquire_static()
     with tempfile.TemporaryDirectory() as tmp:
         root=Path(tmp)
         prior=args.out_root/"publication"
