@@ -21,7 +21,7 @@ CATALOG = Path("catalog/source-library/treasury-fiscaldata.json")
 OUTPUT = Path("publication/source-library")
 BASE = "https://api.fiscaldata.treasury.gov/services/api/fiscal_service/"
 PAGE_SIZE = 1000
-MAX_PAGES = 120
+MAX_PAGES = 600
 MAX_PAGE_BYTES = 7_000_000
 MAX_YEAR_BYTES = 7_000_000
 ID = re.compile(r"^[a-z][a-z0-9-]{3,70}$")
@@ -78,7 +78,7 @@ def validate_catalog(catalog):
                     (item.get("preferredField") is None or
                      re.fullmatch(r"[a-z_]{3,70}", item["preferredField"])) and
                     type(item.get("maxRows")) is int and
-                    1 <= item["maxRows"] <= 120000,
+                    1 <= item["maxRows"] <= 500000,
                     "Invalid source metric, description or row ceiling")
 
 
