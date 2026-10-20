@@ -91,14 +91,16 @@
             "population-stock",
             "published-rate",
             "administrative-money-flow",
-            "publisher-modeled-prevalence"
+            "publisher-modeled-prevalence",
+            "survey-median"
           ]
         },
         "scale": {
           "enum": [
             "count",
             "rate",
-            "monetary-flow"
+            "monetary-flow",
+            "monetary-estimate"
           ]
         },
         "unit": {
@@ -178,7 +180,8 @@
             "publisher-demographic-estimate",
             "published-unadjusted-labor-survey-estimate",
             "publisher-geographic-transaction-aggregate",
-            "publisher-small-area-model"
+            "publisher-small-area-model",
+            "acs-five-year-household-survey"
           ]
         },
         "denominatorAvailability": {
@@ -190,6 +193,33 @@
         },
         "publisherModelled": {
           "type": "boolean"
+        },
+        "marginOfError": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "field",
+                "confidenceLevel",
+                "kind"
+              ],
+              "properties": {
+                "field": {
+                  "const": "marginOfError"
+                },
+                "confidenceLevel": {
+                  "const": 0.9
+                },
+                "kind": {
+                  "const": "publisher-survey-margin-of-error"
+                }
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       }
     },
@@ -237,7 +267,8 @@
             "population-july-1",
             "qualified-annual-average",
             "fiscal-year-transactions",
-            "modeled-reference-year"
+            "modeled-reference-year",
+            "acs-five-year-pooled"
           ]
         },
         "sourceRows": {
@@ -276,7 +307,8 @@
             "enum": [
               "year",
               "stateAbbr",
-              "fips"
+              "fips",
+              "geoid"
             ]
           }
         }

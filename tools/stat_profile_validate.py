@@ -138,6 +138,8 @@ def verify_profile(profile, *, root=ROOT, historical=True):
         "administrative-money-flow": (
             "reported_award_transaction_obligations", "published-administrative-aggregate",
             "publisher-geographic-transaction-aggregate", "monetary-flow", "USD"),
+        "survey-median": ("survey_estimate", "original-publisher-estimate",
+                          "acs-five-year-household-survey", "monetary-estimate", "USD"),
         "publisher-modeled-prevalence": (
             "model_based_estimate", "modeled",
             "publisher-small-area-model", "rate", "percent"),
@@ -149,6 +151,18 @@ def verify_profile(profile, *, root=ROOT, historical=True):
             measure["scale"] != required_scale or
             measure["unit"] != required_unit):
         fail("statistical measurement family conflicts with original publisher classification")
+    if measure["family"] == "survey-median":
+        if (coverage["temporalKind"] != "acs-five-year-pooled" or
+                coverage["firstYear"] != coverage["lastYear"] or
+                coverage["firstYear"] != 2024 or
+                measure.get("marginOfError") != {"field": "marginOfError",
+                    "confidenceLevel": 0.9, "kind": "publisher-survey-margin-of-error"} or
+                measure["intervalFields"] is not None or
+                measure["exactAmountField"] is not None or
+                coverage["allowedSegments"] != ["geoid"]):
+            fail("ACS pooled period and publisher 90-percent margin-of-error contract mismatch")
+    elif measure.get("marginOfError") is not None:
+        fail("non-ACS publisher MOE cannot be introduced without a reviewed contract")
     seen = set()
     counts = {"available": 0, "not_available": 0}
     annual_months = {}
@@ -190,6 +204,15 @@ def verify_profile(profile, *, root=ROOT, historical=True):
                 fail("available publisher value is not a finite number")
         elif value is not None:
             fail("explicitly unavailable publisher value is not null")
+        if measure["family"] == "survey-median":
+            if (row.get("referencePeriod") != "2020-2024 five-year ACS" or
+                    row.get("sourceVariables") != ["B19013_E001", "B19013_M001"] or
+                    (status == "available" and (type(row.get("marginOfError")) is not int or
+                         row["marginOfError"] < 0)) or
+                    (status != "available" and row.get("marginOfError") is not None)):
+                fail("ACS publisher estimate/MOE or five-year reference period invalid")
+            if status == "available" and (type(value) is not int or value <= 0):
+                fail("ACS published median must be a positive integer USD estimate")
         bound = measure["intervalFields"]
         if bound:
             for col in (bound["lower"], bound["upper"]):
@@ -234,17 +257,7 @@ def verify_profile(profile, *, root=ROOT, historical=True):
 def verify_all_profiles(*, root=ROOT, historical=True):
     root = Path(root)
     publication = load(root / "publication/index.json")
-    # STAT-06A is a pure publisher-row projection, not a statistical method
-    # candidate. Its source bytes/MOE are separately replayed by publication
-    # integrity CI, and it must NOT acquire method eligibility merely by being
-    # present in the public original-source release index.
-    source_only = {x["releaseId"] for x in publication["releases"]
-                   if x["status"] == "published"
-                   and x.get("indicatorId") == "state-median-household-income"
-                   and isinstance(x.get("releaseId"), str)
-                   and re.fullmatch(
-                       r"census-acs5-state-income-2024-[0-9a-f]{16}",
-                       x["releaseId"])}
+    source_only = set()  # STAT-06B requires a verified profile for every published release.
     approved = {x["releaseId"] for x in publication["releases"]
                 if x["status"] == "published" and x["releaseId"] not in source_only}
     profiles = root / PROFILES_DIR

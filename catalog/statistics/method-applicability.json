@@ -10,7 +10,8 @@
       "supportedFamilies": [
         "population-stock",
         "published-rate",
-        "publisher-modeled-prevalence"
+        "publisher-modeled-prevalence",
+        "survey-median"
       ],
       "minimumPublishedYears": 1,
       "definition": "Exploratory distribution of publisher numeric observations across verified same-source geographic units; preserves group counts, does not make inference or weight by residents.",
@@ -24,7 +25,8 @@
       "supportedFamilies": [
         "population-stock",
         "published-rate",
-        "publisher-modeled-prevalence"
+        "publisher-modeled-prevalence",
+        "survey-median"
       ],
       "minimumPublishedYears": 1,
       "definition": "Empirical cumulative share of published numeric observations across declared geographic units, with distinct missingness; no independent-sample inference.",
@@ -38,7 +40,8 @@
       "supportedFamilies": [
         "population-stock",
         "published-rate",
-        "publisher-modeled-prevalence"
+        "publisher-modeled-prevalence",
+        "survey-median"
       ],
       "minimumPublishedYears": 1,
       "definition": "Descriptive empirical quantiles and Tukey outlier candidates from publisher values; no automatic deletion, significance or central tendency for individuals.",
@@ -53,7 +56,8 @@
         "population-stock",
         "published-rate",
         "administrative-money-flow",
-        "publisher-modeled-prevalence"
+        "publisher-modeled-prevalence",
+        "survey-median"
       ],
       "minimumPublishedYears": 1,
       "definition": "Counts of availability statuses only; no ordinal scoring or inferred subject-level properties and no zero imputation.",

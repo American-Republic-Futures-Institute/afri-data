@@ -22,6 +22,7 @@ RELEASES = {
     "bls": "bls-laus-state-unemployment-2025-e1625280119b26c3",
     "treasury": "usaspending-fy2025-state-obligations-775e56a13e40db59",
     "cdc": "cdc-places-county-obesity-2025-ec00ab31716eccca",
+    "acs": "census-acs5-state-income-2024-b25a176b0e6c339b",
 }
 METHODS = {
     "histogram": "numpy.histogram/1",
@@ -78,9 +79,9 @@ def decide(value):
 
 
 class StatisticalEligibilityTests(unittest.TestCase):
-    def test_exact_four_approved_profiles_and_exact_seven_methods(self):
+    def test_exact_five_approved_profiles_and_exact_seven_methods(self):
         result = verify_all_profiles()
-        self.assertEqual(result["profiles"], 4)
+        self.assertEqual(result["profiles"], 5)
         self.assertEqual(result["methods"], 7)
         self.assertFalse(result["publishedDerivedAnalysisAuthorized"])
         release_ids = set(RELEASES.values())
@@ -91,6 +92,7 @@ class StatisticalEligibilityTests(unittest.TestCase):
             self.assertEqual(p["reviewStatus"], "not_independently_certified")
             self.assertTrue(all(v is False for v in p["restrictions"].values()))
             self.assertEqual(p["identity"]["sourceCommit"],
+                             "2ec1e1e950fc2c0135cb1d577a084afccdfa61d7" if name == "acs" else
                              "2a54ab437e083a40ef995d12f4d46366a8eb2963")
 
     def test_source_quality_reports_are_descriptive_and_source_bound(self):
@@ -99,6 +101,7 @@ class StatisticalEligibilityTests(unittest.TestCase):
             "bls": (52, 52, 0, 0),
             "treasury": (52, 52, 0, 5),
             "cdc": (3143, 2956, 187, 0),
+            "acs": (52, 52, 0, 0),
         }
         for name, (rows, available, unavailable, omitted) in expected.items():
             q = quality_report(RELEASES[name])
@@ -113,6 +116,23 @@ class StatisticalEligibilityTests(unittest.TestCase):
         self.assertTrue(quality_report(RELEASES["cdc"])["publisherIntervalAvailable"])
         self.assertTrue(quality_report(RELEASES["cdc"])["publisherModelled"])
         self.assertFalse(quality_report(RELEASES["bls"])["referencePeriodsUniform"])
+
+    def test_acs_is_a_pooled_survey_median_not_a_monetary_flow(self):
+        p = profile("acs")
+        self.assertEqual(p["measurement"]["scale"], "monetary-estimate")
+        self.assertEqual(p["measurement"]["marginOfError"]["confidenceLevel"], 0.9)
+        for method in ("histogram", "ecdf", "boxplot"):
+            result = decide(request("acs", method))
+            self.assertEqual(result["decision"], "qualified")
+            self.assertIn("ACS_FIVE_YEAR_POOLED_NOT_ANNUAL", result["reasonCodes"])
+            self.assertIn("UNWEIGHTED_STATES_NOT_HOUSEHOLDS", result["reasonCodes"])
+        self.assertEqual(decide(request("acs", "frequency"))["decision"], "permitted")
+        self.assertIn("METHOD_INCOMPATIBLE_WITH_MEASUREMENT", decide(request("acs", "interval"))["reasonCodes"])
+        self.assertEqual(decide(request("acs", "time-series", years=[2024],segment="geoid"))["decision"], "denied")
+        copy_profile = copy.deepcopy(p)
+        copy_profile["measurement"]["marginOfError"]["confidenceLevel"] = 0.95
+        with self.assertRaises(StatisticalProfileError):
+            verify_profile(copy_profile)
 
     def test_census_preview_distribution_is_qualified_not_certified(self):
         for method in ("histogram", "ecdf", "boxplot"):
