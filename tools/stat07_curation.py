@@ -76,7 +76,14 @@ def validate_recipe(recipe, source_index, release_manifests):
             if (r.get("unit") != source["measurementUnit"] or
                     r.get("status", "available") not in ("available", "not_available")):
                 raise CurationError("Source unit or missingness contract mismatch")
-        keys = [r.get(source["geographyKey"]) for r in doc.get("observations", [])]
+        period = source["selectionYear"]
+        if not (manifest.get("temporalCoverage", {}).get("firstYear", period) <= period <=
+                manifest.get("temporalCoverage", {}).get("lastYear", period)):
+            raise CurationError("Selected source year outside published temporal coverage")
+        rows = [r for r in doc.get("observations", []) if r.get("year") == period]
+        if not rows:
+            raise CurationError("No published rows in selected source period")
+        keys = [r.get(source["geographyKey"]) for r in rows]
         if not all(isinstance(k, str) and k.isdigit() and
                    len(k) == (2 if doc["geography"] == "state" else 5) for k in keys):
             raise CurationError("Invalid source geography keys")
@@ -85,7 +92,7 @@ def validate_recipe(recipe, source_index, release_manifests):
     if vintages != recipe["compatibility"]["boundaryVintages"] or len(geographies) != 1:
         raise CurationError("Source geography vintages or levels mismatched")
     if recipe["compatibility"]["temporalAlignment"] == "matched-source-periods":
-        if len({tuple((s["temporalInterpretation"],) for s in recipe["inputs"])}) != 1:
+        if len({(s["selectionYear"], s["temporalInterpretation"]) for s in recipe["inputs"]}) != 1:
             raise CurationError("Source periods not independently verified as equivalent")
     return {"recipeSha256": hashlib.sha256(canonical_bytes(recipe)).hexdigest(),
             "inputReleaseIds": ids, "candidateOnly": True,
