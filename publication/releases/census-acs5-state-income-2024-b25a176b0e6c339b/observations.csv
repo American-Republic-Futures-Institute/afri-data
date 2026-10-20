@@ -1,0 +1,53 @@
+geoid,marginOfError,name,referencePeriod,sourceVariables,statistic,status,unit,value,year
+01,399,Alabama,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,63999,2024
+02,1232,Alaska,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,92788,2024
+04,407,Arizona,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,79964,2024
+05,467,Arkansas,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,60773,2024
+06,310,California,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,99122,2024
+08,578,Colorado,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,95470,2024
+09,732,Connecticut,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,95781,2024
+10,1251,Delaware,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,84954,2024
+11,1937,District of Columbia,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,109870,2024
+12,284,Florida,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,74568,2024
+13,407,Georgia,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,77353,2024
+15,1121,Hawaii,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,100389,2024
+16,743,Idaho,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,77800,2024
+17,362,Illinois,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,83390,2024
+18,352,Indiana,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,71957,2024
+19,418,Iowa,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,75059,2024
+20,475,Kansas,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,74275,2024
+21,429,Kentucky,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,63726,2024
+22,408,Louisiana,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,60756,2024
+23,795,Maine,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,74733,2024
+24,597,Maryland,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,103678,2024
+25,527,Massachusetts,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,103960,2024
+26,293,Michigan,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,72875,2024
+27,409,Minnesota,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,89062,2024
+28,539,Mississippi,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,56447,2024
+29,325,Missouri,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,70702,2024
+30,761,Montana,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,72509,2024
+31,633,Nebraska,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,76475,2024
+32,596,Nevada,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,78260,2024
+33,1123,New Hampshire,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,99031,2024
+34,513,New Jersey,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,103556,2024
+35,808,New Mexico,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,64059,2024
+36,402,New York,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,85974,2024
+37,324,North Carolina,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,72388,2024
+38,1163,North Dakota,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,76657,2024
+39,321,Ohio,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,71389,2024
+40,439,Oklahoma,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,65039,2024
+41,573,Oregon,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,83011,2024
+42,342,Pennsylvania,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,77971,2024
+44,1209,Rhode Island,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,87796,2024
+45,570,South Carolina,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,69324,2024
+46,888,South Dakota,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,75081,2024
+47,429,Tennessee,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,69595,2024
+48,263,Texas,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,78476,2024
+49,774,Utah,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,95166,2024
+50,1339,Vermont,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,81203,2024
+51,458,Virginia,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,93170,2024
+53,414,Washington,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,98141,2024
+54,691,West Virginia,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,59608,2024
+55,455,Wisconsin,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,77485,2024
+56,1168,Wyoming,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,76176,2024
+72,261,Puerto Rico,2020-2024 five-year ACS,"['B19013_E001', 'B19013_M001']",survey_estimate,available,USD,26297,2024
