@@ -51,6 +51,7 @@ class ACSPublicationTests(unittest.TestCase):
             r["marginOfError"]==1500 for r in rows))
         self.assertTrue(all(r["status"]=="available" for r in rows))
         self.assertEqual(rows[0]["referencePeriod"],"2020-2024 five-year ACS")
+        self.assertEqual(rows[0]["sourceVariables"],["B19013_E001","B19013_M001"])
         info=stage(self.root,raw)
         release=self.root/"publication/releases"/info["releaseId"]
         manifest=json.loads((release/"manifest.json").read_text())
