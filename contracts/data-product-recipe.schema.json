@@ -1,0 +1,200 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ARFI deterministic cross-source curation recipe",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "type",
+    "productId",
+    "inputs",
+    "compatibility",
+    "operation",
+    "authority"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0.0"
+    },
+    "type": {
+      "const": "ARFI-DataProductRecipe"
+    },
+    "productId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{3,100}$"
+    },
+    "inputs": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "releaseId",
+          "sourceCommit",
+          "observationsSha256",
+          "geographyKey",
+          "temporalInterpretation",
+          "measurementUnit",
+          "selectionYear"
+        ],
+        "properties": {
+          "releaseId": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "sourceCommit": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{40}$"
+          },
+          "observationsSha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "geographyKey": {
+            "enum": [
+              "fips",
+              "geoid"
+            ]
+          },
+          "temporalInterpretation": {
+            "type": "string",
+            "minLength": 12,
+            "maxLength": 600
+          },
+          "measurementUnit": {
+            "enum": [
+              "persons",
+              "percent",
+              "USD"
+            ]
+          },
+          "selectionYear": {
+            "type": "integer",
+            "minimum": 2000,
+            "maximum": 2150
+          }
+        }
+      }
+    },
+    "compatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "geographyLevel",
+        "geographyIdentity",
+        "boundaryVintages",
+        "temporalAlignment",
+        "populationComparability",
+        "expectedCardinality",
+        "missingnessPolicy",
+        "uncertaintyPolicy",
+        "acceptedRisks"
+      ],
+      "properties": {
+        "geographyLevel": {
+          "enum": [
+            "state",
+            "county"
+          ]
+        },
+        "geographyIdentity": {
+          "const": "census-fips"
+        },
+        "boundaryVintages": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "integer",
+            "minimum": 2000,
+            "maximum": 2150
+          }
+        },
+        "temporalAlignment": {
+          "enum": [
+            "separate-source-native-periods",
+            "matched-source-periods"
+          ]
+        },
+        "populationComparability": {
+          "enum": [
+            "not-asserted",
+            "verified-equivalent"
+          ]
+        },
+        "expectedCardinality": {
+          "const": "one-to-one"
+        },
+        "missingnessPolicy": {
+          "const": "preserve-explicit-null-and-omissions"
+        },
+        "uncertaintyPolicy": {
+          "const": "preserve-publisher-native-uncertainty"
+        },
+        "acceptedRisks": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 600
+          }
+        }
+      }
+    },
+    "operation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "joinType",
+        "preserveSourceColumns",
+        "formulas"
+      ],
+      "properties": {
+        "kind": {
+          "const": "source-preserving-join"
+        },
+        "joinType": {
+          "enum": [
+            "inner",
+            "left"
+          ]
+        },
+        "preserveSourceColumns": {
+          "const": true
+        },
+        "formulas": {
+          "type": "array",
+          "maxItems": 0
+        }
+      }
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "publicPublicationAuthorized",
+        "crossSourceStatisticalDerivationAuthorized",
+        "causalInferenceAuthorized"
+      ],
+      "properties": {
+        "status": {
+          "const": "candidate-only"
+        },
+        "publicPublicationAuthorized": {
+          "const": false
+        },
+        "crossSourceStatisticalDerivationAuthorized": {
+          "const": false
+        },
+        "causalInferenceAuthorized": {
+          "const": false
+        }
+      }
+    }
+  }
+}
