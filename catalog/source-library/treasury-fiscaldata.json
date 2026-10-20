@@ -134,7 +134,7 @@
       "dateField": "record_date",
       "preferredField": null,
       "unit": "source-reported USD millions",
-      "maxRows": 110000,
+      "maxRows": 450000,
       "sourcePage": "https://fiscaldata.treasury.gov/datasets/monthly-treasury-statement/"
     }
   ]
