@@ -7,7 +7,7 @@ pioneer dashboards.
 
 ## Scope
 
-`catalog/source-library/treasury-fiscaldata.json` registers six original-source
+`catalog/source-library/treasury-fiscaldata.json` registers eleven original-source
 Treasury Fiscal Data endpoints. Add another feed by adding one bounded
 dataset descriptor; do **not** add a bespoke statistical dashboard first.
 
@@ -17,6 +17,11 @@ dataset descriptor; do **not** add a bespoke statistical dashboard first.
 - Daily debt subject to statutory limit
 - Federal tax deposits
 - Income tax refunds issued
+- Monthly Treasury Statement: receipts, outlays and deficit/surplus summary
+- Monthly Treasury Statement: budget and off-budget financing
+- Monthly Treasury Statement: receipts/outlays summary
+- Monthly Treasury Statement: detailed federal receipts by source
+- Monthly Treasury Statement: detailed federal outlays by function
 
 The existing first-generation Census/BLS/CDC/USAspending releases and
 `publication/index.json` are not changed.
