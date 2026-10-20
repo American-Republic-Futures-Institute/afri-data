@@ -36,7 +36,8 @@
           "observationsSha256",
           "geographyKey",
           "temporalInterpretation",
-          "measurementUnit"
+          "measurementUnit",
+          "selectionYear"
         ],
         "properties": {
           "releaseId": {
@@ -68,6 +69,11 @@
               "percent",
               "USD"
             ]
+          },
+          "selectionYear": {
+            "type": "integer",
+            "minimum": 2000,
+            "maximum": 2150
           }
         }
       }
