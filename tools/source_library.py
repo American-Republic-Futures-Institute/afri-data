@@ -25,7 +25,7 @@ MAX_PAGES = 120
 MAX_PAGE_BYTES = 7_000_000
 MAX_YEAR_BYTES = 7_000_000
 ID = re.compile(r"^[a-z][a-z0-9-]{3,70}$")
-ENDPOINT = re.compile(r"^v[12]/accounting/(?:od|dts)/[a-z0-9_]{2,75}$")
+ENDPOINT = re.compile(r"^v[12]/accounting/(?:od|dts|mts)/[a-z0-9_]{2,75}$")
 DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 HEX = re.compile(r"^[0-9a-f]{64}$")
 
