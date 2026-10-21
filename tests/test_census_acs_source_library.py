@@ -90,7 +90,7 @@ class ACSHistoryTests(unittest.TestCase):
                 self.assertTrue(official_table_available(url,opener=opener))
                 self.assertEqual(opener.request.get_method(),"HEAD")
         self.assertEqual(len(opener.requests),16)
-        self.assertEqual(len(set(opener.requests)),12)
+        self.assertEqual(len(set(opener.requests)),16)
         with self.assertRaisesRegex(ValueError,"Unapproved Census HEAD"):
             official_table_available(
                 BASE+"2025/table-based-SF/data/5YRData/acsdt5y2025-b05001.dat",
