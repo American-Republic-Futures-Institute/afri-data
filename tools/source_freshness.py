@@ -296,10 +296,11 @@ def verify_report(report, index, health):
         expected_state = ("registered_not_acquired" if entry is None else
                           "retained_previous_after_failure" if failed else
                           "verified_this_refresh")
-        require(row.get("status") == expected_state and
-                row.get("lastSuccessfulCheckAt") is not None if
-                expected_state == "verified_this_refresh" else True,
+        require(row.get("status") == expected_state,
                 "source acquisition status contradicts health")
+        if expected_state == "verified_this_refresh":
+            require(row.get("lastSuccessfulCheckAt") == report["checkedAt"],
+                    "successful source has no verified acquisition time")
     providers = {}
     for row in values:
         p = providers.setdefault(row["provider"],
