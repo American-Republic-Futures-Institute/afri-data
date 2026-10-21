@@ -21,6 +21,24 @@ jobs:
           python-version: '3.12'
       - name: Verify BEA adapter deterministic fixtures
         run: python -m unittest discover -s tests -p 'test_bea_regional_source_library.py' -v
+      - name: Inspect current BEA publisher ZIP layouts before checking identities
+        run: |
+          python - <<'PY'
+          import io, json
+          from zipfile import ZipFile
+          from tools.bea_regional_source_library import download_archive
+          for archive in ("SAGDP","SAINC"):
+              with ZipFile(io.BytesIO(download_archive(archive))) as source:
+                  names=source.namelist()
+                  print("Archive",archive,"members",len(names))
+                  for prefix in (("SAGDP2_","SAGDP9_") if archive=="SAGDP" else ("SAINC1_",)):
+                      candidates=[name for name in names if name.startswith(prefix)]
+                      print(json.dumps({"prefix":prefix,"count":len(candidates),
+                                        "sample":candidates[:3]}))
+                      if candidates:
+                          with source.open(candidates[0]) as handle:
+                              print("Publisher first lines:",repr(handle.read(800).decode("utf-8-sig","replace")[:800]))
+          PY
       - name: Acquire actual original BEA ZIP bundles and inspect all four series
         run: |
           python - <<'PY'
