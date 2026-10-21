@@ -57,6 +57,47 @@ class SourceLibraryTests(unittest.TestCase):
         self.assertGreaterEqual(MAX_PAGES * PAGE_SIZE, monthly["maxRows"])
         self.assertLessEqual(monthly["maxRows"], 500000)
 
+    def test_large_source_year_splits_into_individually_hash_verified_months(self):
+        from tools.source_library import MAX_YEAR_BYTES, partition
+        large = []
+        for month in range(1, 5):
+            for i in range(180):
+                large.append({"record_date": f"2020-{month:02d}-{1 + i % 28:02d}",
+                              "value": str(i), "account": "large-source-entry",
+                              "raw_source_field": "A" * 3500, "unique_source_id": f"{month}:{i}"})
+        large.sort(key=lambda r: (r["record_date"], r["unique_source_id"]))
+        parts, blobs = partition(spec(), large)
+        self.assertEqual([p["period"] for p in parts],
+                         ["2020-01", "2020-02", "2020-03", "2020-04"])
+        self.assertEqual(sum(p["rows"] for p in parts), len(large))
+        self.assertTrue(all(p["bytes"] <= MAX_YEAR_BYTES for p in parts))
+        self.assertTrue(all(p["sha256"] == digest(blobs[p["path"]]) for p in parts))
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            index = {"schemaVersion": "1.0.0", "sourceClass": "automated-official-source-copy",
+                     "refreshCadence": "weekly",
+                     "datasets": [{"id": spec()["id"], "rowCount": len(large),
+                                   "partitions": parts}]}
+            folder = root / "publication/source-library"
+            folder.mkdir(parents=True)
+            (folder / "index.json").write_bytes(canonical(index))
+            for path, blob in blobs.items():
+                target = root / path
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(blob)
+            self.assertEqual(verify(root)["records"], len(large))
+            p0 = root / parts[0]["path"]
+            p0.write_bytes(p0.read_bytes() + b"edited")
+            with self.assertRaisesRegex(SourceLibraryError, "digest mismatch"):
+                verify(root)
+
+    def test_monthly_partition_cannot_claim_invalid_month_or_duplicate_year(self):
+        from tools.source_library import partition
+        bad=[{"record_date": "2020-13-01", "value": "x" * 11000,
+              "seq": i} for i in range(275)]
+        with self.assertRaisesRegex(SourceLibraryError, "Unexpected source month"):
+            partition(spec(), bad)
+
     def test_source_registration_is_allowlisted_and_rejects_redirect_targets(self):
         baseline = catalog()
         validate_catalog(baseline)
