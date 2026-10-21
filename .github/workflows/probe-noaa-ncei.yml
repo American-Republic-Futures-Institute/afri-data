@@ -32,7 +32,7 @@ jobs:
           from datetime import datetime, timezone
           from hashlib import sha256
           from tools.noaa_ncei_source_library import (
-              registry_sources, noaa_records, NOAAUnavailable, BASE)
+              registry_sources, noaa_records, NOAAUnavailable, BASE, ALTERNATE_BASE)
           p=Path("noaa-probe")
           report={"schemaVersion":"1.0.0","publisher":"NOAA NCEI",
                   "testedAt":datetime.now(timezone.utc).isoformat(),
@@ -41,7 +41,14 @@ jobs:
                   "fullFederalGovernmentDataSaturation":False,
                   "readmeCaptured":False,"sources":[],"failures":{}}
           try:
-              specs=registry_sources(discover=True)
+              try:
+                  specs=registry_sources(discover=True)
+                  report["latestEditionDiscoveryVerified"]=True
+              except NOAAUnavailable as err:
+                  report["latestEditionDiscoveryVerified"]=False
+                  report["discoveryWarning"]=str(err)[:450]
+                  print("NOAA live directory blocked; probe *pinned known edition* from official NCEI archive:",str(err),flush=True)
+                  specs=registry_sources(baseline_base=ALTERNATE_BASE)
               for spec in specs:
                   try:
                       rows=noaa_records(spec)
@@ -54,6 +61,8 @@ jobs:
                       (p/(rsha+".txt")).write_bytes(readme)
                       sample={"dataset":spec["id"],"url":spec["endpoint"],
                               "filename":rows.filename,
+                              "readmeUrl":spec["readmeUrl"],
+                              "latestEditionDiscoveryVerified":report["latestEditionDiscoveryVerified"],
                               "sourceFileBytes":len(original),"sourceFileSHA256":digest,
                               "readmeSHA256":rsha,"readmeBytes":len(readme),
                               "sourceRows":len(rows),
