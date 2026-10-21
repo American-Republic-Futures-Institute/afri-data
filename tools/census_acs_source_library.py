@@ -30,7 +30,8 @@ BASE="https://www2.census.gov/programs-surveys/acs/summary_file/"
 PAGE="https://www.census.gov/programs-surveys/acs/data/summary-file.html"
 TABLES={"b19013","b25077","b25064","b01002",
         "b01003","b19083","b25002","b25003",
-        "b25001","b25008","b25010","b25035"}
+        "b25001","b25008","b25010","b25035",
+        "b25057","b25058","b25059","b25071"}
 VINTAGES={2022,2023,2024}
 MISSING={"", "N", "null", "-666666666", "-888888888", "-999999999", "-555555555"}
 MAX_SOURCE_BYTES=30_000_000
@@ -61,7 +62,7 @@ def official_table_available(url, *, opener=None):
     expected=re.fullmatch(
         r"https://www2\.census\.gov/programs-surveys/acs/summary_file/(20\d{2})/"
         r"table-based-SF/data/5YRData/acsdt5y(20\d{2})-"
-        r"(b19013|b25077|b25064|b01002|b01003|b19083|b25002|b25003|b25001|b25008|b25010|b25035)\.dat",
+        r"(b19013|b25077|b25064|b01002|b01003|b19083|b25002|b25003|b25001|b25008|b25010|b25035|b25057|b25058|b25059|b25071)\.dat",
         url)
     if (not expected or expected[1] != expected[2] or
             not supported_year(int(expected[1]))):
