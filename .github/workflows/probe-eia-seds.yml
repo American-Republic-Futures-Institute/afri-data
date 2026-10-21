@@ -46,6 +46,23 @@ jobs:
                       msns.add(msn)
                       if msn not in samples:samples[msn]=row[:8]
                   geos.add(row[1].strip())
+          # Measure selected publisher-code geography completeness and missing markers.
+          selected={code:{} for code in check}
+          missing={code:{} for code in check}
+          state_codes=set("AL AK AZ AR CA CO CT DE DC FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA WA WV WI WY".split())
+          for row in csv.DictReader(io.StringIO(blob.decode("utf-8-sig"),newline="")):
+              code=row["MSN"].strip()
+              if code not in selected or row["State"] not in state_codes:
+                  continue
+              assert row["State"] not in selected[code],"Duplicate EIA state/MSN row"
+              selected[code][row["State"]]=row
+              for year in list(row):
+                  if year.isdigit() and not row[year].replace(".","",1).replace("-","",1).isdigit():
+                      marker=row[year]
+                      missing[code][marker]=missing[code].get(marker,0)+1
+          print(json.dumps({"selectedCodeStateCounts":{k:len(v) for k,v in selected.items()},
+                 "nonNumericPublisherValues":missing},sort_keys=True))
+          assert all(len(selected[code])==51 for code in ("TETCB","TERCB","TECCB","TEICB","TEACB")),"Incomplete state coverage"
           print(json.dumps({"rows":cnt,"foundMSN":sorted(msns),
                 "samples":samples,"sampleGeographies":sorted(geos)[:25],
                 "firstStateCodes":sorted(geos)[0:25]},sort_keys=True))
