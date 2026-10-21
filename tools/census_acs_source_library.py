@@ -32,6 +32,15 @@ TABLES={"b19013","b25077","b25064","b01002",
         "b01003","b19083","b25002","b25003"}
 VINTAGES={2022,2023,2024}
 MISSING={"", "N", "null", "-666666666", "-888888888", "-999999999", "-555555555"}
+# Census can publish a numerical estimate but a non-numeric MOE annotation.
+# Retain the original marker; never invent a confidence interval or zero MOE.
+MOE_ONLY_CODES = {
+    "-555555555": "publisher_controlled", "*****": "publisher_controlled",
+    "-333333333": "open_ended_median", "***": "open_ended_median",
+    "-222222222": "insufficient_sample", "**": "insufficient_sample",
+    "-888888888": "not_applicable", "-999999999": "not_disclosed",
+}
+
 MAX_SOURCE_BYTES=30_000_000
 MAX_VINTAGE=2099
 
@@ -178,11 +187,18 @@ def parse_table(original, *, table, year):
                 raise ValueError("Duplicate ACS state geography")
             rawEstimate=line[estimate].strip()
             rawMoe=line[moe].strip()
-            absent=rawEstimate in MISSING or rawMoe in MISSING
-            if absent and (rawEstimate not in MISSING or rawMoe not in MISSING):
+            estimate_missing = rawEstimate in MISSING
+            moe_missing = rawMoe in MISSING or rawMoe in MOE_ONLY_CODES
+            # A numeric estimate and a Census-defined MOE annotation is valid,
+            # notably B01003/B25002 controlled population and housing totals.
+            if estimate_missing and not moe_missing:
+                raise ValueError("Estimate and Census 90% MOE must be paired")
+            if estimate_missing and rawMoe in MOE_ONLY_CODES and rawMoe not in MISSING:
+                raise ValueError("MOE annotation without a publisher estimate")
+            if not estimate_missing and moe_missing and rawMoe not in MOE_ONLY_CODES:
                 raise ValueError("Estimate and Census 90% MOE must be paired")
             for item in (rawEstimate, rawMoe):
-                if item in MISSING:continue
+                if item in MISSING or item in MOE_ONLY_CODES:continue
                 try:
                     num=Decimal(item)
                 except (ValueError, InvalidOperation):
@@ -200,7 +216,9 @@ def parse_table(original, *, table, year):
                 "source_year":str(year),
                 "survey_reference_period":f"{year-4}-{year}",
                 "time_basis":"acs_five_year_pooled_vintage_index_not_single_year",
-                "estimate_status":"not_available" if absent else "available",
+                "estimate_status":"not_available" if estimate_missing else "available",
+                "margin_of_error_status": ("not_available" if estimate_missing else
+                    MOE_ONLY_CODES.get(rawMoe, "reported")),
                 "margin_of_error_confidence":"0.90",
                 "source_original_sha256":digest,
             }
