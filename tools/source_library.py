@@ -56,7 +56,7 @@ def validate_catalog(catalog):
                 catalog.get("datasetClass") == "source-native-unreviewed",
                 "Unrecognized source mirror catalog")
     datasets = catalog.get("datasets")
-    assert_that(isinstance(datasets, list) and 1 <= len(datasets) <= 300,
+    assert_that(isinstance(datasets, list) and 1 <= len(datasets) <= 20000,
                 "Source count not bounded")
     seen = set()
     for item in datasets:
@@ -325,6 +325,9 @@ def verify(root=ROOT):
                 index.get("sourceClass") == "automated-official-source-copy" and
                 isinstance(index.get("datasets"), list) and index["datasets"],
                 "No verified source library")
+    from tools.source_catalog_pages import MANIFEST, verify_pages
+    if (Path(root) / MANIFEST).is_file():
+        verify_pages(root, index)
     for entry in index["datasets"]:
         assert_that(ID.fullmatch(entry["id"]) and
                     isinstance(entry.get("partitions"), list), "Invalid source metadata")
@@ -542,6 +545,8 @@ def refresh(root=ROOT, catalog=None, loader=pages, now=None):
     contents = canonical(index)
     if not old_file.is_file() or old_file.read_bytes() != contents:
         old_file.write_bytes(contents)
+    from tools.source_catalog_pages import write_pages
+    write_pages(root, index)
     health = {"schemaVersion": "1.0.0", "checkedAt": checked_at,
               "attempted": len(catalog["datasets"]),
               "succeeded": len(catalog["datasets"]) - len(failures),

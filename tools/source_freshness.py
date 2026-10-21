@@ -13,7 +13,7 @@ import re
 SCHEMA = "ARFI-SourceAcquisitionLedger/1.0.0"
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
 IDENTIFIER = re.compile(r"^[a-z][a-z0-9-]{3,70}$")
-MAX_FEEDS = 300
+MAX_FEEDS = 20000
 
 
 class LedgerError(ValueError):
