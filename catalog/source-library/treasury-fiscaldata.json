@@ -136,6 +136,54 @@
       "unit": "source-reported USD millions",
       "maxRows": 450000,
       "sourcePage": "https://fiscaldata.treasury.gov/datasets/monthly-treasury-statement/"
+    },
+    {
+      "id": "treasury-monthly-deficit-financing",
+      "title": "Means of Financing Federal Deficits and Surpluses",
+      "domain": "public-finance",
+      "description": "Original Monthly Treasury Statement Table 6 account balances and net deficit financing or surplus disposal items, retaining each publisher line and numeric precision.",
+      "endpoint": "v1/accounting/mts/mts_table_6",
+      "dateField": "record_date",
+      "preferredField": null,
+      "unit": "source-reported USD millions",
+      "maxRows": 125000,
+      "sourcePage": "https://fiscaldata.treasury.gov/datasets/monthly-treasury-statement/"
+    },
+    {
+      "id": "treasury-monthly-liability-analysis",
+      "title": "Changes in Federal Excess Liabilities",
+      "domain": "public-finance",
+      "description": "Original Monthly Treasury Statement Table 6A analysis of the change in excess liabilities, retaining source account categories and lines.",
+      "endpoint": "v1/accounting/mts/mts_table_6a",
+      "dateField": "record_date",
+      "preferredField": null,
+      "unit": "source-reported USD millions",
+      "maxRows": 110000,
+      "sourcePage": "https://fiscaldata.treasury.gov/datasets/monthly-treasury-statement/"
+    },
+    {
+      "id": "treasury-monthly-agency-securities",
+      "title": "Federal Agency Securities Issued under Special Financing Authorities",
+      "domain": "public-finance",
+      "description": "Original Monthly Treasury Statement Table 6B federal agency securities issued under special financing authorities, with published institutional classifications.",
+      "endpoint": "v1/accounting/mts/mts_table_6b",
+      "dateField": "record_date",
+      "preferredField": null,
+      "unit": "source-reported USD millions",
+      "maxRows": 110000,
+      "sourcePage": "https://fiscaldata.treasury.gov/datasets/monthly-treasury-statement/"
+    },
+    {
+      "id": "treasury-monthly-agency-borrowing",
+      "title": "Federal Agency Borrowing Financed by Treasury Securities",
+      "domain": "public-finance",
+      "description": "Original Monthly Treasury Statement Table 6C federal agency borrowing financed through issuance of Treasury securities, retaining original agency and source classification.",
+      "endpoint": "v1/accounting/mts/mts_table_6c",
+      "dateField": "record_date",
+      "preferredField": null,
+      "unit": "source-reported USD millions",
+      "maxRows": 110000,
+      "sourcePage": "https://fiscaldata.treasury.gov/datasets/monthly-treasury-statement/"
     }
   ]
 }

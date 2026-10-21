@@ -41,11 +41,55 @@ class SourceLibraryTests(unittest.TestCase):
     def test_real_registry_accepts_monthly_treasury_tables_and_avoids_unverified_hosts(self):
         registered = json.loads((ROOT / CATALOG).read_text("utf-8"))
         validate_catalog(registered)
-        self.assertEqual(len(registered["datasets"]), 11)
+        self.assertEqual(len(registered["datasets"]), 15)
         monthly = [d for d in registered["datasets"] if "/accounting/mts/" in d["endpoint"]]
-        self.assertEqual(len(monthly), 5)
+        self.assertEqual(len(monthly), 9)
         self.assertTrue(all(d["dateField"] == "record_date" for d in monthly))
-        self.assertEqual(len({d["id"] for d in registered["datasets"]}), 11)
+        self.assertEqual(len({d["id"] for d in registered["datasets"]}), 15)
+
+    def test_four_additional_official_treasury_financing_and_agency_tables(self):
+        registry=json.loads((ROOT / CATALOG).read_text("utf-8"))
+        expected={
+            "treasury-monthly-deficit-financing":"mts_table_6",
+            "treasury-monthly-liability-analysis":"mts_table_6a",
+            "treasury-monthly-agency-securities":"mts_table_6b",
+            "treasury-monthly-agency-borrowing":"mts_table_6c",
+        }
+        by_id={s["id"]:s for s in registry["datasets"]}
+        self.assertTrue(expected.keys() <= by_id.keys())
+        for key,endpoint in expected.items():
+            item=by_id[key]
+            with self.subTest(key=key):
+                self.assertEqual(item["endpoint"],"v1/accounting/mts/"+endpoint)
+                self.assertEqual(item["dateField"],"record_date")
+                self.assertEqual(item["preferredField"],None)
+                self.assertLessEqual(item["maxRows"],500000)
+                self.assertEqual(item["sourcePage"],
+                    "https://fiscaldata.treasury.gov/datasets/monthly-treasury-statement/")
+                self.assertEqual(item["unit"],"source-reported USD millions")
+        validate_catalog(registry)
+
+    def test_original_treasury_financing_records_preserve_publisher_strings_and_history(self):
+        monthly=json.loads((ROOT / CATALOG).read_text("utf-8"))
+        source=next(x for x in monthly["datasets"]
+                    if x["id"]=="treasury-monthly-deficit-financing")
+        original=[
+            {"record_date":"2024-09-30","src_line_nbr":"1",
+             "financing_amt":"-1200.001","source_category":"Original financing row"},
+            {"record_date":"2025-09-30","src_line_nbr":"2",
+             "financing_amt":"2700.007","source_category":"Original financing row"},
+        ]
+        with tempfile.TemporaryDirectory() as tmp:
+            out=refresh(root=Path(tmp),catalog={**monthly,"datasets":[source]},
+                loader=lambda _:copy.deepcopy(original),now="2026-10-21T00:00:00Z")
+            self.assertEqual(out["datasets"],1)
+            self.assertEqual(out["records"],2)
+            self.assertEqual(out["failedSources"],{})
+            archive=json.loads((Path(tmp)/"publication/source-library/data/"
+                    "treasury-monthly-deficit-financing/2024.json").read_text())
+            self.assertEqual(archive["records"][0]["financing_amt"],"-1200.001")
+            self.assertEqual(archive["sourceClass"],"official-raw-values")
+            self.assertEqual(verify(Path(tmp))["records"],2)
 
     def test_large_original_outlay_history_has_explicit_bounded_budget(self):
         from tools.source_library import ROOT, CATALOG, MAX_PAGES, PAGE_SIZE
