@@ -38,6 +38,17 @@ def original(year, quarter, industry="10", mutate=None):
 
 
 class QcewSourceTests(unittest.TestCase):
+    def test_preferred_original_source_field_allows_digits_not_hostile_paths(self):
+        from tools.source_library import SourceLibraryError
+        from tools.cdc_places_source_library import registry_sources as cdc
+        qcew=registry_sources()
+        treasury=json.loads((ROOT/CATALOG).read_text("utf-8"))
+        combined={**treasury, "datasets": treasury["datasets"]+cdc()+qcew}
+        validate_catalog(combined)
+        combined["datasets"][-1]["preferredField"]="month3_emplvl/../secret"
+        with self.assertRaisesRegex(SourceLibraryError,"Invalid source metric"):
+            validate_catalog(combined)
+
     def test_original_quarter_record_values_not_recalculated_or_reformatted(self):
         rows=parse_quarter(original(2025,1),year=2025,quarter=1,industry="10")
         self.assertEqual(len(rows),2*len(FIPS))
