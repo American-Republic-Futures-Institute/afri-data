@@ -173,7 +173,10 @@ def member_bytes(bundle, *, archive, table):
                             name.startswith(archive),
                             "Unexpected BEA source member name")
                     selected.append(item)
-            require(len(selected) == 1, "BEA table CSV member absent or ambiguous")
+            require(len(selected) == 1,
+                    "BEA table CSV member absent or ambiguous (" + str(len(selected)) +
+                    "); matching official table names: " +
+                    repr([item.filename[:100] for item in names if table in item.filename][:8]))
             entry = selected[0]
             require(0 < entry.file_size <= MAX_MEMBER_BYTES and
                     entry.compress_size > 0 and
