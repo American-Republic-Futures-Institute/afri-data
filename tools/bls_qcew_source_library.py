@@ -17,7 +17,9 @@ import time
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, build_opener, HTTPRedirectHandler
 
-from pipelines.census_state_population import FIPS
+from tools.stat05_geography import STATE_NAMES
+
+FIPS = frozenset(STATE_NAMES)  # source-only geography, without shapefile dependencies
 
 ROOT=Path(__file__).resolve().parents[1]
 CATALOG=Path("catalog/source-library/bls-qcew.json")
