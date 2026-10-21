@@ -143,5 +143,38 @@ class USDAERSOriginalsTests(unittest.TestCase):
             original_path("../../malicious.zip")
 
 
+    def test_source_library_git_partition_catalog_ledger_and_original_zip_replay(self):
+        from tools.source_library import BASE as TREASURY_BASE, refresh, verify
+        source=complete_fixture()
+        docs=registry_sources()
+        catalog={"schemaVersion":"1.0.0","publisher":"U.S. Treasury",
+                 "publisherApi":TREASURY_BASE,"refreshCadence":"weekly",
+                 "datasetClass":"source-native-unreviewed","datasets":docs}
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp)
+            result=refresh(root=root,catalog=catalog,
+                loader=lambda item: parse_original(source,dataset=item["id"]),
+                now="2026-10-21T20:00:00Z")
+            self.assertEqual(result["datasets"],2)
+            self.assertEqual(result["records"],7890)
+            self.assertFalse(result["failedSources"])
+            self.assertEqual(verify(root)["datasets"],2)
+            idx=json.loads((root/"publication/source-library/index.json").read_text())
+            self.assertEqual({x["id"] for x in idx["datasets"]},set(SERIES))
+            self.assertTrue(all(len(x["partitions"])==117 for x in idx["datasets"]))
+            ledger=json.loads((root/"publication/source-library/acquisition-ledger.json").read_text())
+            self.assertEqual(ledger["totals"]["mirrored"],2)
+            self.assertEqual(ledger["totals"]["sourceRecords"],7890)
+            self.assertEqual(ledger["totals"]["registeredNotAcquired"],0)
+            self.assertEqual(ledger["providers"]["usda-ers"]["succeeded"],2)
+            manifest=json.loads((root/"publication/source-library/catalog/manifest.json").read_text())
+            self.assertEqual(manifest["datasetCount"],2)
+            retained=root/idx["datasets"][0]["originalZipPath"]
+            self.assertEqual(retained.read_bytes(),source)
+            retained.write_bytes(source+b"tampered")
+            with self.assertRaises((ValueError,RuntimeError)):
+                verify(root)
+
+
 if __name__=="__main__":
     unittest.main()
