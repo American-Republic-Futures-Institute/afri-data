@@ -62,7 +62,8 @@ def make_zip(archive, payloads=None, **opts):
             "SAGDP2N": make_original("SAGDP2N", **opts),
             "SAGDP9N": make_original("SAGDP9N", **opts),
         } if archive == "SAGDP" else {
-            "SAINC1": make_original("SAINC1", **opts)}
+            "SAINC1": make_original("SAINC1", line="1", **opts) +
+            make_original("SAINC1", line="3", **opts).split(b"\n", 1)[1]}
     buffer = io.BytesIO()
     with ZipFile(buffer, "w", compression=ZIP_DEFLATED) as z:
         for name, content in payloads.items():
