@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "1.0.0",
+  "publisher": "National Oceanic and Atmospheric Administration",
+  "sourceFamily": "ncei-nclimdiv-division-monthly",
+  "sourcePage": "https://www.ncei.noaa.gov/monitoring-content/data/us/climdiv/monthly/current/",
+  "readmeUrl": "https://www.ncei.noaa.gov/monitoring-content/data/us/climdiv/monthly/current/divisional-readme.txt",
+  "refreshCadence": "weekly",
+  "datasetClass": "source-native-unreviewed",
+  "baselineEdition": "20261006",
+  "variables": [
+    {
+      "code": "pcpndv",
+      "title": "Monthly precipitation",
+      "description": "NOAA NCEI original monthly precipitation values by climate division since 1895; twelve publisher-reported month strings remain unchanged in their respective annual source rows, with missing publisher sentinels retained literally."
+    },
+    {
+      "code": "tmpcdv",
+      "title": "Monthly average temperature",
+      "description": "NOAA NCEI original monthly average temperature by climate division since 1895; all original monthly values and missing sentinels remain text, without inferred state FIPS mapping or adjustments."
+    }
+  ],
+  "description": "Official monthly nClimDiv divisional precipitation and average temperature publisher records, original fixed-width ASCII and NOAA divisional-readme retained byte-for-byte. Processing filename and HTTP Last-Modified are not certified publisher publication timestamps; observations, revision and source custody are separately recorded."
+}
