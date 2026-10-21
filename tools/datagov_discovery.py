@@ -593,11 +593,48 @@ def verify(root):
                re.fullmatch(r"[a-f0-9]{64}",
                             page.get("originalResponseSha256Unarchived", "")),
                "bad or falsely certified catalog candidate page " + str(path))
+        ensure(type(page.get("returnedCount")) is int and
+               isinstance(page.get("rejectedCounts"), dict) and
+               all(type(n) is int and n >= 0 for n in page["rejectedCounts"].values()) and
+               sum(page["rejectedCounts"].values()) + page["candidateCount"] ==
+               page["returnedCount"] and
+               all(isinstance(row, dict) and
+                   row.get("sourceIngestionApproved") is False and
+                   row.get("sourceOriginalByteAcquired") is False and
+                   row.get("publisherReleaseTimestampIndependentlyVerified") is False and
+                   row.get("releaseToGitLagDays") is None and
+                   row.get("candidateKey") ==
+                   sha(row.get("catalogIdentifier", "").encode("utf-8"))
+                   for row in page["candidates"]),
+               "catalog page candidate count, identity or unapproved source provenance tampered")
         page_count += 1
+    records_seen = set()
+    for path in sorted((root / "candidates").glob("??.json")):
+        shard = load_json(path)
+        ensure(shard.get("schemaVersion") == SCHEMA and
+               set(shard) == {"schemaVersion", "records"} and
+               isinstance(shard.get("records"), dict),
+               "stored federal source candidate shard is not closed")
+        for key, candidate_record in shard["records"].items():
+            identity = candidate_record.get("catalogIdentifier")
+            ensure(isinstance(identity, str) and
+                   sha(identity.encode("utf-8")) == key and key[:2] == path.stem and
+                   key not in records_seen and
+                   re.fullmatch(r"[a-f0-9]{64}", candidate_record.get("metadataFingerprint", "")) and
+                   candidate_record.get("sourceIngestionApproved") is False and
+                   candidate_record.get("sourceOriginalByteAcquired") is False and
+                   candidate_record.get("publisherReleaseTimestampIndependentlyVerified") is False and
+                   candidate_record.get("releaseToGitLagDays") is None and
+                   type(candidate_record.get("metadataRevisionCount")) is int and
+                   candidate_record["metadataRevisionCount"] >= 1,
+                   "stored discovery lead forged identity, approval or original evidence")
+            records_seen.add(key)
     ensure(not state["pagesCommitted"] or page_count >= state["pagesCommitted"],
            "missing committed catalog page receipts")
     q = load_json(root / "queue.json")
     if q is not None:
+        ensure(q.get("uniqueFederalCandidateIdentitiesSeen") == len(records_seen),
+               "queue/canonical candidate count inconsistent")
         ensure(q.get("schemaVersion") == SCHEMA and
                q.get("officialSourceOriginalsMirroredByDiscovery") == 0 and
                q.get("federalCatalogEnumerationComplete") is False and
