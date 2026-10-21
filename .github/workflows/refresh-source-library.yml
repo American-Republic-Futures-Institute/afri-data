@@ -42,6 +42,8 @@ jobs:
           python -m unittest discover -s tests -p 'test_cdc_source_library.py' -v
           python -m unittest discover -s tests -p 'test_bls_qcew_source_library.py' -v
           python -m unittest discover -s tests -p 'test_census_acs_source_library.py' -v
+      - name: Verify EPA AirData original ZIP ingestion and absence of reconstructed data
+        run: python -m unittest discover -s tests -p "test_epa_airdata_source_library.py" -v
       - name: Restore persistent source-library branch and reconcile source code
         shell: bash
         run: |
