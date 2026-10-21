@@ -98,6 +98,24 @@ class SourceLibraryTests(unittest.TestCase):
         with self.assertRaisesRegex(SourceLibraryError, "Unexpected source month"):
             partition(spec(), bad)
 
+    def test_clean_stdlib_python_can_import_all_weekly_source_adapters(self):
+        """Source refresh must run without optional pyshp/geopandas/numpy."""
+        import subprocess
+        import sys
+        script = (
+            "from tools.source_library import validate_catalog, pages, refresh; "
+            "from tools.bls_qcew_source_library import registry_sources as bls; "
+            "from tools.census_acs_source_library import registry_sources as acs; "
+            "from tools.cdc_places_source_library import registry_sources as cdc; "
+            "assert len(bls()) == 4 and len(acs()) == 12 and len(cdc()) == 18; "
+            "import sys; "
+            "assert 'shapefile' not in sys.modules; "
+            "assert 'numpy' not in sys.modules"
+        )
+        result = subprocess.run([sys.executable, "-S", "-c", script],
+                                cwd=ROOT, capture_output=True, text=True, timeout=30)
+        self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_source_registration_is_allowlisted_and_rejects_redirect_targets(self):
         baseline = catalog()
         validate_catalog(baseline)
