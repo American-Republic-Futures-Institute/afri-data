@@ -182,11 +182,12 @@ def source_exists(filename, kind, *, opener=None):
     return True
 
 
-def registry_sources(root=ROOT, *, discover=False, opener=None, listing=None):
+def registry_sources(root=ROOT, *, discover=False, opener=None, listing=None, baseline_base=BASE):
     config = validate_registry(json.loads((Path(root) / CATALOG).read_text("utf-8")))
     baseline = config["baselineEdition"]
     filenames = {k: f"climdiv-{k}-v1.0.0-{baseline}" for k in KINDS}
-    chosen_base = BASE
+    require(baseline_base in OFFICIAL_BASES, "NOAA fallback host is not on the exact official allowlist")
+    chosen_base = baseline_base
     if discover:
         html = listing
         if html is None:
