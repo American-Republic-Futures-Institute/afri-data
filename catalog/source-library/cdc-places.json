@@ -75,6 +75,78 @@
       "domain": "health",
       "unit": "percent",
       "maxRows": 3300
+    },
+    {
+      "id": "access2",
+      "title": "Adults without health insurance, ages 18–64",
+      "description": "modeled lack of health insurance among adults ages 18–64, not all adults",
+      "indicatorStem": "access2",
+      "domain": "health",
+      "unit": "percent",
+      "maxRows": 3300
+    },
+    {
+      "id": "casthma",
+      "title": "Current asthma prevalence",
+      "description": "modeled current asthma prevalence among adults",
+      "indicatorStem": "casthma",
+      "domain": "health",
+      "unit": "percent",
+      "maxRows": 3300
+    },
+    {
+      "id": "cancer",
+      "title": "Non-skin cancer prevalence",
+      "description": "modeled prevalence of diagnosed cancer excluding skin cancer among adults",
+      "indicatorStem": "cancer",
+      "domain": "health",
+      "unit": "percent",
+      "maxRows": 3300
+    },
+    {
+      "id": "copd",
+      "title": "COPD prevalence",
+      "description": "modeled chronic obstructive pulmonary disease prevalence among adults",
+      "indicatorStem": "copd",
+      "domain": "health",
+      "unit": "percent",
+      "maxRows": 3300
+    },
+    {
+      "id": "depression",
+      "title": "Depression prevalence",
+      "description": "modeled diagnosed depression prevalence among adults",
+      "indicatorStem": "depression",
+      "domain": "health",
+      "unit": "percent",
+      "maxRows": 3300
+    },
+    {
+      "id": "mhlth",
+      "title": "Frequent mental distress",
+      "description": "modeled adults reporting fourteen or more mentally unhealthy days in the past thirty days",
+      "indicatorStem": "mhlth",
+      "domain": "health",
+      "unit": "percent",
+      "maxRows": 3300
+    },
+    {
+      "id": "phlth",
+      "title": "Frequent physical distress",
+      "description": "modeled adults reporting fourteen or more physically unhealthy days in the past thirty days",
+      "indicatorStem": "phlth",
+      "domain": "health",
+      "unit": "percent",
+      "maxRows": 3300
+    },
+    {
+      "id": "stroke",
+      "title": "Stroke prevalence",
+      "description": "modeled stroke prevalence among adults",
+      "indicatorStem": "stroke",
+      "domain": "health",
+      "unit": "percent",
+      "maxRows": 3300
     }
   ]
 }
