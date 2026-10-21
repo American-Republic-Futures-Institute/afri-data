@@ -23,6 +23,8 @@ BASE = "https://api.fiscaldata.treasury.gov/services/api/fiscal_service/"
 PAGE_SIZE = 1000
 MAX_PAGES = 600
 MAX_PAGE_BYTES = 7_000_000
+MAX_ROW_FIELDS = 256  # bounded expansion from 160; original rows are never truncated
+MAX_ROW_BYTES = 196_608  # canonical UTF-8 JSON bytes per original Treasury record
 MAX_YEAR_BYTES = 3_000_000  # bounded website response; large years split by month
 ID = re.compile(r"^[a-z][a-z0-9-]{3,70}$")
 ENDPOINT = re.compile(r"^v[12]/accounting/(?:od|dts|mts)/[a-z0-9_]{2,75}$")
@@ -270,7 +272,8 @@ def pages(spec, opener=None):
         assert_that(len(rows) <= PAGE_SIZE, "Treasury page exceeded requested size")
         assert_that(rows or number > 1, "No source records returned")
         for row in rows:
-            assert_that(isinstance(row, dict) and 1 <= len(row) <= 160 and
+            assert_that(isinstance(row, dict) and 1 <= len(row) <= MAX_ROW_FIELDS and
+                        len(canonical(row)) <= MAX_ROW_BYTES and
                         all(isinstance(k, str) and re.fullmatch(r"[a-z0-9_]{1,90}", k)
                             for k in row) and
                         all(v is None or type(v) in (str, int, float, bool)
