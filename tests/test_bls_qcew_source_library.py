@@ -51,6 +51,46 @@ class QcewSourceTests(unittest.TestCase):
         with self.assertRaisesRegex(SourceLibraryError,"Invalid source metric"):
             validate_catalog(combined)
 
+    def test_six_new_naics_sectors_preserve_original_values_and_official_slice_identity(self):
+        import re
+        sources={x["id"]:x for x in registry_sources()}
+        requested={
+            "construction":"23",
+            "wholesale-trade":"42",
+            "information":"51",
+            "finance-insurance":"52",
+            "accommodation-food":"72",
+            "other-services":"81",
+        }
+        for key,code in requested.items():
+            with self.subTest(sector=key):
+                spec=sources["bls-qcew-"+key]
+                self.assertEqual(spec["industryCode"],code)
+                self.assertEqual(spec["endpoint"],BASE)
+                self.assertEqual(spec["preferredField"],"month3_emplvl")
+                self.assertEqual(spec["dateBasis"],"publisher-quarter-end-marker")
+                rows=parse_quarter(original(2025,2,industry=code),year=2025,
+                                   quarter=2,industry=code)
+                self.assertEqual(len(rows),2*len(FIPS))
+                self.assertEqual(rows[0]["record_date"],"2025-06-30")
+                self.assertEqual(rows[0]["total_qtrly_wages"],"120000.09")
+                self.assertEqual(rows[0]["industry_code"],code)
+                self.assertTrue(all(r["area_fips"].endswith("000") for r in rows))
+                # Official filename and code are an explicit immutable allowlist.
+                official=f"{BASE}2025/2/industry/{code}.csv"
+                self.assertRegex(official,
+                  r"^https://data\.bls\.gov/cew/data/api/2025/2/industry/(?:23|42|51|52|72|81)\.csv$")
+
+    def test_new_sector_cannot_be_replaced_by_arbitrary_qcew_code(self):
+        from tools.bls_qcew_source_library import validate_registry
+        import copy
+        source=json.loads((ROOT/"catalog/source-library/bls-qcew.json").read_text())
+        self.assertEqual(len(source["industries"]),10)
+        tampered=copy.deepcopy(source)
+        tampered["industries"][-1]["code"]="99"
+        with self.assertRaisesRegex(ValueError,"Unrecognized BLS"):
+            validate_registry(tampered)
+
     def test_original_quarter_record_values_not_recalculated_or_reformatted(self):
         rows=parse_quarter(original(2025,1),year=2025,quarter=1,industry="10")
         self.assertEqual(len(rows),2*len(FIPS))
@@ -67,7 +107,7 @@ class QcewSourceTests(unittest.TestCase):
 
     def test_all_registered_official_industry_sources_with_cdc_and_treasury(self):
         s=registry_sources()
-        self.assertEqual(len(s),4)
+        self.assertEqual(len(s),10)
         self.assertEqual({x["industryCode"] for x in s},set(INDUSTRIES.values()))
         treasury=json.loads((ROOT/CATALOG).read_text("utf-8"))
         from tools.cdc_places_source_library import registry_sources as cdc

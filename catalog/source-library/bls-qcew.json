@@ -29,6 +29,42 @@
       "code": "54",
       "title": "Professional and technical services",
       "description": "BLS QCEW state-level professional, scientific and technical services employment and reported wages."
+    },
+    {
+      "id": "construction",
+      "code": "23",
+      "title": "Construction",
+      "description": "Original QCEW NAICS construction sector state-level employment, establishment and quarterly wage records by reported ownership."
+    },
+    {
+      "id": "wholesale-trade",
+      "code": "42",
+      "title": "Wholesale trade",
+      "description": "Original QCEW NAICS wholesale trade sector state employment, establishment and quarterly wages, retaining ownership classifications."
+    },
+    {
+      "id": "information",
+      "code": "51",
+      "title": "Information",
+      "description": "Original QCEW NAICS information sector quarterly employment and wage records, retaining original publisher strings."
+    },
+    {
+      "id": "finance-insurance",
+      "code": "52",
+      "title": "Finance and insurance",
+      "description": "Original QCEW NAICS finance and insurance sector employment and covered quarterly wage records by state and ownership."
+    },
+    {
+      "id": "accommodation-food",
+      "code": "72",
+      "title": "Accommodation and food services",
+      "description": "Original QCEW NAICS accommodation and food services sector reported employment and quarterly wages for states."
+    },
+    {
+      "id": "other-services",
+      "code": "81",
+      "title": "Other services excluding public administration",
+      "description": "Original QCEW NAICS other services excluding public administration state-level employment and wage records."
     }
   ]
 }

@@ -56,7 +56,7 @@ def validate_catalog(catalog):
                 catalog.get("datasetClass") == "source-native-unreviewed",
                 "Unrecognized source mirror catalog")
     datasets = catalog.get("datasets")
-    assert_that(isinstance(datasets, list) and 1 <= len(datasets) <= 120,
+    assert_that(isinstance(datasets, list) and 1 <= len(datasets) <= 300,
                 "Source count not bounded")
     seen = set()
     for item in datasets:
