@@ -47,6 +47,7 @@ def safe_publisher_url(url):
     return (parsed.scheme == "https" and parsed.netloc in HOSTS and
             parsed.username is None and parsed.password is None and
             parsed.query == "" and parsed.fragment == "" and
+            PurePosixPath(parsed.path).name.lower() == "september-3-2026-release.zip" and
             (parsed.path.startswith("/media/") or
              parsed.path.startswith("/sites/default/files/")) and
             parsed.path.lower().endswith(".zip") and
@@ -100,8 +101,8 @@ def inspect_original(raw, *, resolved=SOURCE_URL):
         with zipfile.ZipFile(BytesIO(raw)) as archive:
             infos = archive.infolist()
             require(1 <= len(infos) <= MAX_MEMBERS and
-                    not archive.testzip(),
-                    "Original USDA archive is incomplete or too many files")
+                    True,
+                    "Original USDA archive is empty or has too many files")
             members = []
             total_extracted = 0
             for member in infos:
@@ -142,6 +143,7 @@ def inspect_original(raw, *, resolved=SOURCE_URL):
                                 "Original USDA CSV header drift or duplicate columns")
                         item.update({"header": header, "textEncodingPreview": encoding})
                 members.append(item)
+            require(archive.testzip() is None, "USDA archive file CRC verification failed")
             csv_members = [x for x in members if x["filename"].lower().endswith(".csv")]
             require(csv_members, "USDA original ZIP includes no CSV members")
             return {
