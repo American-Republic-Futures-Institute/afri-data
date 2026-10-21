@@ -140,8 +140,17 @@ def project(result):
         return None, "missing_dcat"
     access = {x for x in (result.get("accessLevel"), dcat.get("accessLevel"))
               if type(x) is str}
-    if "non-public" in access or "restricted public" in access:
+    rights = dcat.get("accessRights", dcat.get("rights"))
+    # Free-text accessRights is not a grant to download original records.
+    # The public controlled access level is necessary but not sufficient.
+    if "non-public" in access or "restricted public" in access or (
+            type(rights) is str and re.search(
+              r"\b(restrict(?:ed|ion)?|confidential|internal|non.?public|"
+              r"sensitive|protected|proprietary|privacy|controlled)\b",
+              rights, re.IGNORECASE)):
         return None, "restricted_source_not_ingestible"
+    if rights is not None and type(rights) is not str:
+        return None, "unresolved_publisher_access_rights"
     if access != {"public"}:
         return None, "unresolved_publisher_access_rights"
     ident = result.get("identifier")
@@ -196,6 +205,8 @@ def merge(previous, key, fetcher=get_page, pages_limit=10, now=None):
           (prior.get("after") is None or
            (type(prior["after"]) is str and CURSOR.fullmatch(prior["after"]))),
           "invalid historical metadata discovery state")
+    guard(prior.get("after") is None or pages_limit >= 2,
+          "checkpoint continuation requires at least two pages")
     by_id = {}
     for row in prior["candidates"]:
         guard(type(row) is dict and type(row.get("catalogId")) is str and
