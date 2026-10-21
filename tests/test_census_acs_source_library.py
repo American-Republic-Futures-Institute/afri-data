@@ -39,7 +39,7 @@ def fixture(table,year,suppress=None):
 
 
 class ACSHistoryTests(unittest.TestCase):
-    def test_discovery_of_complete_new_acs_vintage_requires_all_four_official_tables(self):
+    def test_discovery_of_complete_new_acs_vintage_requires_all_eight_official_tables(self):
         from datetime import datetime, timezone
         from tools.census_acs_source_library import discovered_vintages, supported_year
         now = datetime(2026, 10, 20, tzinfo=timezone.utc)
@@ -49,14 +49,14 @@ class ACSHistoryTests(unittest.TestCase):
             return True
         self.assertEqual(discovered_vintages(now=now, available=all_available),
                          [2022, 2023, 2024, 2025])
-        self.assertEqual(len(checked), 4)
+        self.assertEqual(len(checked), 8)
         self.assertTrue(all(url.startswith(BASE+"2025/") for url in checked))
         self.assertTrue(supported_year(2025, now=now))
         self.assertFalse(supported_year(2026, now=now))
         result = registry_sources(discover=True, now=now, available=all_available)
-        self.assertEqual(len(result), 16)
+        self.assertEqual(len(result), 32)
         newest = [x for x in result if x["releaseYear"] == 2025]
-        self.assertEqual(len(newest), 4)
+        self.assertEqual(len(newest), 8)
         self.assertEqual({x["surveyReferencePeriod"] for x in newest}, {"2021-2025"})
 
     def test_partial_or_unreleased_acs_vintage_stays_unpublished(self):
@@ -66,8 +66,35 @@ class ACSHistoryTests(unittest.TestCase):
         available = lambda url: "b19013.dat" in url or "b25077.dat" in url
         self.assertEqual(discovered_vintages(now=now, available=available),
                          [2022, 2023, 2024])
-        self.assertEqual(len(registry_sources(discover=True, now=now, available=available)),12)
-        self.assertEqual(len(registry_sources(discover=True, now=now, available=lambda _: False)),12)
+        self.assertEqual(len(registry_sources(discover=True, now=now, available=available)),24)
+        self.assertEqual(len(registry_sources(discover=True, now=now, available=lambda _: False)),24)
+
+    def test_eight_registered_acs_tables_are_allowed_in_official_vintage_head_probe(self):
+        from tools.census_acs_source_library import official_table_available
+        class Reply:
+            headers={"Content-Length":"8192"}
+            def __init__(self,url): self.url=url
+            def __enter__(self): return self
+            def __exit__(self,*_): pass
+            def geturl(self): return self.url
+        class Fake:
+            def __init__(self): self.requests=[]
+            def open(self,req,timeout):
+                self.requests.append(req.full_url)
+                self.request=req
+                return Reply(req.full_url)
+        opener=Fake()
+        for table in sorted(TABLES):
+            with self.subTest(table=table):
+                url=source_url(2025,table)
+                self.assertTrue(official_table_available(url,opener=opener))
+                self.assertEqual(opener.request.get_method(),"HEAD")
+        self.assertEqual(len(opener.requests),8)
+        self.assertEqual(len(set(opener.requests)),8)
+        with self.assertRaisesRegex(ValueError,"Unapproved Census HEAD"):
+            official_table_available(
+                BASE+"2025/table-based-SF/data/5YRData/acsdt5y2025-b05001.dat",
+                opener=opener)
 
     def test_census_availability_probe_rejects_hostile_paths_and_oversized_publishers(self):
         from tools.census_acs_source_library import official_table_available
@@ -92,16 +119,16 @@ class ACSHistoryTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"Unapproved Census HEAD"):
             official_table_available("https://attacker.example/file.dat",opener=fake)
 
-    def test_four_official_tables_across_three_pooled_five_year_editions(self):
+    def test_eight_official_tables_across_three_pooled_five_year_editions(self):
         sources=registry_sources()
-        self.assertEqual(len(sources),12)
+        self.assertEqual(len(sources),24)
         self.assertEqual({s["table"] for s in sources},TABLES)
         self.assertEqual({s["releaseYear"] for s in sources},VINTAGES)
         t=json.loads((ROOT/"catalog/source-library/treasury-fiscaldata.json").read_text("utf-8"))
         from tools.cdc_places_source_library import registry_sources as cdc
         from tools.bls_qcew_source_library import registry_sources as bls
         validate_catalog({**t,"datasets":t["datasets"]+cdc()+bls()+sources})
-        self.assertEqual(len(t["datasets"]+cdc()+bls()+sources),45)
+        self.assertEqual(len(t["datasets"]+cdc()+bls()+sources),57)
 
     def test_publisher_original_suppression_strings_and_90_percent_moe_survive(self):
         rows=parse_table(fixture("b01002",2023,suppress="01"),table="b01002",year=2023)
@@ -154,6 +181,46 @@ class ACSHistoryTests(unittest.TestCase):
             census_records(s,fetch=fetch)
         with self.assertRaises(ValueError):
             source_url(2024,"b05001")
+
+
+    def test_new_official_population_gini_and_housing_source_edition_projections(self):
+        original = registry_sources()
+        expected = {"b01003":"persons (ACS estimate)",
+                    "b19083":"unitless Gini index",
+                    "b25002":"housing units (ACS estimate)",
+                    "b25003":"occupied housing units"}
+        for table,unit in expected.items():
+            for year in VINTAGES:
+                with self.subTest(table=table,year=year):
+                    desc=next(x for x in original if x["id"]==f"census-acs5-{table}-{year}")
+                    self.assertEqual(desc["unit"],unit)
+                    self.assertEqual(desc["surveyReferencePeriod"],f"{year-4}-{year}")
+                    self.assertEqual(desc["preferredField"],table.upper()+"_E001")
+                    self.assertEqual(desc["endpoint"],source_url(year,table))
+                    self.assertTrue(desc["endpoint"].startswith(BASE))
+                    raw=fixture(table,year)
+                    if table=="b19083":
+                        raw=raw.replace(b"62000",b"0.4567").replace(b"1400",b"0.0180")
+                    rows=parse_table(raw,table=table,year=year)
+                    self.assertEqual(len(rows),52)
+                    self.assertEqual(rows[0][table.upper()+"_E001"],
+                                     "0.4567" if table=="b19083" else "62000")
+                    self.assertEqual(rows[0]["margin_of_error_confidence"],"0.90")
+                    self.assertEqual(rows[0]["survey_reference_period"],f"{year-4}-{year}")
+                    self.assertEqual(rows[0]["record_date"],f"{year}-12-31")
+
+    def test_gini_range_suppression_and_unsupported_table_fail_closed(self):
+        raw=fixture("b19083",2024).replace(b"62000",b"0.4500").replace(b"1400",b"0.0100")
+        self.assertEqual(parse_table(raw,table="b19083",year=2024)[0]["B19083_E001"],"0.4500")
+        over=raw.replace(b"0.4500",b"1.2500",1)
+        with self.assertRaisesRegex(ValueError,"unit interval"):
+            parse_table(over,table="b19083",year=2024)
+        suppressed=fixture("b25003",2023,suppress="01")
+        rows=parse_table(suppressed,table="b25003",year=2023)
+        self.assertEqual(rows[0]["estimate_status"],"not_available")
+        self.assertEqual(rows[0]["B25003_M001"],"-666666666")
+        with self.assertRaises(ValueError):
+            source_url(2024,"b25099")
 
 
 if __name__=="__main__":

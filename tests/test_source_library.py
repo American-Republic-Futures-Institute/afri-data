@@ -107,7 +107,7 @@ class SourceLibraryTests(unittest.TestCase):
             "from tools.bls_qcew_source_library import registry_sources as bls; "
             "from tools.census_acs_source_library import registry_sources as acs; "
             "from tools.cdc_places_source_library import registry_sources as cdc; "
-            "assert len(bls()) == 4 and len(acs()) == 12 and len(cdc()) == 18; "
+            "assert len(bls()) == 4 and len(acs()) == 24 and len(cdc()) == 18; "
             "import sys; "
             "assert 'shapefile' not in sys.modules; "
             "assert 'numpy' not in sys.modules"
