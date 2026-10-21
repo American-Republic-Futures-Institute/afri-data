@@ -9,6 +9,8 @@ on:
       - '.github/workflows/refresh-source-library.yml'
       - 'catalog/source-library/**'
       - 'tools/source_library.py'
+      - 'tools/cdc_places_source_library.py'
+      - 'tests/test_cdc_source_library.py'
       - 'tests/test_source_library.py'
 permissions:
   contents: write
@@ -29,7 +31,9 @@ jobs:
         with:
           python-version: '3.12'
       - name: Check source pipeline before acquisition
-        run: python -m unittest discover -s tests -p 'test_source_library.py' -v
+        run: |
+          python -m unittest discover -s tests -p 'test_source_library.py' -v
+          python -m unittest discover -s tests -p 'test_cdc_source_library.py' -v
       - name: Restore persistent source-library branch and reconcile source code
         shell: bash
         run: |
@@ -44,7 +48,7 @@ jobs:
           else
             git switch -c data/source-library
           fi
-      - name: Fetch authoritative Treasury histories and update changed yearly partitions
+      - name: Fetch authoritative Treasury and CDC histories and update changed partitions
         run: python -m tools.source_library
       - name: Independently verify every retained source partition
         run: python -m tools.source_library --verify
@@ -54,7 +58,7 @@ jobs:
           set -euo pipefail
           git add -- publication/source-library/
           if ! git diff --cached --quiet; then
-            git commit -m "data: refresh Treasury source-library yearly partitions"
+            git commit -m "data: refresh Treasury and CDC authoritative source-library partitions"
           fi
           git push origin HEAD:refs/heads/data/source-library
       - name: Surface publisher failures instead of silently claiming full freshness
