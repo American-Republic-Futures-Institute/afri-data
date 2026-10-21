@@ -126,6 +126,30 @@ class ACSHistoryTests(unittest.TestCase):
         self.assertEqual([x["state_fips"] for x in rows], sorted(FIPS))
         self.assertEqual(rows,parse_table(data,table="b25077",year=2024))
 
+    def test_census_controlled_population_estimate_has_original_moe_annotation(self):
+        # Official ACS B01003/B25002 can have a valid numeric controlled
+        # population/housing estimate but a ***** (or -555555555) MOE.
+        for table in ("b01003", "b25002"):
+            source = fixture(table, 2024)
+            for published, status in (
+                (b"-555555555", "publisher_controlled"),
+                (b"*****", "publisher_controlled"),
+                (b"-222222222", "insufficient_sample"),
+                (b"-333333333", "open_ended_median"),
+            ):
+                adjusted = source.replace(b"62000|1400", b"62000|" + published, 1)
+                rows = parse_table(adjusted, table=table, year=2024)
+                alabama = next(x for x in rows if x["state_fips"] == "01")
+                self.assertEqual(alabama[table.upper() + "_E001"], "62000")
+                self.assertEqual(alabama[table.upper() + "_M001"], published.decode("utf-8"))
+                self.assertEqual(alabama["estimate_status"], "available")
+                self.assertEqual(alabama["margin_of_error_status"], status)
+                self.assertEqual(rows[1]["margin_of_error_status"], "reported")
+        # A numerical MOE without any published estimate remains invalid.
+        incomplete = fixture("b01003",2024).replace(b"62000|1400",b"-666666666|1400",1)
+        with self.assertRaisesRegex(ValueError,"paired"):
+            parse_table(incomplete,table="b01003",year=2024)
+
     def test_no_imputation_if_moe_missing_or_bad_upstream_geography(self):
         raw=fixture("b19013",2024)
         broken=raw.replace(b"1400",b"-666666666",1)
