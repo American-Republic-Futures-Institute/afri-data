@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "1.0.0",
+  "publisher": "U.S. Geological Survey",
+  "sourceFamily": "usgs-comcat-global-m6-earthquakes",
+  "startYear": 2000,
+  "registeredThroughYear": 2026,
+  "minimumMagnitude": "6",
+  "eventType": "earthquake",
+  "refreshCadence": "weekly",
+  "datasetClass": "source-native-unreviewed",
+  "catalogApi": "https://earthquake.usgs.gov/fdsnws/event/1/",
+  "sourcePage": "https://earthquake.usgs.gov/fdsnws/event/1/",
+  "dateBasis": "usgs-earthquake-origin-utc-not-catalog-release",
+  "description": "Original USGS ComCat CSV rows for global earthquakes of magnitude 6.0 or greater. Years are event-origin periods, not source publication timestamps; the current year is provisional and historical catalog records can be revised."
+}

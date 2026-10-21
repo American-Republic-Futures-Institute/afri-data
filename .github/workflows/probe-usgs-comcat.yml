@@ -1,0 +1,66 @@
+name: Probe official USGS ComCat annual CSV originals
+on:
+  pull_request:
+    paths:
+      - 'catalog/source-library/usgs-comcat.json'
+      - 'tools/usgs_comcat_source_library.py'
+      - 'tests/test_usgs_comcat_source_library.py'
+      - '.github/workflows/probe-usgs-comcat.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  official-source-probe:
+    if: github.repository == 'American-Republic-Futures-Institute/afri-data'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify offline original-byte and source-count integrity
+        run: python -m unittest discover -s tests -p 'test_usgs_comcat_source_library.py' -v
+      - name: Acquire sample official USGS catalog annual originals and publisher counts
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p usgs-probe
+          python - <<'PY'
+          import json
+          from datetime import datetime,timezone
+          from hashlib import sha256
+          from pathlib import Path
+          from tools.usgs_comcat_source_library import registry_sources,usgs_records
+          specs={s['releaseYear']:s for s in registry_sources()}
+          out=Path('usgs-probe')
+          rows=[]
+          for year in [2000,2015,2026]:
+              spec=specs[year]
+              events=usgs_records(spec)
+              raw=events.original_csv
+              digest=sha256(raw).hexdigest()
+              assert len(events)>0 and all(r["record_date"][:4]==str(year) for r in events)
+              (out/(digest+'.csv')).write_bytes(raw)
+              row={'year':year,'provider':'usgs-comcat','publisher':'U.S. Geological Survey',
+                   'url':spec['endpoint'],'sha256':digest,'bytes':len(raw),
+                   'independentlyCountChecked':True,'publisherRows':len(events),
+                   'releasePublishedAt':None,'sourceReleaseToGitLagDays':None,
+                   'researchOnly':True,'officialOriginalCaptured':True}
+              rows.append(row)
+              print(json.dumps(row,sort_keys=True))
+          (out/'evidence.json').write_text(json.dumps({
+              'schemaVersion':'1.0.0','sourceSystem':'USGS ComCat annual CSV',
+              'retrievedAt':datetime.now(timezone.utc).isoformat(),
+              'sourceCompleteThroughYear':2026,'onlySamplesAcquired':True,
+              'completeGovernmentSaturation':False,'sourcePublicationLagVerified':False,
+              'results':rows},indent=2,sort_keys=True)+'\n')
+          PY
+      - name: Preserve official USGS sample original bytes and source SHA-256
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: data10g-usgs-comcat-official-original-samples
+          path: usgs-probe/
+          if-no-files-found: warn
+          retention-days: 30
