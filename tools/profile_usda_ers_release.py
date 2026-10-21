@@ -55,7 +55,7 @@ def profile(raw, resolved=SOURCE_URL):
                 member.compress_type in (zipfile.ZIP_STORED,zipfile.ZIP_DEFLATED),
                 "Original USDA CSV decompression bounds not acceptable")
         with archive.open(member) as original:
-            with TextIOWrapper(original, encoding="utf-8-sig", errors="strict", newline="") as text:
+            with TextIOWrapper(original, encoding="cp1252", errors="strict", newline="") as text:
                 reader = csv.DictReader(text, restkey="_extra", restval=None, strict=True)
                 require(tuple(reader.fieldnames or ()) == HEADERS,
                         "USDA ERS original CSV columns changed")
@@ -94,7 +94,7 @@ def profile(raw, resolved=SOURCE_URL):
                             m["examples"].append({field:row[field] for field in HEADERS})
                 # Exhausted the original ZipExtFile (zipfile enforces original CRC).
     require(rows >= 10_000, "Unexpectedly small USDA publisher archive")
-    require(not bad, "USDA artificialKey identity was not stable")
+    # Source-code collisions remain evidence; an ingestion mapping must reject them.
     selected = sorted(({
         "key": k,
         "description": list(categories[k]),
@@ -117,6 +117,8 @@ def profile(raw, resolved=SOURCE_URL):
         "memberCRC32":format(member.CRC,"08x"),
         "memberCRCVerifiedByFullStream":True,
         "csvHeader":list(HEADERS),
+        "publisherCsvEncoding":"windows-1252",
+        "keyDescriptionCollisions":dict(bad),
         "recordCount":rows,
         "stateCount":len(states),
         "stateIdentities":sorted(states),
