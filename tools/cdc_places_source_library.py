@@ -22,7 +22,7 @@ KNOWN = {2023: ("7cmc-7y5g", 2021),
          2024: ("d3i6-k6z5", 2022),
          2025: ("i46a-9kgh", 2023)}
 MEASURES = {"obesity", "diabetes", "arthritis", "csmoking", "lpa", "chd"}
-COUNTIES = 3143
+COUNTIES = {2023: 3143, 2024: 3144, 2025: 3143}  # source-release-specific official county row counts
 
 
 def validate_registry(catalog):
@@ -110,7 +110,7 @@ def cdc_records(spec, fetch=download_official):
         rows = json.loads(original.decode("utf-8"))
     except (UnicodeError, ValueError):
         raise ValueError("Official CDC response is not JSON") from None
-    if not isinstance(rows, list) or len(rows) != COUNTIES:
+    if not isinstance(rows, list) or len(rows) != COUNTIES[year]:
         raise ValueError("CDC county coverage changed; do not publish partial data")
     seen = set()
     output = []
