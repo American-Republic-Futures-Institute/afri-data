@@ -1,6 +1,6 @@
 """Keyless CDC PLACES county source snapshots, not new ARFI statistics.
 
-Reads six publisher-modeled health measures across the official 2023, 2024,
+Reads fourteen publisher-modeled health measures across the official 2023, 2024,
 and 2025 GIS-friendly county releases. Copies source fields and CDC-reported
 intervals; record_date is an explicitly labeled release-vintage index marker,
 not a survey observation date. No prevalence is calculated or inferred.
@@ -21,7 +21,11 @@ BASE = "https://data.cdc.gov/resource/"
 KNOWN = {2023: ("7cmc-7y5g", 2021),
          2024: ("d3i6-k6z5", 2022),
          2025: ("i46a-9kgh", 2023)}
-MEASURES = {"obesity", "diabetes", "arthritis", "csmoking", "lpa", "chd"}
+MEASURES = {
+    "obesity", "diabetes", "arthritis", "csmoking", "lpa", "chd",
+    "access2", "casthma", "cancer", "copd", "depression",
+    "mhlth", "phlth", "stroke",
+}
 COUNTIES = {2023: 3143, 2024: 3144, 2025: 3143}  # source-release-specific official county row counts
 
 
@@ -44,7 +48,7 @@ def validate_registry(catalog):
     for m in measures:
         if (not isinstance(m.get("title"), str) or
                 not isinstance(m.get("description"), str) or
-                not re.fullmatch(r"[a-z]{2,15}", m["id"]) or
+                not re.fullmatch(r"[a-z][a-z0-9]{1,14}", m["id"]) or
                 m["id"] != m["indicatorStem"] or m["domain"] != "health" or
                 m["unit"] != "percent" or m["maxRows"] != 3300):
             raise ValueError("Invalid CDC source metadata")
@@ -114,6 +118,7 @@ def cdc_records(spec, fetch=download_official):
         raise ValueError("CDC county coverage changed; do not publish partial data")
     seen = set()
     output = []
+    observed = 0
     for row in rows:
         if not isinstance(row, dict) or not set(fields[:3]) <= set(row):
             raise ValueError("CDC county identity fields missing")
@@ -130,6 +135,7 @@ def cdc_records(spec, fetch=download_official):
         estimate = row.get(value)
         ci = row.get(interval)
         if estimate is not None:
+            observed += 1
             try:
                 number = Decimal(str(estimate))
             except (InvalidOperation, ValueError):
@@ -145,4 +151,6 @@ def cdc_records(spec, fetch=download_official):
                        "publisher_release_vintage": str(year),
                        "model_reference_year": str(spec["modelReferenceYear"]),
                        "time_basis": "publisher_release_year_marker_not_survey_date"})
+    if observed == 0:
+        raise ValueError("CDC measure has no published prevalence observations")
     return sorted(output, key=lambda r: (r["record_date"], r["countyfips"]))
