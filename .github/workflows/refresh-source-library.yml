@@ -13,6 +13,8 @@ on:
       - 'tests/test_source_freshness.py'
       - 'tools/cdc_places_source_library.py'
       - 'tools/bls_qcew_source_library.py'
+      - 'tools/epa_airdata_source_library.py'
+      - 'tests/test_epa_airdata_source_library.py'
       - 'tools/census_acs_source_library.py'
       - 'tests/test_census_acs_source_library.py'
       - 'tests/test_bls_qcew_source_library.py'
@@ -58,7 +60,7 @@ jobs:
           else
             git switch -c data/source-library
           fi
-      - name: Fetch authoritative Treasury, CDC, BLS and Census original histories and update partitions
+      - name: Fetch authoritative Treasury, CDC, BLS, Census and EPA original histories and update partitions
         run: python -m tools.source_library
       - name: Independently verify every retained source partition
         run: python -m tools.source_library --verify
