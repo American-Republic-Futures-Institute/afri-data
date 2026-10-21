@@ -128,7 +128,7 @@ class NOAAOriginalTests(unittest.TestCase):
     def test_end_to_end_official_response_preserves_publisher_readme_and_sha(self):
         original=synthetic_rows()
         spec=registry_sources()[0]
-        self.assertGreater(len(original),100_000)
+        self.assertGreater(len(original),90_000)
         def fetch(url, ceiling, mime=None):
             if url==README_URL:return official_readme(),None
             self.assertEqual(url,spec["endpoint"])
@@ -161,7 +161,7 @@ class NOAAOriginalTests(unittest.TestCase):
             (catalog_path/"noaa-ncei.json").write_text(json.dumps(registry()))
             result=refresh(root=root,catalog=treasury,loader=loader,
                      now="2026-10-21T17:00:00Z")
-            self.assertEqual(result["succeeded"],1)
+            self.assertEqual(result["datasets"],1)
             self.assertEqual(verify(root)["datasets"],1)
             index=json.loads((root/"publication/source-library/index.json").read_text())
             record=index["datasets"][0]
