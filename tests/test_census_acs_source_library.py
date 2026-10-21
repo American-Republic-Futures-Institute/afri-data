@@ -66,8 +66,8 @@ class ACSHistoryTests(unittest.TestCase):
         available = lambda url: "b19013.dat" in url or "b25077.dat" in url
         self.assertEqual(discovered_vintages(now=now, available=available),
                          [2022, 2023, 2024])
-        self.assertEqual(len(registry_sources(discover=True, now=now, available=available)),24)
-        self.assertEqual(len(registry_sources(discover=True, now=now, available=lambda _: False)),24)
+        self.assertEqual(len(registry_sources(discover=True, now=now, available=available)),36)
+        self.assertEqual(len(registry_sources(discover=True, now=now, available=lambda _: False)),36)
 
     def test_twelve_registered_acs_tables_are_allowed_in_official_vintage_head_probe(self):
         from tools.census_acs_source_library import official_table_available
