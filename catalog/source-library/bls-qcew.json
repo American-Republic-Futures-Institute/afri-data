@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "1.0.0",
+  "publisher": "U.S. Bureau of Labor Statistics",
+  "sourceFamily": "bls-qcew-csv",
+  "refreshCadence": "weekly",
+  "datasetClass": "source-native-unreviewed",
+  "startYear": 2022,
+  "industries": [
+    {
+      "id": "all-industry",
+      "code": "10",
+      "title": "All industries",
+      "description": "BLS QCEW reported employment, establishment and wages source records across all industries at state level."
+    },
+    {
+      "id": "manufacturing",
+      "code": "31_33",
+      "title": "Manufacturing",
+      "description": "Original BLS QCEW state-level manufacturing employment and reported quarterly wages, across published ownership categories."
+    },
+    {
+      "id": "health-care",
+      "code": "62",
+      "title": "Health care and social assistance",
+      "description": "Original BLS QCEW state-level health care and social assistance covered employment, establishments and wages."
+    },
+    {
+      "id": "professional-services",
+      "code": "54",
+      "title": "Professional and technical services",
+      "description": "BLS QCEW state-level professional, scientific and technical services employment and reported wages."
+    }
+  ]
+}
