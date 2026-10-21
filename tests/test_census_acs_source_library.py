@@ -159,7 +159,7 @@ class ACSHistoryTests(unittest.TestCase):
                 ]
                 buff=io.StringIO(newline="")
                 writer=csv.DictWriter(buff,fieldnames=columns,delimiter="|",
-                                      lineterminator="\\n")
+                                      lineterminator="\n")
                 writer.writeheader()
                 for state in sorted(FIPS):
                     row={"GEO_ID":"0400000US"+state,
@@ -218,7 +218,7 @@ class ACSHistoryTests(unittest.TestCase):
         columns=["GEO_ID"]+[
             f"B25002_{kind}{n:03d}" for n in range(1,80) for kind in ("E","M")
         ]
-        raw="|".join(columns)+"\\n"
+        raw="|".join(columns)+"\n"
         with self.assertRaisesRegex(ValueError,"website row limit"):
             parse_table(raw.encode(),table="b25002",year=2024)
 
