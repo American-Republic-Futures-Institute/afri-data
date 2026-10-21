@@ -69,6 +69,33 @@ class ACSHistoryTests(unittest.TestCase):
         self.assertEqual(len(registry_sources(discover=True, now=now, available=available)),24)
         self.assertEqual(len(registry_sources(discover=True, now=now, available=lambda _: False)),24)
 
+    def test_eight_registered_acs_tables_are_allowed_in_official_vintage_head_probe(self):
+        from tools.census_acs_source_library import official_table_available
+        class Reply:
+            headers={"Content-Length":"8192"}
+            def __init__(self,url): self.url=url
+            def __enter__(self): return self
+            def __exit__(self,*_): pass
+            def geturl(self): return self.url
+        class Fake:
+            def __init__(self): self.requests=[]
+            def open(self,req,timeout):
+                self.requests.append(req.full_url)
+                self.request=req
+                return Reply(req.full_url)
+        opener=Fake()
+        for table in sorted(TABLES):
+            with self.subTest(table=table):
+                url=source_url(2025,table)
+                self.assertTrue(official_table_available(url,opener=opener))
+                self.assertEqual(opener.request.get_method(),"HEAD")
+        self.assertEqual(len(opener.requests),8)
+        self.assertEqual(len(set(opener.requests)),8)
+        with self.assertRaisesRegex(ValueError,"Unapproved Census HEAD"):
+            official_table_available(
+                BASE+"2025/table-based-SF/data/5YRData/acsdt5y2025-b05001.dat",
+                opener=opener)
+
     def test_census_availability_probe_rejects_hostile_paths_and_oversized_publishers(self):
         from tools.census_acs_source_library import official_table_available
         url=source_url(2025,"b19013")
