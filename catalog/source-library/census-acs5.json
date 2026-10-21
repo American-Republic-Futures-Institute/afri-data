@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "1.0.0",
+  "publisher": "U.S. Census Bureau",
+  "sourceFamily": "census-acs5-table-based",
+  "refreshCadence": "weekly",
+  "datasetClass": "source-native-unreviewed",
+  "surveyLengthYears": 5,
+  "vintages": [
+    2022,
+    2023,
+    2024
+  ],
+  "tables": [
+    {
+      "table": "b19013",
+      "title": "Median household income",
+      "description": "Source-published median household income for states and equivalents, Census original 90% margin of error, five-year pooled ACS reference period.",
+      "unit": "USD inflation-adjusted to release vintage",
+      "preferredField": "B19013_E001"
+    },
+    {
+      "table": "b25077",
+      "title": "Median owner-occupied home value",
+      "description": "Source-published median owner-occupied housing unit value in inflation-adjusted vintage dollars, with original 90% margin of error.",
+      "unit": "USD inflation-adjusted to release vintage",
+      "preferredField": "B25077_E001"
+    },
+    {
+      "table": "b25064",
+      "title": "Median gross rent",
+      "description": "Source-published median gross rent in inflation-adjusted vintage dollars with original 90% margin of error, not a single-year market rent index.",
+      "unit": "USD inflation-adjusted to release vintage",
+      "preferredField": "B25064_E001"
+    },
+    {
+      "table": "b01002",
+      "title": "Median age",
+      "description": "Source-published five-year pooled median age for states and equivalents, including original 90% margin of error.",
+      "unit": "years of age",
+      "preferredField": "B01002_E001"
+    }
+  ]
+}
