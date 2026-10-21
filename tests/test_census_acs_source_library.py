@@ -144,7 +144,92 @@ class ACSHistoryTests(unittest.TestCase):
         self.assertEqual(rows[1]["time_basis"],"acs_five_year_pooled_vintage_index_not_single_year")
         self.assertEqual(rows[1]["margin_of_error_confidence"],"0.90")
         self.assertRegex(rows[1]["source_original_sha256"],"^[a-f0-9]{64}$")
-        self.assertNotIn("B01002_E002",rows[1]) # only requested estimate/MOE, not a fabricated measure
+        self.assertEqual(rows[1]["B01002_E002"],"37.7")
+        self.assertEqual(rows[1]["B01002_M002"],"0.2")
+        self.assertNotIn("B01002_E003",rows[1]) # only fields in official original file
+
+    def test_original_housing_occupied_vacant_owner_renter_and_age_breakdowns(self):
+        """Keep E001-E003 and M001-M003 as publisher strings, no rates."""
+        for table in ("b25002","b25003","b01002"):
+            with self.subTest(table=table):
+                prefix=table.upper()
+                columns=["GEO_ID","NAME"] + [
+                    f"{prefix}_{kind}{n:03d}"
+                    for n in (1,2,3) for kind in ("E","M")
+                ]
+                buff=io.StringIO(newline="")
+                writer=csv.DictWriter(buff,fieldnames=columns,delimiter="|",
+                                      lineterminator="\\n")
+                writer.writeheader()
+                for state in sorted(FIPS):
+                    row={"GEO_ID":"0400000US"+state,
+                         "NAME":f"Official publisher region {state}"}
+                    for n,(estimate,moe) in enumerate(
+                        (("62000","1400"),("50000","800"),("12000","300")),1):
+                        row[f"{prefix}_E{n:03d}"]=estimate
+                        row[f"{prefix}_M{n:03d}"]=moe
+                    writer.writerow(row)
+                records=parse_table(buff.getvalue().encode("utf-8"),table=table,year=2024)
+                self.assertEqual(len(records),52)
+                first=records[0]
+                self.assertEqual(first["NAME"],"Official publisher region 01")
+                self.assertEqual(first[prefix+"_E002"],"50000")
+                self.assertEqual(first[prefix+"_M002"],"800")
+                self.assertEqual(first[prefix+"_E003"],"12000")
+                self.assertEqual(first[prefix+"_M003"],"300")
+                self.assertNotIn("vacancy_rate",first)
+                self.assertNotIn("owner_occupancy_rate",first)
+                self.assertEqual(first["source_original_sha256"],
+                    records[-1]["source_original_sha256"])
+
+    def test_per_cell_moe_sentinels_are_preserved_in_all_original_fields(self):
+        table="b25002"
+        raw=fixture(table,2024)
+        raw=raw.decode("utf-8").replace(
+            "GEO_ID|B25002_E001|B25002_M001",
+            "GEO_ID|B25002_E001|B25002_M001|B25002_E002|B25002_M002")
+        raw=raw.replace(
+            "0400000US01|62000|1400",
+            "0400000US01|62000|1400|1000|-222222222")
+        for state in sorted(FIPS-set(("01",))):
+            raw=raw.replace(f"0400000US{state}|62000|1400",
+                            f"0400000US{state}|62000|1400|500|5")
+        raw=raw.replace("0500000US01001|999999|1",
+                        "0500000US01001|999999|1|2000|10")
+        records=parse_table(raw.encode(),table=table,year=2024)
+        self.assertEqual(records[0]["B25002_E002"],"1000")
+        self.assertEqual(records[0]["B25002_M002"],"-222222222")
+        self.assertEqual(records[0]["margin_of_error_status"],"published")
+        self.assertEqual(records[1]["B25002_M002"],"5")
+
+    def test_invalid_publisher_headers_are_rejected_before_projection(self):
+        raw=fixture("b25002",2024).decode()
+        for header in ("B25002_E002","B25002_M002","B25002_E000",
+                       "B99999_E002","B25002_E002/escape"):
+            with self.subTest(header=header):
+                bad=raw.replace("B25002_M001", "B25002_M001|"+header,1)
+                with self.assertRaisesRegex(ValueError,"Unexpected ACS|Unpaired ACS"):
+                    parse_table(bad.encode(),table="b25002",year=2024)
+        duplicated=raw.replace("B25002_M001","B25002_E001",1)
+        with self.assertRaisesRegex(ValueError,"duplicated"):
+            parse_table(duplicated.encode(),table="b25002",year=2024)
+
+    def test_website_160_field_budget_never_drops_publisher_columns(self):
+        columns=["GEO_ID"]+[
+            f"B25002_{kind}{n:03d}" for n in range(1,80) for kind in ("E","M")
+        ]
+        raw="|".join(columns)+"\\n"
+        with self.assertRaisesRegex(ValueError,"website row limit"):
+            parse_table(raw.encode(),table="b25002",year=2024)
+
+    def test_all_original_fields_replay_preserves_signed_source_file(self):
+        raw=fixture("b01002",2024)
+        rows=parse_table(raw,table="b01002",year=2024)
+        self.assertEqual(rows,parse_table(raw,table="b01002",year=2024))
+        self.assertEqual(rows[0]["B01002_E002"],"37.7")
+        self.assertEqual(rows[0]["B01002_M002"],"0.2")
+        self.assertEqual(rows[0]["source_original_sha256"],
+                         __import__("hashlib").sha256(raw).hexdigest())
 
     def test_52_state_equivalent_keys_and_stable_replay(self):
         data=fixture("b25077",2024)
