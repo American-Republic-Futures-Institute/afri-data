@@ -20,15 +20,52 @@ def source_rows(field="obesity_crudeprev", count=COUNTIES[2025]):
 
 
 class CdcOriginalSourceTests(unittest.TestCase):
-    def test_official_2023_2024_2025_registrations_and_six_measure_allowlist(self):
+    def test_official_2023_2024_2025_registrations_and_fourteen_measure_allowlist(self):
         sources = registry_sources()
-        self.assertEqual(len(sources), 18)
-        self.assertEqual(len({s["id"] for s in sources}), 18)
+        self.assertEqual(len(sources), 42)
+        self.assertEqual(len({s["id"] for s in sources}), 42)
         self.assertEqual({s["releaseYear"] for s in sources}, set(KNOWN))
         self.assertEqual({s["indicatorStem"] for s in sources}, MEASURES)
         treasury = json.loads((ROOT / CATALOG).read_text("utf-8"))
         validate_catalog({**treasury, "datasets": treasury["datasets"] + sources})
-        self.assertEqual(len(treasury["datasets"]) + len(sources), 33)
+        self.assertEqual(len(treasury["datasets"]) + len(sources), 57)
+
+    def test_eight_additional_measures_preserve_original_cdc_prevalence_and_intervals_across_vintages(self):
+        extra = {"access2","casthma","cancer","copd","depression",
+                 "mhlth","phlth","stroke"}
+        sources = [s for s in registry_sources() if s["indicatorStem"] in extra]
+        self.assertEqual(len(sources), 24)
+        for source in sources:
+            stem = source["indicatorStem"]
+            year = source["releaseYear"]
+            value = stem + "_crudeprev"
+            ci = stem + "_crude95ci"
+            def get(url, *, host, limit):
+                self.assertEqual(host,"data.cdc.gov")
+                self.assertEqual(limit,3500000)
+                self.assertIn(value,url)
+                self.assertIn(ci,url)
+                return json.dumps(source_rows(field=value,count=COUNTIES[year])).encode("utf-8")
+            with self.subTest(id=source["id"]):
+                original=cdc_records(source,fetch=get)
+                self.assertEqual(len(original),COUNTIES[year])
+                self.assertEqual(original[0][value],"18.2")
+                self.assertEqual(original[0][ci],"(16.9, 19.5)")
+                self.assertEqual(original[0]["model_reference_year"],str(KNOWN[year][1]))
+                self.assertEqual(original[0]["record_date"],f"{year}-12-31")
+                self.assertNotIn("derived_metric",original[0])
+        access=next(x for x in sources if x["id"]=="cdc-places-access2-2025")
+        self.assertIn("18–64",access["description"])
+
+    def test_missing_selected_measure_is_not_falsely_counted_as_published(self):
+        source=next(x for x in registry_sources() if x["id"]=="cdc-places-access2-2025")
+        empty=[{"countyfips":f"{i+1:05d}",
+                "countyname":"Synthetic county","stateabbr":"VA"}
+                for i in range(COUNTIES[2025])]
+        def fetch(url,*,host,limit):
+            return json.dumps(empty).encode("utf-8")
+        with self.assertRaisesRegex(ValueError,"no published prevalence"):
+            cdc_records(source,fetch=fetch)
 
     def test_stores_original_modeled_value_interval_and_separate_release_marker(self):
         source = next(s for s in registry_sources() if s["id"] == "cdc-places-obesity-2025")
