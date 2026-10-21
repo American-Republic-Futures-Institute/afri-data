@@ -28,6 +28,24 @@ def ensure(condition, reason):
         raise FieldInventoryError(reason)
 
 
+def publisher_family(entry):
+    """Resolve legacy descriptor families from canonical IDs, not absent provider."""
+    key=entry.get("id")
+    declared=entry.get("provider")
+    allowed=("treasury-fiscaldata","cdc-places","bls-qcew","census-acs5",
+             "bea-regional","epa-airdata","usgs-comcat","eia-seds","usda-ers")
+    prefixes=(("treasury-","treasury-fiscaldata"),("cdc-places-","cdc-places"),
+              ("bls-qcew-","bls-qcew"),("census-acs5-","census-acs5"),
+              ("bea-","bea-regional"),("epa-airdata-","epa-airdata"),
+              ("usgs-comcat-","usgs-comcat"),("eia-seds-","eia-seds"),
+              ("usda-ers-","usda-ers"))
+    matched=next((family for prefix,family in prefixes
+                  if type(key) is str and key.startswith(prefix)),None)
+    ensure(matched in allowed and (declared is None or declared == matched),
+           "Unknown or inconsistent original source family")
+    return matched
+
+
 def audit(root=ROOT):
     root = Path(root)
     base = root / "publication/source-library"
@@ -44,7 +62,7 @@ def audit(root=ROOT):
     ids = set()
     for item in entries:
         dataset_id = item.get("id")
-        provider = item.get("provider") or "treasury-fiscaldata"
+        provider = publisher_family(item)
         ensure(type(dataset_id) is str and dataset_id not in ids and
                type(provider) is str and type(item.get("partitions")) is list,
                "Duplicate source or invalid descriptor")
