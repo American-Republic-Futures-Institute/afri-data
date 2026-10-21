@@ -128,7 +128,7 @@ class ACSHistoryTests(unittest.TestCase):
         from tools.cdc_places_source_library import registry_sources as cdc
         from tools.bls_qcew_source_library import registry_sources as bls
         validate_catalog({**t,"datasets":t["datasets"]+cdc()+bls()+sources})
-        self.assertEqual(len(t["datasets"]+cdc()+bls()+sources),57)
+        self.assertEqual(len(t["datasets"]+cdc()+bls()+sources),61)
 
     def test_publisher_original_suppression_strings_and_90_percent_moe_survive(self):
         rows=parse_table(fixture("b01002",2023,suppress="01"),table="b01002",year=2023)

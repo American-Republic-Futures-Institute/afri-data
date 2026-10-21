@@ -1,0 +1,32 @@
+name: Verify four additional Treasury MTS publisher endpoints
+on:
+  pull_request:
+    paths:
+      - 'catalog/source-library/treasury-fiscaldata.json'
+      - 'tools/treasury_mts_probe.py'
+      - 'tests/test_treasury_mts_probe.py'
+      - '.github/workflows/probe-treasury-expansion.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  publisher-mts-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test exact official Treasury endpoints, response schemas and source redirects
+        run: python -m unittest discover -s tests -p 'test_treasury_mts_probe.py' -v
+      - name: Inspect public Treasury table 6 through 6C first pages
+        run: python -m tools.treasury_mts_probe --output evidence/data11-treasury/source-probe.json
+      - name: Retain original-source availability evidence for audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: data11-treasury-source-probe
+          path: evidence/data11-treasury/source-probe.json
+          if-no-files-found: error
+          retention-days: 30
