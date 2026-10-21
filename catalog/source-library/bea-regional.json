@@ -11,7 +11,7 @@
       "title": "BEA — State gross domestic product, current dollars",
       "description": "Original BEA annual state gross domestic product, all industries, current-dollar series. Not an ARFI-derived estimate.",
       "archive": "SAGDP",
-      "table": "SAGDP2N",
+      "table": "SAGDP2",
       "lineCode": "1",
       "unit": "millions of current dollars",
       "domain": "economy"
@@ -21,7 +21,7 @@
       "title": "BEA — State real gross domestic product",
       "description": "Original BEA annual state chained-dollar real gross domestic product, all industries. Preserve release-specific base-year units.",
       "archive": "SAGDP",
-      "table": "SAGDP9N",
+      "table": "SAGDP9",
       "lineCode": "1",
       "unit": "publisher chained-dollar units",
       "domain": "economy"
@@ -33,7 +33,7 @@
       "archive": "SAINC",
       "table": "SAINC1",
       "lineCode": "1",
-      "unit": "thousands of current dollars",
+      "unit": "millions of current dollars",
       "domain": "economy"
     },
     {
