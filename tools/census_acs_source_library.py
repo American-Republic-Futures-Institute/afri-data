@@ -59,7 +59,8 @@ def official_table_available(url, *, opener=None):
     """Bounded source existence check; does not download a full Census file."""
     expected=re.fullmatch(
         r"https://www2\.census\.gov/programs-surveys/acs/summary_file/(20\d{2})/"
-        r"table-based-SF/data/5YRData/acsdt5y(20\d{2})-(b19013|b25077|b25064|b01002)\.dat",
+        r"table-based-SF/data/5YRData/acsdt5y(20\d{2})-"
+        r"(b19013|b25077|b25064|b01002|b01003|b19083|b25002|b25003)\.dat",
         url)
     if (not expected or expected[1] != expected[2] or
             not supported_year(int(expected[1]))):
@@ -85,7 +86,7 @@ def official_table_available(url, *, opener=None):
 
 
 def discovered_vintages(*, now=None, available=official_table_available):
-    """Extend fixed base editions only after *all four* official tables exist.
+    """Extend fixed base editions only after *all registered* official tables exist.
 
     Do not skip an intermediate unpublished or partially available vintage.
     """
