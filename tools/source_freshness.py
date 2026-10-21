@@ -98,6 +98,9 @@ def source_fingerprint(entry):
                     "publication/source-library/originals/noaa-ncei/sha256/" + orig + ".dat" and
                 type(readme) is str and SHA256.fullmatch(readme) and
                 type(readme_bytes) is int and 100 < readme_bytes <= 65_536 and
+                entry.get("originalReadmeUrl") in (
+                    "https://www.ncei.noaa.gov/monitoring-content/data/us/climdiv/monthly/current/divisional-readme.txt",
+                    "https://www.ncei.noaa.gov/pub/data/cirs/climdiv/divisional-readme.txt") and
                 entry.get("originalReadmePath") ==
                     "publication/source-library/originals/noaa-ncei/readme/sha256/" + readme + ".txt" and
                 entry.get("publisherPublishedAt") is None and
