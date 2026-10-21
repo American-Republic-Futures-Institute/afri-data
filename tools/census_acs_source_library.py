@@ -36,6 +36,12 @@ VINTAGES={2022,2023,2024}
 MISSING={"", "N", "null", "-666666666", "-888888888", "-999999999", "-555555555"}
 MAX_SOURCE_BYTES=30_000_000
 MAX_VINTAGE=2099
+# The website source gateway accepts at most 160 row keys. Refuse oversized
+# publisher schemas rather than dropping original estimate/MOE columns.
+MAX_WEBSITE_FIELDS=160
+OTHER_MOE_SENTINELS={"-222222222","-333333333","**","***","*****"}
+ANNOTATION_PATTERN=re.compile(r"^(?:B[0-9]{5}_(?:EA|MA)[0-9]{3}|B[0-9]{5}_[EM][0-9]{3}A)$")
+
 
 
 def supported_year(year, *, now=None):
@@ -159,24 +165,57 @@ def registry_sources(root=ROOT, *, discover=False, available=official_table_avai
 
 
 def parse_table(original, *, table, year):
+    """Lossless state-only projection of every Census table estimate and MOE.
+
+    Every original E### and M### field is retained, not merely E001/M001.
+    The state projection is identified by source GEO_ID and anchored to the
+    complete publisher-file digest. No ratios or intervals are recalculated.
+    """
     if table not in TABLES or not supported_year(year):
         raise ValueError("Unrecognized ACS publisher table")
     try:
         source=csv.DictReader(io.StringIO(original.decode("utf-8-sig")),delimiter="|")
-        estimate=table.upper()+"_E001"
-        moe=table.upper()+"_M001"
-        if not {"GEO_ID",estimate,moe}.issubset(set(source.fieldnames or [])):
-            raise ValueError("ACS source estimate and 90% MOE columns missing")
-        if len(source.fieldnames)!=len(set(source.fieldnames)):
-            raise ValueError("Duplicate ACS table columns")
+        prefix=table.upper()
+        estimate=prefix+"_E001"
+        moe=prefix+"_M001"
+        headers=source.fieldnames or []
+        if (not headers or len(headers)!=len(set(headers)) or
+                not {"GEO_ID",estimate,moe}.issubset(headers)):
+            raise ValueError("ACS source estimate and 90% MOE columns missing or duplicated")
+
+        pairs={"E":set(),"M":set()}
+        source_fields=[]
+        annotation_fields=[]
+        for column in headers:
+            if column in ("GEO_ID","NAME"):
+                continue
+            match=re.fullmatch(rf"{prefix}_([EM])([0-9]{{3}})",column)
+            if match and int(match[2])>0:
+                pairs[match[1]].add(match[2])
+                source_fields.append(column)
+            elif ANNOTATION_PATTERN.fullmatch(column) and column.startswith(prefix+"_"):
+                annotation_fields.append(column)
+            else:
+                raise ValueError("Unexpected ACS source estimate/MOE field: "+str(column)[:90])
+        if not pairs["E"] or pairs["E"]!=pairs["M"] or "001" not in pairs["E"]:
+            raise ValueError("Unpaired ACS source estimate and MOE header families")
+        # Optional original annotation columns must point to an actual E/M line.
+        for column in annotation_fields:
+            tail=column.removeprefix(prefix+"_")
+            kind=tail[0]
+            number=(tail[2:] if tail[1]=="A" else tail[1:4])
+            if number not in pairs[kind]:
+                raise ValueError("Unpaired ACS source annotation field")
+        # GEO_ID is shared with the public metadata projection; every other
+        # original column must fit beside the eleven existing metadata keys.
+        if len(headers)-1+11>MAX_WEBSITE_FIELDS:
+            raise ValueError("ACS source original columns exceed safe website row limit")
+
         rows={}
         digest=sha256(original).hexdigest()
         for line in source:
-            # The original table-based file also contains county, tract,
-            # block-group and other geographies. We materialize the state
-            # projection only, so their row-shape peculiarities are outside
-            # the state's E001/M001 acceptance boundary. Inspect GEO_ID
-            # before enforcing exact width *on a selected state row*.
+            # The original multi-geography file also contains county, tract
+            # and block group records. Validate only projected state rows.
             geoid=line.get("GEO_ID")
             if not isinstance(geoid,str) or not geoid.startswith("0400000US"):
                 continue
@@ -187,33 +226,51 @@ def parse_table(original, *, table, year):
                 raise ValueError("Unexpected ACS state row width")
             if state in rows:
                 raise ValueError("Duplicate ACS state geography")
+            # Preserve original source strings exactly; use stripped numeric
+            # forms only for validation, not for published values.
+            source_values={}
+            for column in headers:
+                if column=="GEO_ID":
+                    continue
+                value=line[column]
+                if (not isinstance(value,str) or
+                        (len(value)>180 if column=="NAME" else len(value)>80) or
+                        any(ord(ch)<32 for ch in value)):
+
+                    raise ValueError("Invalid or oversized ACS original source cell")
+                if column in source_fields:
+                    candidate=value.strip()
+                    # The extra ACS annotation codes are legal in MOE
+                    # columns only; an E### estimate containing ***** is
+                    # malformed and cannot be silently marked available.
+                    allowed=MISSING|(OTHER_MOE_SENTINELS if "_M" in column else set())
+                    if candidate not in allowed:
+                        try:
+                            number=Decimal(candidate)
+                        except (ValueError,InvalidOperation):
+                            raise ValueError("Invalid official ACS numeric source") from None
+                        if not number.is_finite() or number<0 or number>1_000_000_000:
+                            raise ValueError("Unreasonable official ACS source estimate")
+                        if table=="b19083" and number>1:
+                            raise ValueError("ACS publisher Gini estimate or margin exceeds unit interval")
+                source_values[column]=value
+
             rawEstimate=line[estimate].strip()
             rawMoe=line[moe].strip()
-            # An ACS-controlled population/housing total may have a numeric
-            # estimate and a publisher MOE sentinel (***** / -555555555).
-            # Retain the exact estimate/MOE strings. This is not a missing
-            # estimate, nor permission to synthesize a numeric 0 MOE.
-            controlled_moe = rawMoe in ("-555555555", "*****") and rawEstimate not in MISSING
-            estimate_missing = rawEstimate in MISSING
-            moe_missing = rawMoe in MISSING or rawMoe == "*****"
-            if estimate_missing != moe_missing and not controlled_moe:
+            controlled_moe=(rawMoe in ("-555555555","*****") and
+                            rawEstimate not in MISSING)
+            other_unavailable_moe=(rawMoe in OTHER_MOE_SENTINELS and
+                                   not controlled_moe and rawEstimate not in MISSING)
+            estimate_missing=rawEstimate in MISSING
+            moe_missing=rawMoe in MISSING or rawMoe in OTHER_MOE_SENTINELS
+            if estimate_missing!=moe_missing and not (controlled_moe or other_unavailable_moe):
                 raise ValueError("Estimate and Census 90% MOE must be paired")
-            for item in (rawEstimate, rawMoe):
-                if item in MISSING or (item == "*****" and controlled_moe):
-                    continue
-                try:
-                    num=Decimal(item)
-                except (ValueError, InvalidOperation):
-                    raise ValueError("Invalid official ACS numeric source") from None
-                if not num.is_finite() or num<0 or num>1_000_000_000:
-                    raise ValueError("Unreasonable official ACS source estimate")
-                if table=="b19083" and num>1:
-                    raise ValueError("ACS publisher Gini estimate or margin exceeds unit interval")
+
             rows[state]={
                 "GEO_ID":geoid,
+                **source_values,
                 "state_fips":state,
                 "state_name":STATE_NAMES[state],
-                estimate:rawEstimate,moe:rawMoe,
                 "record_date":f"{year}-12-31",
                 "source_year":str(year),
                 "survey_reference_period":f"{year-4}-{year}",
@@ -225,12 +282,13 @@ def parse_table(original, *, table, year):
                 "margin_of_error_confidence":"0.90",
                 "source_original_sha256":digest,
             }
+            if len(rows[state])>MAX_WEBSITE_FIELDS:
+                raise ValueError("ACS original row exceeds website serving field count")
         if len(rows)!=52 or set(rows)!=FIPS:
             raise ValueError("ACS historical state and equivalent coverage incomplete")
         return [rows[code] for code in sorted(rows)]
     except UnicodeError:
         raise ValueError("Invalid publisher ACS source character encoding") from None
-
 
 def census_records(spec, fetch=download_official):
     year=spec.get("releaseYear")
