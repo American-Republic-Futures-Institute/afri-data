@@ -5,7 +5,7 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from tools.audit_source_field_widths import FieldInventoryError, audit
+from tools.audit_source_field_widths import FieldInventoryError, audit, publisher_family
 
 
 def raw(obj):
@@ -48,6 +48,24 @@ class SourceFieldWidthsTests(unittest.TestCase):
             original.write_bytes(original.read_bytes()+b"tampered")
             with self.assertRaises(FieldInventoryError):
                 audit(root)
+
+    def test_legacy_source_family_classification_is_not_mislabeled_treasury(self):
+        expected={
+            "bls-qcew-all-industry": "bls-qcew",
+            "cdc-places-county-obesity-2024": "cdc-places",
+            "census-acs5-b19013-2024": "census-acs5",
+            "bea-state-gdp-nominal": "bea-regional",
+            "treasury-debt-to-penny": "treasury-fiscaldata",
+            "eia-seds-total-consumption": "eia-seds",
+            "usda-ers-net-farm-income": "usda-ers",
+        }
+        for key,provider in expected.items():
+            with self.subTest(dataset=key):
+                self.assertEqual(publisher_family({"id":key}),provider)
+        with self.assertRaises(FieldInventoryError):
+            publisher_family({"id":"nondescript-invented"})
+        with self.assertRaises(FieldInventoryError):
+            publisher_family({"id":"bls-qcew-all-industry","provider":"treasury-fiscaldata"})
 
     def test_source_ledger_count_mismatch_blocks_report(self):
         with tempfile.TemporaryDirectory() as tmp:
