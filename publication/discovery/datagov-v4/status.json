@@ -1,0 +1,20 @@
+{
+  "candidatesAcceptedThisRun": 0,
+  "checkedAtUtc": "2026-10-21T14:38:49Z",
+  "exhausted": false,
+  "filter": {
+    "org_type": "Federal Government",
+    "per_page": "100",
+    "sort": "last_harvested_date"
+  },
+  "lastErrorCategory": null,
+  "mode": "federal_dataset_metadata_discovery_only",
+  "pagesFetched": 0,
+  "publisherOriginalDatasetFeedsAcquired": 0,
+  "publisherReleaseToGitLatencySlo": "unmeasurable_without_verified_publisher_release_and_ingest_times",
+  "rejected": {},
+  "scanEdition": 1,
+  "schemaVersion": "ARFI-DataGovFederalDiscovery/1.0.0",
+  "sourceAPI": "https://api.gsa.gov/technology/datagov/v4/",
+  "status": "blocked_missing_key"
+}
