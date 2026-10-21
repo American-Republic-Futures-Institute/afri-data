@@ -320,3 +320,36 @@ def verify_report(report, index, health):
     return {"registered": len(values), "mirrored": len(current),
             "verifiedPartitions": report["totals"]["sourcePartitions"],
             "publisherReleaseLagMeasurable": False}
+
+def main():
+    """Verify the Git branch's report without claiming publisher release timeliness."""
+    import argparse
+    from pathlib import Path
+    root = Path(__file__).resolve().parents[1]
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--verify", action="store_true")
+    parser.add_argument("--check-cadence", action="store_true")
+    parser.add_argument("--as-of", help="UTC ISO8601 override for reproducible checks")
+    args = parser.parse_args()
+    if not args.verify and not args.check_cadence:
+        parser.error("Select --verify and/or --check-cadence")
+    path = root / "publication/source-library"
+    index = json.loads((path / "index.json").read_text("utf-8"))
+    health = json.loads((path / "health.json").read_text("utf-8"))
+    ledger = json.loads((path / "acquisition-ledger.json").read_text("utf-8"))
+    result = verify_report(ledger, index, health)
+    if args.check_cadence:
+        now = utc_date(args.as_of or utc_string(datetime.now(timezone.utc)))
+        age = now - utc_date(ledger["checkedAt"])
+        require(age >= timedelta(0), "acquisition clock in the future")
+        result["daysSinceSuccessfulRefreshCheck"] = round(age.total_seconds() / 86400, 4)
+        result["checkCadenceStatus"] = ("escalation_required" if age > timedelta(days=14)
+             else "overdue" if age > timedelta(days=7) else "within_seven_day_check_target")
+        result["publisherReleaseLagMeasurable"] = False
+    print(json.dumps(result, sort_keys=True))
+    if args.check_cadence and result["checkCadenceStatus"] != "within_seven_day_check_target":
+        raise SystemExit(2 if result["checkCadenceStatus"]=="escalation_required" else 1)
+
+
+if __name__ == "__main__":
+    main()
