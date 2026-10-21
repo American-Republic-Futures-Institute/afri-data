@@ -109,7 +109,7 @@ def registry_sources(root=ROOT, *, discover=False, now=None, available=None):
         "sourcePage":SOURCE_PAGE,
         "dateField":"record_date",
         "dateBasis":"epa-annual-measurement-year-end-not-publisher-release",
-        "preferredField":"Days with AQI",
+        "preferredField":None,
         "unit":"EPA-reported days and AQI index",
         "maxRows":2500,
     } for year in years for scope,row in
