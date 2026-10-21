@@ -9,6 +9,8 @@ on:
       - '.github/workflows/refresh-source-library.yml'
       - 'catalog/source-library/**'
       - 'tools/source_library.py'
+      - 'tools/source_freshness.py'
+      - 'tests/test_source_freshness.py'
       - 'tools/cdc_places_source_library.py'
       - 'tools/bls_qcew_source_library.py'
       - 'tools/census_acs_source_library.py'
@@ -58,6 +60,8 @@ jobs:
         run: python -m tools.source_library
       - name: Independently verify every retained source partition
         run: python -m tools.source_library --verify
+      - name: Check exact registered/acquired/revised source coverage and release-lag honesty
+        run: python -m tools.source_freshness --verify
       - name: Publish validated source copies to the rolling data branch
         shell: bash
         run: |
@@ -76,6 +80,13 @@ jobs:
           status=json.loads(Path("publication/source-library/health.json").read_text())
           print("Source refresh:",status["succeeded"],"of",status["attempted"],"succeeded")
           print("Last checked:",status["checkedAt"])
+          freshness=json.loads(Path("publication/source-library/acquisition-ledger.json").read_text())
+          print("Canonical mirrored datasets:", freshness["totals"]["mirrored"])
+          print("Registered source feeds:", freshness["totals"]["registered"])
+          print("Previously mirrored but retained after upstream failure:", freshness["totals"]["retainedAfterFailure"])
+          print("Newly mirrored this run:", freshness["totals"]["newlyMirroredAtThisRefresh"])
+          print("Revised previously mirrored sources:", freshness["totals"]["changedMirroredAtThisRefresh"])
+          print("Publisher publication-to-Git latency:", freshness["publicationLagMeasurementStatus"])
           for key,value in status["failed"].items():
               print(f"::warning title=Government source temporarily unavailable::{key}: {value}")
           for key,value in status.get("discoveryWarnings", {}).items():
