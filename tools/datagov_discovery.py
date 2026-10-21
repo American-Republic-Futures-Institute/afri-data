@@ -73,8 +73,11 @@ def safe_https(value):
         url = urlsplit(value)
     except ValueError:
         return None
-    if (url.scheme != "https" or url.username or url.password or url.query or
-            url.fragment or not url.hostname or url.port not in (None, 443)):
+    try:
+        if (url.scheme != "https" or url.username or url.password or url.query or
+                url.fragment or not url.hostname or url.port not in (None, 443)):
+            return None
+    except ValueError:
         return None
     return value
 
@@ -481,7 +484,10 @@ def run(root, *, api_key, repository_root, page_budget=30, recent_pages=3,
         status["status"] = "blocked_missing_key" if not api_key else "blocked_demo_key"
         atomic_json(root / "status.json", status)
         return status
-    ensure(KEY_PATTERN.fullmatch(api_key), "private API key invalid")
+    if not KEY_PATTERN.fullmatch(api_key):
+        status["status"] = "blocked_invalid_key"
+        atomic_json(root / "status.json", status)
+        return status
     seeds = read_seeds(repository_root)
     try:
         org_data, org_sha, org_bytes = get(ORGANIZATIONS, api_key)
@@ -494,9 +500,14 @@ def run(root, *, api_key, repository_root, page_budget=30, recent_pages=3,
         # The recent sweep restarts at the newest harvest-date cursor each run,
         # independently of the bounded catch-up scan. No completeness claim.
         recent_cursor = None
+        recent_seen = set()
         for seq in range(1, recent_pages + 1):
             payload, raw_sha, raw_length = get(search_url(recent_cursor), api_key)
             next_cursor = payload.get("after")
+            if next_cursor is not None:
+                ensure(sha(str(next_cursor).encode()) not in recent_seen,
+                       "cyclic recent-release source cursor")
+                recent_seen.add(sha(str(next_cursor).encode()))
             stats = persist_page(root, mode="recent", epoch=int(checked[:19].replace("-", "").replace("T", "").replace(":", "")),
                                  sequence=seq, source=SEARCH, page=payload,
                                  raw_sha=raw_sha, raw_length=raw_length,
@@ -562,7 +573,7 @@ def verify(root):
            status.get("publisherOriginalDatasetFeedsAcquired") == 0 and
            status.get("publisherReleaseToGitLatencySlo") ==
            "unmeasurable_without_verified_publisher_release_and_ingest_times" and
-           status.get("status") in ("blocked_missing_key", "blocked_demo_key",
+           status.get("status") in ("blocked_missing_key", "blocked_demo_key", "blocked_invalid_key",
                                     "degraded_source_or_validation", "partial_checkpointed",
                                     "catalog_scan_complete"),
            "missing or overstated source-discovery status")
