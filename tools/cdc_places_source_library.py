@@ -132,10 +132,10 @@ def cdc_records(spec, fetch=download_official):
         if estimate is not None:
             try:
                 number = Decimal(str(estimate))
-                if not number.is_finite() or number < 0 or number > 100:
-                    raise ValueError("Out-of-range CDC modeled prevalence")
             except (InvalidOperation, ValueError):
                 raise ValueError("Invalid CDC modeled prevalence") from None
+            if not number.is_finite() or number < 0 or number > 100:
+                raise ValueError("Out-of-range CDC modeled prevalence")
         if ci is not None and (not isinstance(ci, str) or len(ci) > 80):
             raise ValueError("Unsupported CDC publisher confidence interval")
         # Original source fields are untouched. The following separate
