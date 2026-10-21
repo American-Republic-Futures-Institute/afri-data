@@ -7,7 +7,7 @@ import unittest
 
 from tools.source_library import BASE, SourceLibraryError, refresh, verify
 from tools.source_freshness import (
-    LedgerError, report_for, source_fingerprint, verify_report,
+    LedgerError, check_cadence, report_for, source_fingerprint, verify_report,
 )
 
 AT="2026-10-21T08:00:00Z"
@@ -218,6 +218,34 @@ class FreshnessLedgerTests(unittest.TestCase):
             stored.write_text(json.dumps(fake))
             with self.assertRaisesRegex(LedgerError,"per-source fingerprint"):
                 verify(p)
+
+    def test_daily_watch_detects_source_level_staleness_and_uncaptured_feeds(self):
+        with tempfile.TemporaryDirectory() as directory:
+            p=Path(directory)
+            refresh(root=p,catalog=catalog(),loader=lambda _:rows(),now=AT)
+            current=report(p)
+            self.assertEqual(check_cadence(current,AT)["checkCadenceStatus"],
+                             "within_seven_day_check_target")
+            one_week_plus="2026-10-29T08:00:00Z"
+            late=check_cadence(current,one_week_plus)
+            self.assertEqual(late["checkCadenceStatus"],"overdue_or_unacquired")
+            self.assertEqual(late["overdueSourceIds"],["treasury-ledger"])
+            severe=check_cadence(current,"2026-11-05T08:00:00Z")
+            self.assertEqual(severe["checkCadenceStatus"],"escalation_required")
+            self.assertEqual(severe["escalatedSourceIds"],["treasury-ledger"])
+            self.assertEqual(severe["publisherReleaseLagMeasurable"],False)
+            c=catalog(("treasury-ledger","treasury-other"))
+            def partial(spec):
+                if spec["id"]=="treasury-other":
+                    raise SourceLibraryError("No original publisher response")
+                return rows()
+            refresh(root=p,catalog=c,loader=partial,now=WEEK)
+            pending=check_cadence(report(p),WEEK)
+            self.assertEqual(pending["checkCadenceStatus"],"overdue_or_unacquired")
+            self.assertEqual(pending["neverAcquiredSourceIds"],["treasury-other"])
+            self.assertEqual(pending["overdueSourceIds"],[])
+            with self.assertRaisesRegex(LedgerError,"before source refresh"):
+                check_cadence(report(p),AT)
 
     def test_source_fingerprint_rejects_duplicate_or_foreign_partition_paths(self):
         with tempfile.TemporaryDirectory() as directory:
