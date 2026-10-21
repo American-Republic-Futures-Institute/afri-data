@@ -38,6 +38,34 @@
       "description": "Source-published five-year pooled median age for states and equivalents, including original 90% margin of error.",
       "unit": "years of age",
       "preferredField": "B01002_E001"
+    },
+    {
+      "table": "b01003",
+      "title": "Total resident population (ACS estimate)",
+      "description": "Source-published ACS five-year survey estimate of total persons; not the Population Estimates Program official annual population total; original 90% margin of error retained.",
+      "unit": "persons (ACS estimate)",
+      "preferredField": "B01003_E001"
+    },
+    {
+      "table": "b19083",
+      "title": "Household income inequality (Gini index)",
+      "description": "Source-published ACS five-year Gini index of income inequality among households, retaining the original estimate and 90% margin of error; not a causal measure.",
+      "unit": "unitless Gini index",
+      "preferredField": "B19083_E001"
+    },
+    {
+      "table": "b25002",
+      "title": "Housing occupancy status",
+      "description": "Source-published ACS five-year total housing unit universe for occupancy status, retaining original estimate and 90% margin of error without inferring vacancy rates.",
+      "unit": "housing units (ACS estimate)",
+      "preferredField": "B25002_E001"
+    },
+    {
+      "table": "b25003",
+      "title": "Occupied housing tenure",
+      "description": "Source-published ACS five-year occupied housing unit universe for owner and renter tenure, retaining original estimate and 90% margin of error without inferring ownership rates.",
+      "unit": "occupied housing units",
+      "preferredField": "B25003_E001"
     }
   ]
 }
