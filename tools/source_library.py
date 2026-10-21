@@ -466,7 +466,8 @@ def refresh(root=ROOT, catalog=None, loader=pages, now=None):
             noaa = noaa_sources(root, discover=True)
         except NOAAUnavailable as exc:
             discovery_warnings["noaa-ncei"] = str(exc)[:200]
-            noaa = noaa_sources(root)
+            from tools.noaa_ncei_source_library import ALTERNATE_BASE
+            noaa = noaa_sources(root, baseline_base=ALTERNATE_BASE)
         catalog = {**treasury,
                    "datasets": treasury["datasets"] + cdc_sources(root) +
                    bls_sources(root) + census + epa + bea_sources(root) + usgs + noaa}
