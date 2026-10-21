@@ -11,7 +11,7 @@ from tools.cdc_places_source_library import (
 from tools.source_library import CATALOG, ROOT, SourceLibraryError, validate_catalog, refresh
 
 
-def source_rows(field="obesity_crudeprev", count=COUNTIES):
+def source_rows(field="obesity_crudeprev", count=COUNTIES[2025]):
     return [
         {"countyfips": f"{n + 1:05d}", "countyname": "Synthetic County " + str(n),
          "stateabbr": "VA", field: "18.2", field.replace("_crudeprev", "_crude95ci"): "(16.9, 19.5)"}
@@ -37,7 +37,7 @@ class CdcOriginalSourceTests(unittest.TestCase):
             captured.append((url, host, limit))
             return json.dumps(source_rows()).encode("utf-8")
         rows = cdc_records(source, fetch=get)
-        self.assertEqual(len(rows), COUNTIES)
+        self.assertEqual(len(rows), COUNTIES[2025])
         self.assertEqual(rows[0]["obesity_crudeprev"], "18.2")
         self.assertEqual(rows[0]["obesity_crude95ci"], "(16.9, 19.5)")
         self.assertEqual(rows[0]["record_date"], "2025-12-31")
@@ -46,6 +46,16 @@ class CdcOriginalSourceTests(unittest.TestCase):
         self.assertEqual(captured[0][1:], ("data.cdc.gov", 3500000))
         self.assertTrue(captured[0][0].startswith(BASE + "i46a-9kgh.json?"))
         self.assertIn("%24select=", captured[0][0])
+
+    def test_2024_publisher_count_differing_from_other_vintages_is_preserved(self):
+        source = next(s for s in registry_sources() if s["id"] == "cdc-places-obesity-2024")
+        def publish(count):
+            return lambda url, *, host, limit: json.dumps(
+                source_rows(count=count)).encode("utf-8")
+        self.assertEqual(len(cdc_records(source, fetch=publish(3144))), 3144)
+        with self.assertRaisesRegex(ValueError, "county coverage changed"):
+            cdc_records(source, fetch=publish(3143))
+        self.assertEqual(COUNTIES, {2023: 3143, 2024: 3144, 2025: 3143})
 
     def test_refuses_truncation_duplicate_counties_unexpected_measure_and_silent_unit_inference(self):
         source = next(s for s in registry_sources() if s["id"] == "cdc-places-obesity-2025")
