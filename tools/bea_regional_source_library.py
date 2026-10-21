@@ -29,8 +29,8 @@ PAGE = "https://apps.bea.gov/regional/downloadzip.htm"
 ARCHIVES = frozenset(("SAGDP", "SAINC"))
 # These are precise source-published BEA table/line identities, not generated indicators.
 SERIES = {
-    "bea-state-gdp-nominal": ("SAGDP", "SAGDP2N", "1"),
-    "bea-state-gdp-real": ("SAGDP", "SAGDP9N", "1"),
+    "bea-state-gdp-nominal": ("SAGDP", "SAGDP2", "1"),
+    "bea-state-gdp-real": ("SAGDP", "SAGDP9", "1"),
     "bea-state-income-total": ("SAINC", "SAINC1", "1"),
     "bea-state-income-per-capita": ("SAINC", "SAINC1", "3"),
 }
@@ -220,14 +220,14 @@ def parse_member(original, *, table, line_code, member, archive_sha, now=None):
             visited += 1
             require(visited <= MAX_SOURCE_ROWS, "BEA original table contains unbounded rows")
             geographic = line.get("GeoFIPS")
-            if not isinstance(geographic, str) or not re.fullmatch(r"\d{2}000", geographic) or (
-                    geographic[:2] not in STATES):
+            if not isinstance(geographic, str) or not re.fullmatch(r"\d{2}000", geographic.strip().strip('"')) or (
+                    geographic.strip().strip('"')[:2] not in STATES):
                 continue  # Preserve the state projection; never mistake totals for states.
             require(None not in line and all(type(x) is str for x in line.values()),
                     "Malformed original BEA state row")
             if line.get("TableName") != table or line.get("LineCode", "").strip() != line_code:
                 continue  # Other official source lines remain in the ZIP, not this release.
-            state = geographic[:2]
+            state = geographic.strip().strip('"')[:2]
             metadata = {column: line[column] for column in headers if not YEAR.fullmatch(column)}
             require(all(len(value) <= 180 and
                         not any(ord(ch) < 32 for ch in value)
@@ -245,6 +245,7 @@ def parse_member(original, *, table, line_code, member, archive_sha, now=None):
                 year_seen.add(year)
                 rows[key] = {
                     **metadata,
+                    "state_fips": state,
                     "record_date": f"{year}-12-31",
                     "value": value,
                     "value_year_column": str(year),
