@@ -158,7 +158,7 @@ def member_bytes(bundle, *, archive, table):
     try:
         with ZipFile(io.BytesIO(bundle)) as source:
             names = source.infolist()
-            require(0 < len(names) <= 300 and
+            require(0 < len(names) <= 5000 and
                     len({item.filename for item in names}) == len(names),
                     "BEA ZIP contains duplicate or excessive members")
             selected = []
