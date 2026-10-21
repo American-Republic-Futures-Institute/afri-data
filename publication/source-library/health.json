@@ -1,1 +1,1 @@
-{"attempted":61,"checkedAt":"2026-10-21T02:24:44Z","discoveryWarnings":{},"failed":{},"nextExpectedCheck":"within 7 days of last successful scheduled run","schemaVersion":"1.0.0","succeeded":61}
+{"attempted":85,"checkedAt":"2026-10-21T02:33:00Z","discoveryWarnings":{},"failed":{"census-acs5-b25002-2022":"Unexpected ACS row width"},"nextExpectedCheck":"within 7 days of last successful scheduled run","schemaVersion":"1.0.0","succeeded":84}
