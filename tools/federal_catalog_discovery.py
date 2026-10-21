@@ -294,17 +294,126 @@ def merge(previous, key, fetcher=get_page, pages_limit=10, now=None):
     }
 
 
+def verify_index(snapshot):
+    """Verify that persisted discovery metadata cannot claim source acquisition."""
+    guard(type(snapshot) is dict and set(snapshot) == {
+          "schemaVersion", "source", "filter", "status", "checkedAt",
+          "after", "scanBoundaryReachedAt", "pagesExamined", "rowsExamined",
+          "rejectedByReason", "pageEvidence", "candidates"},
+          "unexpected or incomplete discovery snapshot fields")
+    guard(snapshot["schemaVersion"] == SCHEMA and snapshot["source"] == BASE and
+          snapshot["filter"] ==
+          "org_type=Federal Government;sort=last_harvested_date" and
+          snapshot["status"] in (
+              "not_started",
+              "bounded_discovery_in_progress",
+              "cursor_exhausted_at_check_not_complete_federal_data_census"),
+          "noncanonical discovery status or provenance")
+    checked = snapshot["checkedAt"]
+    if checked is not None:
+        timestamp(checked)
+    else:
+        guard(snapshot["status"] == "not_started", "source check missing")
+    after = snapshot["after"]
+    guard(after is None or (type(after) is str and CURSOR.fullmatch(after)),
+          "unsafe saved cursor")
+    guard(type(snapshot["pagesExamined"]) is int and
+          type(snapshot["rowsExamined"]) is int and
+          0 <= snapshot["pagesExamined"] and
+          0 <= snapshot["rowsExamined"] and
+          snapshot["rowsExamined"] <= snapshot["pagesExamined"] * PER_PAGE,
+          "invalid original catalog pagination totals")
+    boundary = snapshot["scanBoundaryReachedAt"]
+    if boundary is not None:
+        guard(checked is not None and timestamp(boundary) <= timestamp(checked),
+              "falsified catalog scan checkpoint date")
+    guard(type(snapshot["rejectedByReason"]) is dict and
+          all(type(k) is str and k and type(v) is int and v >= 0
+              for k, v in snapshot["rejectedByReason"].items()),
+          "unrecognized catalog rejection statistics")
+    evidence = snapshot["pageEvidence"]
+    guard(type(evidence) is list and len(evidence) <= 40, "unbounded source page evidence")
+    for e in evidence:
+        guard(type(e) is dict and set(e) == {
+             "checkedAt", "cursor", "responseSha256", "responseBytes", "rows"} and
+             type(e["checkedAt"]) is str and checked is not None and
+             timestamp(e["checkedAt"]) <= timestamp(checked) and
+             (e["cursor"] is None or
+              (type(e["cursor"]) is str and CURSOR.fullmatch(e["cursor"]))) and
+             type(e["responseSha256"]) is str and SHA.fullmatch(e["responseSha256"]) and
+             type(e["responseBytes"]) is int and 0 < e["responseBytes"] <= MAX_BYTES and
+             type(e["rows"]) is int and 0 <= e["rows"] <= PER_PAGE,
+             "invalid publisher API original-page digest metadata")
+    rows = snapshot["candidates"]
+    guard(type(rows) is list and len(rows) <= MAX_CANDIDATES,
+          "unbounded federal metadata candidate queue")
+    ids = set()
+    raw_fields = {
+        "catalogId", "organizationSlug", "organizationName",
+        "publisherName", "title", "accessClass", "catalogHarvestedAtUnverified",
+        "publisherModifiedAtRawUnverified", "publisherIssuedAtRawUnverified",
+        "distributionCandidatesNotFetched", "sourceReleaseTimestampVerified",
+        "approvedForSourceIngestion", "licenseAndReuseReviewComplete",
+        "sourceBytesAcquired"}
+    for row in rows:
+        guard(type(row) is dict and set(row) == raw_fields | {
+          "catalogFingerprint", "firstDiscoveredAt",
+          "lastCatalogMetadataChangeObservedAt"} and
+          type(row["catalogId"]) is str and UUID.fullmatch(row["catalogId"]) and
+          row["catalogId"] not in ids and
+          type(row["organizationSlug"]) is str and
+          re.fullmatch(r"[a-z0-9-]{2,100}", row["organizationSlug"]) and
+          row["accessClass"] ==
+           "public_catalog_metadata_requires_original_source_review" and
+          row["approvedForSourceIngestion"] is False and
+          row["licenseAndReuseReviewComplete"] is False and
+          row["sourceBytesAcquired"] is False and
+          row["sourceReleaseTimestampVerified"] is None and
+          type(row["distributionCandidatesNotFetched"]) is list and
+          len(row["distributionCandidatesNotFetched"]) <= 20 and
+          all(type(u) is str and u.startswith("https://") and
+              len(u) <= 1500 for u in row["distributionCandidatesNotFetched"]) and
+          type(row["catalogFingerprint"]) is str and
+          SHA.fullmatch(row["catalogFingerprint"]) and
+          type(row["firstDiscoveredAt"]) is str and
+          type(row["lastCatalogMetadataChangeObservedAt"]) is str and
+          checked is not None and
+          timestamp(row["firstDiscoveredAt"]) <=
+          timestamp(row["lastCatalogMetadataChangeObservedAt"]) <= timestamp(checked),
+          "source candidate falsely approved or invalid original evidence")
+        ids.add(row["catalogId"])
+        projected = {k: row[k] for k in raw_fields}
+        guard(sha256(canonical(projected)).hexdigest() == row["catalogFingerprint"],
+              "catalog metadata candidate fingerprint changed without revision")
+    guard(rows == sorted(rows, key=lambda x: x["catalogId"]),
+          "noncanonical federal discovery ordering")
+    guard(len(canonical(snapshot)) <= 12_000_000,
+          "discovery metadata file too large: requires bounded sharding")
+    return {"sourceClass": "unreviewed_catalog_metadata_only",
+            "candidates": len(rows), "pagesExamined": snapshot["pagesExamined"],
+            "originalPublisherBytesDownloaded": 0,
+            "completeFederalEnumeration": False}
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", default=str(ROOT / OUTPUT))
     parser.add_argument("--pages", type=int, default=10)
+    parser.add_argument("--verify", action="store_true",
+                        help="Only verify the existing discovery snapshot; no API call")
     args = parser.parse_args()
+    destination = Path(args.output)
+    if args.verify:
+        snapshot = json.loads(destination.read_text("utf-8"))
+        print(json.dumps(verify_index(snapshot), sort_keys=True))
+        return
     key = os.environ.get("DATA_GOV_API_KEY")
     if not key or key == "DEMO_KEY":
         raise SystemExit("DATA-10C blocked_missing_real_api_key: set DATA_GOV_API_KEY in GitHub Actions secrets")
-    destination = Path(args.output)
     previous = json.loads(destination.read_text("utf-8")) if destination.exists() else empty()
+    verify_index(previous)
     result = merge(previous, key, pages_limit=args.pages)
+    verify_index(result)
     destination.parent.mkdir(parents=True, exist_ok=True)
     staged = destination.with_suffix(".json.tmp")
     staged.write_bytes(canonical(result))
