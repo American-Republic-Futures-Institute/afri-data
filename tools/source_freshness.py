@@ -330,9 +330,12 @@ def main():
     parser.add_argument("--verify", action="store_true")
     parser.add_argument("--check-cadence", action="store_true")
     parser.add_argument("--as-of", help="UTC ISO8601 override for reproducible checks")
+    parser.add_argument("--root", help="Source checkout directory (default: this repository)")
     args = parser.parse_args()
     if not args.verify and not args.check_cadence:
         parser.error("Select --verify and/or --check-cadence")
+    if args.root:
+        root = Path(args.root).resolve()
     path = root / "publication/source-library"
     index = json.loads((path / "index.json").read_text("utf-8"))
     health = json.loads((path / "health.json").read_text("utf-8"))
