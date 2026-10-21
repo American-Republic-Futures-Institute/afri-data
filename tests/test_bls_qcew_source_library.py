@@ -67,7 +67,7 @@ class QcewSourceTests(unittest.TestCase):
 
     def test_all_registered_official_industry_sources_with_cdc_and_treasury(self):
         s=registry_sources()
-        self.assertEqual(len(s),4)
+        self.assertEqual(len(s),10)
         self.assertEqual({x["industryCode"] for x in s},set(INDUSTRIES.values()))
         treasury=json.loads((ROOT/CATALOG).read_text("utf-8"))
         from tools.cdc_places_source_library import registry_sources as cdc
