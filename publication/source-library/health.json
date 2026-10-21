@@ -1,1 +1,1 @@
-{"attempted":11,"checkedAt":"2026-10-20T18:29:57Z","failed":{"treasury-monthly-outlays":"Annual source partition exceeds GitHub-serving limit"},"nextExpectedCheck":"within 7 days of last successful scheduled run","schemaVersion":"1.0.0","succeeded":10}
+{"attempted":11,"checkedAt":"2026-10-21T00:15:42Z","failed":{},"nextExpectedCheck":"within 7 days of last successful scheduled run","schemaVersion":"1.0.0","succeeded":11}
