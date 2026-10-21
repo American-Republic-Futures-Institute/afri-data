@@ -11,6 +11,8 @@ on:
       - 'tools/source_library.py'
       - 'tools/cdc_places_source_library.py'
       - 'tools/bls_qcew_source_library.py'
+      - 'tools/census_acs_source_library.py'
+      - 'tests/test_census_acs_source_library.py'
       - 'tests/test_bls_qcew_source_library.py'
       - 'tests/test_cdc_source_library.py'
       - 'tests/test_source_library.py'
@@ -37,6 +39,7 @@ jobs:
           python -m unittest discover -s tests -p 'test_source_library.py' -v
           python -m unittest discover -s tests -p 'test_cdc_source_library.py' -v
           python -m unittest discover -s tests -p 'test_bls_qcew_source_library.py' -v
+          python -m unittest discover -s tests -p 'test_census_acs_source_library.py' -v
       - name: Restore persistent source-library branch and reconcile source code
         shell: bash
         run: |
@@ -51,7 +54,7 @@ jobs:
           else
             git switch -c data/source-library
           fi
-      - name: Fetch authoritative Treasury, CDC and BLS histories and update partitions
+      - name: Fetch authoritative Treasury, CDC, BLS and Census original histories and update partitions
         run: python -m tools.source_library
       - name: Independently verify every retained source partition
         run: python -m tools.source_library --verify
@@ -61,7 +64,7 @@ jobs:
           set -euo pipefail
           git add -- publication/source-library/
           if ! git diff --cached --quiet; then
-            git commit -m "data: refresh Treasury, CDC and BLS official source-library partitions"
+            git commit -m "data: refresh Treasury, CDC, BLS and Census official source-library partitions"
           fi
           git push origin HEAD:refs/heads/data/source-library
       - name: Surface publisher failures instead of silently claiming full freshness
