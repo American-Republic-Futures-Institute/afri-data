@@ -28,7 +28,7 @@ class CdcOriginalSourceTests(unittest.TestCase):
         self.assertEqual({s["indicatorStem"] for s in sources}, MEASURES)
         treasury = json.loads((ROOT / CATALOG).read_text("utf-8"))
         validate_catalog({**treasury, "datasets": treasury["datasets"] + sources})
-        self.assertEqual(len(treasury["datasets"]) + len(sources), 29)
+        self.assertEqual(len(treasury["datasets"]) + len(sources), 33)
 
     def test_stores_original_modeled_value_interval_and_separate_release_marker(self):
         source = next(s for s in registry_sources() if s["id"] == "cdc-places-obesity-2025")
