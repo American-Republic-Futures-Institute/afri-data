@@ -78,6 +78,8 @@ jobs:
           print("Last checked:",status["checkedAt"])
           for key,value in status["failed"].items():
               print(f"::warning title=Government source temporarily unavailable::{key}: {value}")
+          for key,value in status.get("discoveryWarnings", {}).items():
+              print(f"::warning title=New federal publisher release discovery temporarily unavailable::{key}: {value}")
           if status["failed"]:
               raise SystemExit("Partial source refresh. Successful feeds were published, failed feeds retained their last valid versions.")
           PY

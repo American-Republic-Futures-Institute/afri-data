@@ -56,7 +56,7 @@ def validate_catalog(catalog):
                 catalog.get("datasetClass") == "source-native-unreviewed",
                 "Unrecognized source mirror catalog")
     datasets = catalog.get("datasets")
-    assert_that(isinstance(datasets, list) and 1 <= len(datasets) <= 128,
+    assert_that(isinstance(datasets, list) and 1 <= len(datasets) <= 120,
                 "Source count not bounded")
     seen = set()
     for item in datasets:
@@ -66,10 +66,10 @@ def validate_catalog(catalog):
                     "Duplicate or unsafe source ID")
         seen.add(key)
         if item.get("provider") == "census-acs5":
-            from tools.census_acs_source_library import source_url, PAGE, TABLES, VINTAGES
+            from tools.census_acs_source_library import source_url, PAGE, TABLES, supported_year
             year = item.get("releaseYear")
             table = item.get("table")
-            assert_that(year in VINTAGES and table in TABLES and
+            assert_that(supported_year(year) and table in TABLES and
                         key == f"census-acs5-{table}-{year}" and
                         item.get("endpoint") == source_url(year, table) and
                         item.get("sourcePage") == PAGE and
@@ -330,13 +330,21 @@ def verify(root=ROOT):
 
 def refresh(root=ROOT, catalog=None, loader=pages, now=None):
     root = Path(root)
+    discovery_warnings = {}
     if catalog is None:
         treasury = json.loads((root / CATALOG).read_text("utf-8"))
         from tools.cdc_places_source_library import registry_sources as cdc_sources
         from tools.bls_qcew_source_library import registry_sources as bls_sources
         from tools.census_acs_source_library import registry_sources as census_sources
+        try:
+            census = census_sources(root, discover=True)
+        except RuntimeError as exc:
+            # Publisher HEAD checking can be temporarily unavailable without
+            # invalidating any already-registered, archived source histories.
+            discovery_warnings["census-acs5"] = str(exc)[:200]
+            census = census_sources(root)
         catalog = {**treasury,
-                   "datasets": treasury["datasets"] + cdc_sources(root) + bls_sources(root) + census_sources(root)}
+                   "datasets": treasury["datasets"] + cdc_sources(root) + bls_sources(root) + census}
     validate_catalog(catalog)
     checked_at = now or datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
     directory = root / OUTPUT
@@ -365,6 +373,8 @@ def refresh(root=ROOT, catalog=None, loader=pages, now=None):
                 "publisher": spec.get("publisher", catalog["publisher"]),
                 "endpoint": spec["endpoint"] if spec.get("provider") in ("cdc-places", "bls-qcew", "census-acs5") else BASE + spec["endpoint"],
                 "dateBasis": spec.get("dateBasis", "original-publisher-record-date"),
+                **({"surveyReferencePeriod": spec["surveyReferencePeriod"]}
+                   if spec.get("provider") == "census-acs5" else {}),
                 "dateField": spec["dateField"], "preferredField": spec["preferredField"],
                 "unit": spec["unit"], "refreshCadence": "weekly",
                 "rowCount": len(records), "firstDate": partitions[0]["firstDate"],
@@ -391,6 +401,7 @@ def refresh(root=ROOT, catalog=None, loader=pages, now=None):
               "attempted": len(catalog["datasets"]),
               "succeeded": len(catalog["datasets"]) - len(failures),
               "failed": failures,
+              "discoveryWarnings": discovery_warnings,
               "nextExpectedCheck": "within 7 days of last successful scheduled run"}
     (directory / "health.json").write_bytes(canonical(health))
     verification = verify(root)

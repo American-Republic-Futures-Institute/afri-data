@@ -39,6 +39,59 @@ def fixture(table,year,suppress=None):
 
 
 class ACSHistoryTests(unittest.TestCase):
+    def test_discovery_of_complete_new_acs_vintage_requires_all_four_official_tables(self):
+        from datetime import datetime, timezone
+        from tools.census_acs_source_library import discovered_vintages, supported_year
+        now = datetime(2026, 10, 20, tzinfo=timezone.utc)
+        checked = []
+        def all_available(url):
+            checked.append(url)
+            return True
+        self.assertEqual(discovered_vintages(now=now, available=all_available),
+                         [2022, 2023, 2024, 2025])
+        self.assertEqual(len(checked), 4)
+        self.assertTrue(all(url.startswith(BASE+"2025/") for url in checked))
+        self.assertTrue(supported_year(2025, now=now))
+        self.assertFalse(supported_year(2026, now=now))
+        result = registry_sources(discover=True, now=now, available=all_available)
+        self.assertEqual(len(result), 16)
+        newest = [x for x in result if x["releaseYear"] == 2025]
+        self.assertEqual(len(newest), 4)
+        self.assertEqual({x["surveyReferencePeriod"] for x in newest}, {"2021-2025"})
+
+    def test_partial_or_unreleased_acs_vintage_stays_unpublished(self):
+        from datetime import datetime, timezone
+        from tools.census_acs_source_library import discovered_vintages
+        now = datetime(2026, 10, 20, tzinfo=timezone.utc)
+        available = lambda url: "b19013.dat" in url or "b25077.dat" in url
+        self.assertEqual(discovered_vintages(now=now, available=available),
+                         [2022, 2023, 2024])
+        self.assertEqual(len(registry_sources(discover=True, now=now, available=available)),12)
+        self.assertEqual(len(registry_sources(discover=True, now=now, available=lambda _: False)),12)
+
+    def test_census_availability_probe_rejects_hostile_paths_and_oversized_publishers(self):
+        from tools.census_acs_source_library import official_table_available
+        url=source_url(2025,"b19013")
+        class Reply:
+            def __init__(self, wanted, size):
+                self._url=wanted
+                self.headers={"Content-Length":str(size)}
+            def __enter__(self):return self
+            def __exit__(self,*_):pass
+            def geturl(self):return self._url
+        class Fake:
+            def __init__(self,size):self.size=size
+            def open(self, req, timeout):
+                self.request = req
+                return Reply(req.full_url,self.size)
+        fake=Fake(20_000_000)
+        self.assertTrue(official_table_available(url,opener=fake))
+        self.assertEqual(fake.request.get_method(),"HEAD")
+        with self.assertRaisesRegex(RuntimeError,"byte ceiling"):
+            official_table_available(url,opener=Fake(40_000_000))
+        with self.assertRaisesRegex(ValueError,"Unapproved Census HEAD"):
+            official_table_available("https://attacker.example/file.dat",opener=fake)
+
     def test_eight_official_tables_across_three_pooled_five_year_editions(self):
         sources=registry_sources()
         self.assertEqual(len(sources),24)
