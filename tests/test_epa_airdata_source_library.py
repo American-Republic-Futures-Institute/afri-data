@@ -149,7 +149,7 @@ class EPAOriginalsTests(unittest.TestCase):
                      "https://aqs.epa.gov/aqsweb/airdata/../secrets.zip"):
             with self.assertRaisesRegex(e.EPAUnavailable,"Unsafe EPA ZIP source"):
                 e.official_zip(link)
-        with self.assertRaisesRegex(e.EPAUnavailable,"edition identity"):
+        with self.assertRaisesRegex(e.EPAUnavailable,"archive identity"):
             e.source_url(2025,"not-a-scope")
 
     def test_reject_duplicate_monitored_county_labels(self):
