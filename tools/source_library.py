@@ -89,6 +89,18 @@ def validate_catalog(catalog):
                         item.get("dateBasis") == "publisher-quarter-end-marker" and
                         item.get("startYear") == 2022,
                         "Unapproved BLS QCEW publisher")
+        elif item.get("provider") == "epa-airdata":
+            from tools.epa_airdata_source_library import KINDS, SOURCE_PAGE as EPA_PAGE, source_url
+            scope, year = item.get("sourceScope"), item.get("releaseYear")
+            assert_that(scope in KINDS and type(year) is int and
+                        1990 <= year <= 2150 and
+                        key == f"epa-airdata-{scope}-{year}" and
+                        item.get("endpoint") == source_url(year, scope) and
+                        item.get("sourcePage") == EPA_PAGE and
+                        item.get("dateField") == "record_date" and
+                        item.get("dateBasis") ==
+                        "epa-annual-measurement-year-end-not-publisher-release",
+                        "Unapproved EPA original source edition")
         elif item.get("provider") == "cdc-places":
             from tools.cdc_places_source_library import BASE as CDC_BASE, KNOWN, MEASURES
             year = item.get("releaseYear")
@@ -170,6 +182,9 @@ def pages(spec, opener=None):
     if spec.get("provider") == "census-acs5":
         from tools.census_acs_source_library import census_records
         return census_records(spec)
+    if spec.get("provider") == "epa-airdata":
+        from tools.epa_airdata_source_library import epa_records
+        return epa_records(spec)
     """Treasury pagination never silently truncates."""
     endpoint = spec["endpoint"]
     result = []
@@ -283,6 +298,7 @@ def verify(root=ROOT):
         assert_that(ID.fullmatch(entry["id"]) and
                     isinstance(entry.get("partitions"), list), "Invalid source metadata")
         total = 0
+        epa_rows = [] if entry.get("provider") == "epa-airdata" else None
         keys = set()
         annual_years = set()
         monthly_years = set()
@@ -321,6 +337,14 @@ def verify(root=ROOT):
                         records[-1]["record_date"] == part["lastDate"],
                         "Source partition record or date mismatch")
             total += part["rows"]
+            if epa_rows is not None:
+                epa_rows.extend(records)
+        if epa_rows is not None:
+            from tools.epa_airdata_source_library import verify_original_file
+            authoritative_rows = verify_original_file(root, entry)
+            assert_that(sorted(canonical(x) for x in epa_rows) ==
+                        sorted(canonical(x) for x in authoritative_rows),
+                        "EPA published JSON source rows differ from retained original ZIP")
         assert_that(not (annual_years & monthly_years),
                     "Cannot mix annual and monthly partitions of one source year")
         assert_that(total == entry["rowCount"], "Source dataset row-count mismatch")
@@ -342,6 +366,8 @@ def refresh(root=ROOT, catalog=None, loader=pages, now=None):
         from tools.cdc_places_source_library import registry_sources as cdc_sources
         from tools.bls_qcew_source_library import registry_sources as bls_sources
         from tools.census_acs_source_library import registry_sources as census_sources
+        from tools.epa_airdata_source_library import (
+            registry_sources as epa_sources, EPAUnavailable)
         try:
             census = census_sources(root, discover=True)
         except RuntimeError as exc:
@@ -349,8 +375,14 @@ def refresh(root=ROOT, catalog=None, loader=pages, now=None):
             # invalidating any already-registered, archived source histories.
             discovery_warnings["census-acs5"] = str(exc)[:200]
             census = census_sources(root)
+        try:
+            epa = epa_sources(root, discover=True)
+        except EPAUnavailable as exc:
+            discovery_warnings["epa-airdata"] = str(exc)[:200]
+            epa = epa_sources(root)
         catalog = {**treasury,
-                   "datasets": treasury["datasets"] + cdc_sources(root) + bls_sources(root) + census}
+                   "datasets": treasury["datasets"] + cdc_sources(root) +
+                   bls_sources(root) + census + epa}
     validate_catalog(catalog)
     checked_at = now or datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
     directory = root / OUTPUT
@@ -365,12 +397,37 @@ def refresh(root=ROOT, catalog=None, loader=pages, now=None):
         try:
             records = loader(spec)
             assert_that(isinstance(records, list) and records, "Empty publisher result")
+            epa_extra = {}
+            if spec.get("provider") == "epa-airdata":
+                from tools.epa_airdata_source_library import (
+                    OriginalEPARows, parse_original, original_path, MAX_ZIP_BYTES)
+                assert_that(isinstance(records, OriginalEPARows) and
+                            type(records.original_zip) is bytes and
+                            0 < len(records.original_zip) <= MAX_ZIP_BYTES,
+                            "EPA original publisher ZIP bytes are required")
+                assert_that(sorted(canonical(x) for x in records) ==
+                            sorted(canonical(x) for x in parse_original(
+                                records.original_zip, year=spec["releaseYear"],
+                                scope=spec["sourceScope"])),
+                            "EPA rows must match exact original ZIP source bytes")
+                zip_sha = digest(records.original_zip)
+                zip_path = original_path(zip_sha)
+                epa_extra = {
+                    "provider": "epa-airdata",
+                    "releaseYear": spec["releaseYear"],
+                    "sourceScope": spec["sourceScope"],
+                    "originalZipPath": zip_path,
+                    "originalZipSha256": zip_sha,
+                    "originalZipBytes": len(records.original_zip),
+                }
             records.sort(key=lambda r: (r[spec["dateField"]], canonical(r)))
             partitions, blobs = partition(spec, records)
             if spec["id"] in previous:
                 prior = previous[spec["id"]]["rowCount"]
                 assert_that(len(records) >= prior * .8,
                             "Publisher history shrank unexpectedly; keeping prior snapshot")
+            if epa_extra:
+                blobs[epa_extra["originalZipPath"]] = records.original_zip
             for path, payload in blobs.items():
                 target = root / path
                 target.parent.mkdir(parents=True, exist_ok=True)
@@ -380,7 +437,9 @@ def refresh(root=ROOT, catalog=None, loader=pages, now=None):
                 "id": spec["id"], "title": spec["title"], "domain": spec["domain"],
                 "description": spec["description"], "sourcePage": spec["sourcePage"],
                 "publisher": spec.get("publisher", catalog["publisher"]),
-                "endpoint": spec["endpoint"] if spec.get("provider") in ("cdc-places", "bls-qcew", "census-acs5") else BASE + spec["endpoint"],
+                "endpoint": spec["endpoint"] if spec.get("provider") in
+                    ("cdc-places", "bls-qcew", "census-acs5", "epa-airdata")
+                    else BASE + spec["endpoint"],
                 "dateBasis": spec.get("dateBasis", "original-publisher-record-date"),
                 **({"surveyReferencePeriod": spec["surveyReferencePeriod"]}
                    if spec.get("provider") == "census-acs5" else {}),
@@ -389,6 +448,7 @@ def refresh(root=ROOT, catalog=None, loader=pages, now=None):
                 "rowCount": len(records), "firstDate": partitions[0]["firstDate"],
                 "latestDate": partitions[-1]["lastDate"],
                 "partitions": partitions, "sourceClass": "source-native-unreviewed",
+                **epa_extra,
             }
         except (ValueError, RuntimeError, KeyError, TypeError, OSError) as exc:
             failures[spec["id"]] = str(exc)[:250]
@@ -399,7 +459,7 @@ def refresh(root=ROOT, catalog=None, loader=pages, now=None):
                 "All authoritative source acquisitions failed; previous publication preserved")
     index = {"schemaVersion": "1.0.0",
              "sourceClass": "automated-official-source-copy",
-             "sourceSystem": "Official U.S. Treasury, CDC PLACES, BLS QCEW and Census ACS original sources" if any(d.get("provider") == "census-acs5" for d in catalog["datasets"]) else ("U.S. Treasury Fiscal Data API, CDC PLACES and BLS QCEW original sources" if any(d.get("provider") == "bls-qcew" for d in catalog["datasets"]) else ("U.S. Treasury Fiscal Data API and CDC PLACES official county sources" if any(d.get("provider") == "cdc-places" for d in catalog["datasets"]) else "U.S. Treasury Fiscal Data API")),
+             "sourceSystem": "Official U.S. Treasury, CDC PLACES, BLS QCEW, Census ACS and EPA AirData originals" if any(d.get("provider") == "epa-airdata" for d in catalog["datasets"]) else ("Official U.S. Treasury, CDC PLACES, BLS QCEW and Census ACS original sources" if any(d.get("provider") == "census-acs5" for d in catalog["datasets"]) else ("U.S. Treasury Fiscal Data API, CDC PLACES and BLS QCEW original sources" if any(d.get("provider") == "bls-qcew" for d in catalog["datasets"]) else ("U.S. Treasury Fiscal Data API and CDC PLACES official county sources" if any(d.get("provider") == "cdc-places" for d in catalog["datasets"]) else "U.S. Treasury Fiscal Data API"))),
              "refreshCadence": "weekly",
              "datasets": [fresh[id] for id in sorted(fresh)]}
     directory.mkdir(parents=True, exist_ok=True)
