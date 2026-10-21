@@ -195,7 +195,7 @@ def registry_sources(root=ROOT, *, discover=False, now=None, available=None):
         "dateField": "record_date",
         "dateBasis": config["dateBasis"],
         "preferredField": "mag",
-        "unit": "USGS-reported magnitude, depth km, coordinates",
+        "unit": "magnitude, depth (km), coordinates",
         "maxRows": MAX_EVENTS_PER_YEAR,
     } for year in years]
 
