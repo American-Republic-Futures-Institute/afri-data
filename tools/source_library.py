@@ -9,6 +9,7 @@ import argparse
 from datetime import datetime, timezone, timedelta
 import hashlib
 import json
+import math
 from pathlib import Path
 import re
 import time
@@ -24,6 +25,12 @@ PAGE_SIZE = 1000
 MAX_PAGES = 600
 MAX_PAGE_BYTES = 7_000_000
 MAX_YEAR_BYTES = 3_000_000  # bounded website response; large years split by month
+# DATA-22: finite, source-native wide-row contract shared with the website.
+# The field ceiling is not a reason to discard publisher columns.
+MAX_SOURCE_FIELDS = 512
+MAX_SOURCE_CELL_BYTES = 16_384
+MAX_SOURCE_ROW_BYTES = 131_072
+FORBIDDEN_SOURCE_FIELDS = frozenset({"__proto__", "prototype", "constructor"})
 ID = re.compile(r"^[a-z][a-z0-9-]{3,70}$")
 ENDPOINT = re.compile(r"^v[12]/accounting/(?:od|dts|mts)/[a-z0-9_]{2,75}$")
 DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
@@ -47,6 +54,27 @@ def canonical(obj):
 
 def digest(content):
     return hashlib.sha256(content).hexdigest()
+
+
+def validate_original_row(row):
+    """Fail closed on unsafe or oversized original fields; never strip columns."""
+    assert_that(type(row) is dict and 1 <= len(row) <= MAX_SOURCE_FIELDS,
+                "Original source row field ceiling exceeded")
+    for field, value in row.items():
+        assert_that(type(field) is str and
+                    re.fullmatch(r"[a-z0-9_]{1,90}", field) and
+                    field.lower() not in FORBIDDEN_SOURCE_FIELDS,
+                    "Unsafe original publisher field name")
+        assert_that(value is None or type(value) in (str, int, float, bool),
+                    "Non-scalar original publisher value")
+        if type(value) is str:
+            assert_that(len(value.encode("utf-8")) <= MAX_SOURCE_CELL_BYTES,
+                        "Original source string cell exceeds safe byte budget")
+        elif type(value) is float:
+            assert_that(math.isfinite(value), "Non-finite original source number")
+    assert_that(len(canonical(row)) <= MAX_SOURCE_ROW_BYTES,
+                "Original source row exceeds safe serialized byte budget")
+    return row
 
 
 def validate_catalog(catalog):
@@ -270,12 +298,7 @@ def pages(spec, opener=None):
         assert_that(len(rows) <= PAGE_SIZE, "Treasury page exceeded requested size")
         assert_that(rows or number > 1, "No source records returned")
         for row in rows:
-            assert_that(isinstance(row, dict) and 1 <= len(row) <= 160 and
-                        all(isinstance(k, str) and re.fullmatch(r"[a-z0-9_]{1,90}", k)
-                            for k in row) and
-                        all(v is None or type(v) in (str, int, float, bool)
-                            for v in row.values()),
-                        "Malformed original publisher record")
+            validate_original_row(row)
             date = row.get(spec["dateField"])
             assert_that(type(date) is str and DATE.fullmatch(date),
                         "Unrecognized source record date")
