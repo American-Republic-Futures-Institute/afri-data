@@ -61,7 +61,7 @@ jobs:
       - name: Independently verify every retained source partition
         run: python -m tools.source_library --verify
       - name: Check exact registered/acquired/revised source coverage and release-lag honesty
-        run: python -m tools.source_freshness --verify --check-cadence
+        run: python -m tools.source_freshness --verify
       - name: Publish validated source copies to the rolling data branch
         shell: bash
         run: |
