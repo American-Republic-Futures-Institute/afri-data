@@ -116,14 +116,16 @@ def validate_catalog(catalog):
                         "Unapproved USGS ComCat source/period identity")
         elif item.get("provider") == "noaa-ncei":
             from tools.noaa_ncei_source_library import (
-                BASE as NOAA_BASE, README_URL, KINDS, MAX_ROWS, source_url)
+                BASE as NOAA_BASE, OFFICIAL_BASES, KINDS, MAX_ROWS, source_url)
             kind, endpoint = item.get("sourceKind"), item.get("endpoint")
             assert_that(kind in KINDS and
                         key == f"noaa-ncei-climdiv-{kind}" and
-                        item.get("readmeUrl") == README_URL and
                         item.get("sourcePage") == NOAA_BASE and
-                        type(endpoint) is str and endpoint.startswith(NOAA_BASE) and
-                        endpoint == source_url(kind, endpoint[len(NOAA_BASE):]) and
+                        type(endpoint) is str and
+                        any(endpoint.startswith(base) and
+                            endpoint == source_url(kind, endpoint[len(base):], base=base) and
+                            item.get("readmeUrl") == base+"divisional-readme.txt"
+                            for base in OFFICIAL_BASES) and
                         item.get("dateField") == "record_date" and
                         item.get("dateBasis") ==
                             "noaa-monthly-values-in-annual-source-record-not-release" and
@@ -552,6 +554,7 @@ def refresh(root=ROOT, catalog=None, loader=pages, now=None):
                     "originalTxtPath": original_path(data_sha),
                     "originalTxtSha256": data_sha,
                     "originalTxtBytes": len(records.original_text),
+                    "originalReadmeUrl": spec["readmeUrl"],
                     "originalReadmePath": original_path(readme_sha, readme=True),
                     "originalReadmeSha256": readme_sha,
                     "originalReadmeBytes": len(records.original_readme),
