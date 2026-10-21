@@ -153,6 +153,34 @@ class ACSHistoryTests(unittest.TestCase):
         self.assertEqual([x["state_fips"] for x in rows], sorted(FIPS))
         self.assertEqual(rows,parse_table(data,table="b25077",year=2024))
 
+    def test_controlled_census_population_total_retains_numeric_estimate_and_original_moe_sentinel(self):
+        for edition in sorted(VINTAGES):
+            for publisher_marker in ("-555555555", "*****"):
+                with self.subTest(year=edition, marker=publisher_marker):
+                    original=fixture("b01003",edition).replace(b"1400",publisher_marker.encode(),1)
+                    rows=parse_table(original,table="b01003",year=edition)
+                    first=rows[0]
+                    self.assertEqual(len(rows),52)
+                    self.assertEqual(first["B01003_E001"],"62000")
+                    self.assertEqual(first["B01003_M001"],publisher_marker)
+                    self.assertEqual(first["estimate_status"],"available")
+                    self.assertEqual(first["margin_of_error_status"],"publisher_controlled")
+                    self.assertEqual(first["margin_of_error_confidence"],"0.90")
+                    self.assertEqual(first["survey_reference_period"],f"{edition-4}-{edition}")
+                    self.assertNotEqual(first["B01003_M001"],"0")
+                    self.assertEqual(rows[1]["margin_of_error_status"],"published")
+
+    def test_controlled_marker_not_confused_with_arbitrary_missing_moe(self):
+        raw=fixture("b01003",2024)
+        for bad in ("-666666666","-888888888","-999999999"):
+            with self.subTest(moe=bad):
+                broken=raw.replace(b"1400",bad.encode(),1)
+                with self.assertRaisesRegex(ValueError,"paired"):
+                    parse_table(broken,table="b01003",year=2024)
+        invalid=raw.replace(b"62000",b"*****",1)
+        with self.assertRaisesRegex(ValueError,"Invalid official ACS numeric"):
+            parse_table(invalid,table="b01003",year=2024)
+
     def test_no_imputation_if_moe_missing_or_bad_upstream_geography(self):
         raw=fixture("b19013",2024)
         broken=raw.replace(b"1400",b"-666666666",1)
