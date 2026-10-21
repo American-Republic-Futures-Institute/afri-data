@@ -1,0 +1,80 @@
+{
+  "schemaVersion": "1.0.0",
+  "publisher": "Centers for Disease Control and Prevention",
+  "sourceFamily": "cdc-places-county-gis",
+  "refreshCadence": "weekly",
+  "datasetClass": "source-native-unreviewed",
+  "vintages": [
+    {
+      "year": 2023,
+      "id": "7cmc-7y5g",
+      "modelReferenceYear": 2021
+    },
+    {
+      "year": 2024,
+      "id": "d3i6-k6z5",
+      "modelReferenceYear": 2022
+    },
+    {
+      "year": 2025,
+      "id": "i46a-9kgh",
+      "modelReferenceYear": 2023
+    }
+  ],
+  "datasets": [
+    {
+      "id": "obesity",
+      "title": "Adult obesity prevalence",
+      "description": "adult modeled obesity crude prevalence",
+      "indicatorStem": "obesity",
+      "domain": "health",
+      "unit": "percent",
+      "maxRows": 3300
+    },
+    {
+      "id": "diabetes",
+      "title": "Diagnosed diabetes prevalence",
+      "description": "adult modeled diagnosed diabetes crude prevalence",
+      "indicatorStem": "diabetes",
+      "domain": "health",
+      "unit": "percent",
+      "maxRows": 3300
+    },
+    {
+      "id": "arthritis",
+      "title": "Arthritis prevalence",
+      "description": "adult modeled arthritis crude prevalence",
+      "indicatorStem": "arthritis",
+      "domain": "health",
+      "unit": "percent",
+      "maxRows": 3300
+    },
+    {
+      "id": "csmoking",
+      "title": "Current cigarette smoking prevalence",
+      "description": "adult modeled current smoking crude prevalence",
+      "indicatorStem": "csmoking",
+      "domain": "health",
+      "unit": "percent",
+      "maxRows": 3300
+    },
+    {
+      "id": "lpa",
+      "title": "Physical inactivity prevalence",
+      "description": "adult modeled leisure-time physical inactivity crude prevalence",
+      "indicatorStem": "lpa",
+      "domain": "health",
+      "unit": "percent",
+      "maxRows": 3300
+    },
+    {
+      "id": "chd",
+      "title": "Coronary heart disease prevalence",
+      "description": "adult modeled coronary heart disease crude prevalence",
+      "indicatorStem": "chd",
+      "domain": "health",
+      "unit": "percent",
+      "maxRows": 3300
+    }
+  ]
+}
