@@ -115,7 +115,7 @@ class EPAOriginalsTests(unittest.TestCase):
         source_rows=e.parse_original(raw,year=2025,scope="county")
         source_rows[0]["Good Days"]="fraud"
         with tempfile.TemporaryDirectory() as directory:
-            with self.assertRaisesRegex(ValueError,"must match exact original ZIP"):
+            with self.assertRaisesRegex(ValueError,"All authoritative source acquisitions failed"):
                 refresh(Path(directory),catalog=regs,loader=lambda _:
                         e.OriginalEPARows(source_rows,raw))
 
@@ -126,7 +126,7 @@ class EPAOriginalsTests(unittest.TestCase):
               "publisherApi":BASE,"refreshCadence":"weekly",
               "datasetClass":"source-native-unreviewed","datasets":[one]}
         with tempfile.TemporaryDirectory() as directory:
-            with self.assertRaisesRegex(ValueError,"original publisher ZIP bytes"):
+            with self.assertRaisesRegex(ValueError,"All authoritative source acquisitions failed"):
                 refresh(Path(directory),catalog=regs,loader=lambda _:
                         e.parse_original(fixture(),year=2025,scope="county"))
 
