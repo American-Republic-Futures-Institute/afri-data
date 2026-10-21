@@ -64,7 +64,7 @@ class SourceLibraryTests(unittest.TestCase):
             for i in range(180):
                 large.append({"record_date": f"2020-{month:02d}-{1 + i % 28:02d}",
                               "value": str(i), "account": "large-source-entry",
-                              "raw_source_field": "A" * 3500, "unique_source_id": f"{month}:{i}"})
+                              "raw_source_field": "A" * 4700, "unique_source_id": f"{month}:{i}"})
         large.sort(key=lambda r: (r["record_date"], r["unique_source_id"]))
         parts, blobs = partition(spec(), large)
         self.assertEqual([p["period"] for p in parts],
