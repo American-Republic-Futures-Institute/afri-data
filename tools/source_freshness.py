@@ -89,6 +89,23 @@ def source_fingerprint(entry):
                 "publication/source-library/originals/usgs-comcat/sha256/" +
                 orig + ".csv", "USGS original archive missing from source fingerprint")
         payload.append(["original-csv-sha256", orig, 0, length])
+    if entry.get("provider") == "noaa-ncei":
+        orig, orig_bytes = entry.get("originalTxtSha256"), entry.get("originalTxtBytes")
+        readme, readme_bytes = entry.get("originalReadmeSha256"), entry.get("originalReadmeBytes")
+        require(type(orig) is str and SHA256.fullmatch(orig) and
+                type(orig_bytes) is int and 100 < orig_bytes <= 8_000_000 and
+                entry.get("originalTxtPath") ==
+                    "publication/source-library/originals/noaa-ncei/sha256/" + orig + ".dat" and
+                type(readme) is str and SHA256.fullmatch(readme) and
+                type(readme_bytes) is int and 100 < readme_bytes <= 65_536 and
+                entry.get("originalReadmePath") ==
+                    "publication/source-library/originals/noaa-ncei/readme/sha256/" + readme + ".txt" and
+                entry.get("publisherPublishedAt") is None and
+                type(entry.get("sourceFilename")) is str and
+                entry.get("endpoint", "").endswith(entry["sourceFilename"]),
+                "NOAA original/readme fingerprints or publication time forged")
+        payload.extend([["original-noaa-text", orig, 0, orig_bytes],
+                        ["original-noaa-readme", readme, 0, readme_bytes]])
     return sha256((json.dumps(sorted(payload), separators=(",", ":"), ensure_ascii=True)
                    + "\n").encode("utf-8")).hexdigest()
 
@@ -181,7 +198,7 @@ def report_for(catalog, index, health, prior_index=None, prior_report=None):
         past = previous_rows.get(key, {})
         error = failures.get(key)
         provider = spec.get("provider") or "treasury-fiscaldata"
-        require(provider in ("treasury-fiscaldata", "cdc-places", "bls-qcew", "census-acs5", "epa-airdata", "bea-regional", "usgs-comcat"),
+        require(provider in ("treasury-fiscaldata", "cdc-places", "bls-qcew", "census-acs5", "epa-airdata", "bea-regional", "usgs-comcat", "noaa-ncei"),
                 "unknown registered provider for source coverage")
         fingerprint = source_fingerprint(current_row) if current_row else None
         old_fp = source_fingerprint(old_row) if old_row else None
