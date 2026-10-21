@@ -56,7 +56,7 @@ def validate_catalog(catalog):
                 catalog.get("datasetClass") == "source-native-unreviewed",
                 "Unrecognized source mirror catalog")
     datasets = catalog.get("datasets")
-    assert_that(isinstance(datasets, list) and 1 <= len(datasets) <= 30,
+    assert_that(isinstance(datasets, list) and 1 <= len(datasets) <= 50,
                 "Source count not bounded")
     seen = set()
     for item in datasets:
@@ -65,12 +65,31 @@ def validate_catalog(catalog):
         assert_that(isinstance(key, str) and ID.fullmatch(key) and key not in seen,
                     "Duplicate or unsafe source ID")
         seen.add(key)
-        assert_that(isinstance(item.get("endpoint"), str) and
-                    ENDPOINT.fullmatch(item["endpoint"]) and
-                    item.get("dateField") == "record_date" and
-                    isinstance(item.get("sourcePage"), str) and
-                    item["sourcePage"].startswith("https://fiscaldata.treasury.gov/datasets/"),
-                    "Unapproved federal origin or endpoint")
+        if item.get("provider") == "cdc-places":
+            from tools.cdc_places_source_library import BASE as CDC_BASE, KNOWN, MEASURES
+            year = item.get("releaseYear")
+            entry = KNOWN.get(year)
+            assert_that(entry is not None and
+                        item.get("sourceId") == entry[0] and
+                        item.get("modelReferenceYear") == entry[1] and
+                        item.get("indicatorStem") in MEASURES and
+                        key == f"cdc-places-{item['indicatorStem']}-{year}" and
+                        item.get("endpoint") == CDC_BASE + entry[0] + ".json" and
+                        item.get("sourcePage") == (
+                            "https://data.cdc.gov/500-Cities-Places/"
+                            f"PLACES-County-Data-GIS-Friendly-Format-{year}-releas/"
+                            + entry[0]) and
+                        item.get("dateBasis") == "publisher-release-year-marker" and
+                        item.get("dateField") == "record_date",
+                        "Unapproved CDC public source")
+        else:
+            assert_that(item.get("provider") is None and
+                        isinstance(item.get("endpoint"), str) and
+                        ENDPOINT.fullmatch(item["endpoint"]) and
+                        item.get("dateField") == "record_date" and
+                        isinstance(item.get("sourcePage"), str) and
+                        item["sourcePage"].startswith("https://fiscaldata.treasury.gov/datasets/"),
+                        "Unapproved federal origin or endpoint")
         assert_that(isinstance(item.get("title"), str) and
                     4 <= len(item["title"]) <= 110 and
                     isinstance(item.get("description"), str) and
@@ -117,7 +136,11 @@ def acquire(url, opener=None):
 
 
 def pages(spec, opener=None):
-    """Full available publisher history; pagination never silently truncates."""
+    """Fetch full official source history; return publisher fields without reinterpretation."""
+    if spec.get("provider") == "cdc-places":
+        from tools.cdc_places_source_library import cdc_records
+        return cdc_records(spec)
+    """Treasury pagination never silently truncates."""
     endpoint = spec["endpoint"]
     result = []
     declared_total = None
@@ -277,7 +300,11 @@ def verify(root=ROOT):
 
 def refresh(root=ROOT, catalog=None, loader=pages, now=None):
     root = Path(root)
-    catalog = catalog or json.loads((root / CATALOG).read_text("utf-8"))
+    if catalog is None:
+        treasury = json.loads((root / CATALOG).read_text("utf-8"))
+        from tools.cdc_places_source_library import registry_sources
+        catalog = {**treasury,
+                   "datasets": treasury["datasets"] + registry_sources(root)}
     validate_catalog(catalog)
     checked_at = now or datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
     directory = root / OUTPUT
@@ -303,7 +330,9 @@ def refresh(root=ROOT, catalog=None, loader=pages, now=None):
             fresh[spec["id"]] = {
                 "id": spec["id"], "title": spec["title"], "domain": spec["domain"],
                 "description": spec["description"], "sourcePage": spec["sourcePage"],
-                "publisher": catalog["publisher"], "endpoint": BASE + spec["endpoint"],
+                "publisher": spec.get("publisher", catalog["publisher"]),
+                "endpoint": spec["endpoint"] if spec.get("provider") == "cdc-places" else BASE + spec["endpoint"],
+                "dateBasis": spec.get("dateBasis", "original-publisher-record-date"),
                 "dateField": spec["dateField"], "preferredField": spec["preferredField"],
                 "unit": spec["unit"], "refreshCadence": "weekly",
                 "rowCount": len(records), "firstDate": partitions[0]["firstDate"],
@@ -319,7 +348,7 @@ def refresh(root=ROOT, catalog=None, loader=pages, now=None):
                 "All authoritative source acquisitions failed; previous publication preserved")
     index = {"schemaVersion": "1.0.0",
              "sourceClass": "automated-official-source-copy",
-             "sourceSystem": "U.S. Treasury Fiscal Data API",
+             "sourceSystem": "U.S. Treasury Fiscal Data API and CDC PLACES official county sources" if any(d.get("provider") == "cdc-places" for d in catalog["datasets"]) else "U.S. Treasury Fiscal Data API",
              "refreshCadence": "weekly",
              "datasets": [fresh[id] for id in sorted(fresh)]}
     directory.mkdir(parents=True, exist_ok=True)
