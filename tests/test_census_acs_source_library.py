@@ -39,7 +39,7 @@ def fixture(table,year,suppress=None):
 
 
 class ACSHistoryTests(unittest.TestCase):
-    def test_discovery_of_complete_new_acs_vintage_requires_all_four_official_tables(self):
+    def test_discovery_of_complete_new_acs_vintage_requires_all_eight_official_tables(self):
         from datetime import datetime, timezone
         from tools.census_acs_source_library import discovered_vintages, supported_year
         now = datetime(2026, 10, 20, tzinfo=timezone.utc)
@@ -49,14 +49,14 @@ class ACSHistoryTests(unittest.TestCase):
             return True
         self.assertEqual(discovered_vintages(now=now, available=all_available),
                          [2022, 2023, 2024, 2025])
-        self.assertEqual(len(checked), 4)
+        self.assertEqual(len(checked), 8)
         self.assertTrue(all(url.startswith(BASE+"2025/") for url in checked))
         self.assertTrue(supported_year(2025, now=now))
         self.assertFalse(supported_year(2026, now=now))
         result = registry_sources(discover=True, now=now, available=all_available)
-        self.assertEqual(len(result), 16)
+        self.assertEqual(len(result), 32)
         newest = [x for x in result if x["releaseYear"] == 2025]
-        self.assertEqual(len(newest), 4)
+        self.assertEqual(len(newest), 8)
         self.assertEqual({x["surveyReferencePeriod"] for x in newest}, {"2021-2025"})
 
     def test_partial_or_unreleased_acs_vintage_stays_unpublished(self):
@@ -66,8 +66,8 @@ class ACSHistoryTests(unittest.TestCase):
         available = lambda url: "b19013.dat" in url or "b25077.dat" in url
         self.assertEqual(discovered_vintages(now=now, available=available),
                          [2022, 2023, 2024])
-        self.assertEqual(len(registry_sources(discover=True, now=now, available=available)),12)
-        self.assertEqual(len(registry_sources(discover=True, now=now, available=lambda _: False)),12)
+        self.assertEqual(len(registry_sources(discover=True, now=now, available=available)),24)
+        self.assertEqual(len(registry_sources(discover=True, now=now, available=lambda _: False)),24)
 
     def test_census_availability_probe_rejects_hostile_paths_and_oversized_publishers(self):
         from tools.census_acs_source_library import official_table_available
