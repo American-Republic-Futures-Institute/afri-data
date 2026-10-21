@@ -133,11 +133,20 @@ def report_for(catalog, index, health, prior_index=None, prior_report=None):
         require(prior_time <= utc_date(checked), "source check clock moved backwards")
         previous_rows = {x.get("id"): x for x in prior_report["sources"]
                          if type(x) is dict}
+        # Some registrations legitimately failed their first download. They
+        # have a ledger row but *no* source bytes or prior mirror fingerprint.
+        # Permit only that explicit state; it must not invent first-seen custody.
         require(len(previous_rows) == len(prior_report["sources"]) and
-                set(previous_rows) <= set(previous) and
-                all(type(x.get("mirrorFingerprint")) is str and
-                    SHA256.fullmatch(x["mirrorFingerprint"]) and
-                    x["mirrorFingerprint"] == source_fingerprint(previous[key])
+                set(previous_rows) <= set(specs) and
+                all(
+                    (type(x.get("mirrorFingerprint")) is str and
+                     SHA256.fullmatch(x["mirrorFingerprint"]) and
+                     x["mirrorFingerprint"] == source_fingerprint(previous[key]))
+                    if key in previous else
+                    (x.get("status") == "registered_not_acquired" and
+                     x.get("mirrorFingerprint") is None and
+                     x.get("firstSeenInMirrorAt") is None and
+                     x.get("lastSuccessfulCheckAt") is None)
                     for key, x in previous_rows.items()),
                 "prior acquisition ledger is disconnected from previous source index")
     data = []
