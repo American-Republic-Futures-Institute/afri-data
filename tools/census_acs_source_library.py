@@ -57,8 +57,8 @@ class NoPublisherRedirects(HTTPRedirectHandler):
 def official_table_available(url, *, opener=None):
     """Bounded source existence check; does not download a full Census file."""
     expected=re.fullmatch(
-        r"https://www2\\.census\\.gov/programs-surveys/acs/summary_file/(20\\d{2})/"
-        r"table-based-SF/data/5YRData/acsdt5y(20\\d{2})-(b19013|b25077|b25064|b01002)\\.dat",
+        r"https://www2\.census\.gov/programs-surveys/acs/summary_file/(20\d{2})/"
+        r"table-based-SF/data/5YRData/acsdt5y(20\d{2})-(b19013|b25077|b25064|b01002)\.dat",
         url)
     if (not expected or expected[1] != expected[2] or
             not supported_year(int(expected[1]))):
