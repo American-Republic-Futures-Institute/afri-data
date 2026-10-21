@@ -26,7 +26,9 @@ CATALOG=Path("catalog/source-library/bls-qcew.json")
 BASE="https://data.bls.gov/cew/data/api/"
 SOURCE_PAGE="https://www.bls.gov/cew/additional-resources/open-data/csv-data-slices.htm"
 INDUSTRIES={"all-industry":"10","manufacturing":"31_33",
-            "health-care":"62","professional-services":"54"}
+            "health-care":"62","professional-services":"54",
+            "construction":"23","wholesale-trade":"42","information":"51",
+            "finance-insurance":"52","accommodation-food":"72","other-services":"81"}
 QUARTER_DATE={1:"03-31",2:"06-30",3:"09-30",4:"12-31"}
 MAX_BYTES=30_000_000
 FIELDS={"area_fips","year","qtr","industry_code","own_code"}
@@ -49,7 +51,7 @@ def validate_registry(catalog):
             catalog.get("refreshCadence")!="weekly"):
         raise ValueError("Unapproved BLS registry")
     industries=catalog.get("industries")
-    if (not isinstance(industries,list) or len(industries)!=4 or
+    if (not isinstance(industries,list) or len(industries)!=10 or
             {entry["id"]:entry["code"] for entry in industries}!=INDUSTRIES):
         raise ValueError("Unrecognized BLS QCEW industry list")
     for source in industries:
@@ -82,7 +84,7 @@ def registry_sources(root=ROOT):
 
 
 def official_csv(url, *, year, latest_year, opener=None):
-    if not re.fullmatch(r"https://data\.bls\.gov/cew/data/api/\d{4}/[1-4]/industry/(?:10|31_33|54|62)\.csv",url):
+    if not re.fullmatch(r"https://data\.bls\.gov/cew/data/api/\d{4}/[1-4]/industry/(?:10|23|31_33|42|51|52|54|62|72|81)\.csv",url):
         raise BLSUnavailable("Unapproved BLS QCEW source URL")
     opener=opener or build_opener(NoRedirects())
     request=Request(url,headers={"User-Agent":"ARFI-Source-Library/1.0 (+https://www.arfinstitute.org/)",
