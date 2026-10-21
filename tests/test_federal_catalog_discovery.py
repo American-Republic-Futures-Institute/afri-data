@@ -7,6 +7,7 @@ import unittest
 
 from tools.federal_catalog_discovery import (
     BASE, DiscoveryError, PER_PAGE, api_url, empty, get_page, merge, project,
+    verify_index,
 )
 
 A="00000000-0000-4000-8000-000000000001"
@@ -239,6 +240,41 @@ class FederalDiscoveryTests(unittest.TestCase):
         self.assertNotEqual(item["catalogFingerprint"],
                             initial["candidates"][0]["catalogFingerprint"])
         self.assertNotIn("publisherReleaseToGitLag",item)
+
+    def test_immutable_metadata_fingerprints_and_no_original_custody_claim(self):
+        first=merge(empty(),"real",fetcher=page_fetch({
+            None:page([official(A)],None)}),pages_limit=2,now=CHECK)
+        proof=verify_index(first)
+        self.assertEqual(proof["candidates"],1)
+        self.assertEqual(proof["originalPublisherBytesDownloaded"],0)
+        self.assertFalse(proof["completeFederalEnumeration"])
+        altered=copy.deepcopy(first)
+        altered["candidates"][0]["title"]="Forged publisher metadata"
+        with self.assertRaisesRegex(DiscoveryError,"candidate fingerprint"):
+            verify_index(altered)
+        for field,val in [
+            ("approvedForSourceIngestion",True),
+            ("licenseAndReuseReviewComplete",True),
+            ("sourceBytesAcquired",True),
+            ("sourceReleaseTimestampVerified",CHECK)]:
+            altered=copy.deepcopy(first)
+            altered["candidates"][0][field]=val
+            with self.subTest(field=field):
+                with self.assertRaisesRegex(DiscoveryError,
+                                             "falsely approved|candidate fingerprint"):
+                    verify_index(altered)
+        altered=copy.deepcopy(first)
+        altered["candidateGovernmentWideDenominator"]=1
+        with self.assertRaisesRegex(DiscoveryError,"unexpected"):
+            verify_index(altered)
+        altered=copy.deepcopy(first)
+        altered["pageEvidence"][0]["responseSha256"]="not-a-hash"
+        with self.assertRaisesRegex(DiscoveryError,"original-page digest"):
+            verify_index(altered)
+        altered=copy.deepcopy(first)
+        altered["candidates"].append(copy.deepcopy(altered["candidates"][0]))
+        with self.assertRaisesRegex(DiscoveryError,"source candidate falsely approved"):
+            verify_index(altered)
 
     def test_quarantine_candidate_count_does_not_inflate_verified_sources(self):
         call=page_fetch({None:page([official(A),
