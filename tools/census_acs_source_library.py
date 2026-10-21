@@ -28,7 +28,8 @@ ROOT=Path(__file__).resolve().parents[1]
 CATALOG=Path("catalog/source-library/census-acs5.json")
 BASE="https://www2.census.gov/programs-surveys/acs/summary_file/"
 PAGE="https://www.census.gov/programs-surveys/acs/data/summary-file.html"
-TABLES={"b19013","b25077","b25064","b01002"}
+TABLES={"b19013","b25077","b25064","b01002",
+        "b01003","b19083","b25002","b25003"}
 VINTAGES={2022,2023,2024}
 MISSING={"", "N", "null", "-666666666", "-888888888", "-999999999", "-555555555"}
 MAX_SOURCE_BYTES=30_000_000
@@ -121,7 +122,9 @@ def registry_sources(root=ROOT, *, discover=False, available=official_table_avai
             not isinstance(table.get("description"),str) or
             len(table["description"])<20 or
             table.get("preferredField")!=key.upper()+"_E001" or
-            table.get("unit") not in ("years of age","USD (inflation-adjusted vintage)")):
+            table.get("unit") not in ("years of age","USD (inflation-adjusted vintage)",
+                                       "persons (ACS estimate)","unitless Gini index",
+                                       "housing units (ACS estimate)","occupied housing units")):
             raise ValueError("Malformed ACS table identity or units")
         for year in years:
             label=f"{year-4}-{year}"
@@ -131,7 +134,8 @@ def registry_sources(root=ROOT, *, discover=False, available=official_table_avai
                 "description":table["description"]+
                     f" Publisher five-year pooled survey {label}; original Census 90% MOE. "
                     f"Do not infer single-year {year} measurements.",
-                "domain":"people" if key=="b01002" else "economy" if key=="b19013" else "housing",
+                "domain":"people" if key in ("b01002","b01003") else
+                          "economy" if key in ("b19013","b19083") else "housing",
                 "provider":"census-acs5",
                 "table":key,
                 "releaseYear":year,
@@ -185,6 +189,8 @@ def parse_table(original, *, table, year):
                     raise ValueError("Invalid official ACS numeric source") from None
                 if not num.is_finite() or num<0 or num>1_000_000_000:
                     raise ValueError("Unreasonable official ACS source estimate")
+                if table=="b19083" and num>1:
+                    raise ValueError("ACS publisher Gini estimate or margin exceeds unit interval")
             rows[state]={
                 "GEO_ID":geoid,
                 "state_fips":state,
