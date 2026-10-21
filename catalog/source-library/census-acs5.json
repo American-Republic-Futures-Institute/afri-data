@@ -66,6 +66,34 @@
       "description": "Source-published ACS five-year occupied housing unit universe for owner and renter tenure, retaining original estimate and 90% margin of error without inferring ownership rates.",
       "unit": "occupied housing units",
       "preferredField": "B25003_E001"
+    },
+    {
+      "table": "b25001",
+      "title": "Total housing units",
+      "description": "Source-published housing unit totals for states and equivalents, with original controlled or published Census margin of error.",
+      "unit": "housing units (ACS estimate)",
+      "preferredField": "B25001_E001"
+    },
+    {
+      "table": "b25008",
+      "title": "Population in occupied housing units by tenure",
+      "description": "Source-published total population living in occupied housing units, retaining the original publisher estimate and 90% margin of error.",
+      "unit": "persons in occupied housing units",
+      "preferredField": "B25008_E001"
+    },
+    {
+      "table": "b25010",
+      "title": "Average household size of occupied housing units",
+      "description": "Source-published average household size among occupied housing units, retaining Census original source values and 90% margin of error.",
+      "unit": "persons per occupied housing unit",
+      "preferredField": "B25010_E001"
+    },
+    {
+      "table": "b25035",
+      "title": "Median year structure built",
+      "description": "Source-published median construction year of structures, retaining original Census estimate and 90% margin of error.",
+      "unit": "year built (median)",
+      "preferredField": "B25035_E001"
     }
   ]
 }
