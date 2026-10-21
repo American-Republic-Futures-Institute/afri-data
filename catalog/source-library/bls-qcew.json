@@ -65,6 +65,72 @@
       "code": "81",
       "title": "Other services excluding public administration",
       "description": "Original QCEW NAICS other services excluding public administration state-level employment and wage records."
+    },
+    {
+      "id": "agriculture-forestry",
+      "code": "11",
+      "title": "Agriculture, forestry, fishing and hunting",
+      "description": "Original QCEW NAICS agriculture, forestry, fishing and hunting state-level quarterly employment, establishments and wage records by ownership."
+    },
+    {
+      "id": "mining",
+      "code": "21",
+      "title": "Mining, quarrying and oil and gas extraction",
+      "description": "Original QCEW NAICS mining, quarrying and oil and gas extraction quarterly employment and wage records for reporting states."
+    },
+    {
+      "id": "utilities",
+      "code": "22",
+      "title": "Utilities and energy delivery",
+      "description": "Original QCEW NAICS utilities state-level employment, covered wages and establishment records with source ownership classifications."
+    },
+    {
+      "id": "retail-trade",
+      "code": "44_45",
+      "title": "Retail trade",
+      "description": "Original QCEW NAICS retail trade sectors 44–45 employment, establishment and wage records by state and quarter."
+    },
+    {
+      "id": "transport-warehousing",
+      "code": "48_49",
+      "title": "Transportation and warehousing",
+      "description": "Original QCEW NAICS transportation and warehousing sectors 48–49 state-level quarterly employment, establishment and wage records."
+    },
+    {
+      "id": "real-estate",
+      "code": "53",
+      "title": "Real estate and rental and leasing",
+      "description": "Original QCEW NAICS real estate and rental and leasing quarterly state employment and wage records including ownership classes."
+    },
+    {
+      "id": "company-management",
+      "code": "55",
+      "title": "Management of companies and enterprises",
+      "description": "Original QCEW NAICS management of companies and enterprises employment, establishment and covered wage records by state."
+    },
+    {
+      "id": "administrative-services",
+      "code": "56",
+      "title": "Administrative support and waste management",
+      "description": "Original QCEW NAICS administrative and support, waste management and remediation services source employment and wage records."
+    },
+    {
+      "id": "education",
+      "code": "61",
+      "title": "Educational services",
+      "description": "Original QCEW NAICS educational services employment and wage records across covered private and public ownership classes."
+    },
+    {
+      "id": "arts-recreation",
+      "code": "71",
+      "title": "Arts, entertainment and recreation",
+      "description": "Original QCEW NAICS arts, entertainment and recreation state-level employment and wage records by quarter and ownership."
+    },
+    {
+      "id": "public-administration",
+      "code": "92",
+      "title": "Public administration",
+      "description": "Original QCEW NAICS public administration government employment and wage records by state and publishing quarter."
     }
   ]
 }
