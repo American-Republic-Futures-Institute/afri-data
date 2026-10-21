@@ -18,6 +18,37 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Run EIA original-data and custody regressions
+        run: python -m unittest discover -s tests -p 'test_eia_seds_source_library.py' -v
+      - name: Acquire five EIA original state consumption series and save fingerprints
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from tools.eia_seds_source_library import registry_sources,eia_records,STATES
+          report=[]
+          for spec in registry_sources():
+              rows=eia_records(spec)
+              years=sorted({r["record_date"][:4] for r in rows})
+              if len(years)<60 or len(rows)!=len(years)*len(STATES):
+                  raise ValueError("Publisher SEDS annual state history incomplete")
+              digests={r["source_original_sha256"] for r in rows}
+              if len(digests)!=1:
+                  raise ValueError("Publisher CSV altered within one acquisition")
+              obj={"id":spec["id"],"msn":spec["msn"],
+                   "source":spec["endpoint"],"years":[years[0],years[-1]],
+                   "states":len(STATES),"records":len(rows),
+                   "originalCsvSha256":next(iter(digests))}
+              report.append(obj)
+              print(json.dumps(obj,sort_keys=True))
+          Path("eia-seds-live-probe.json").write_text(json.dumps(report,indent=2,sort_keys=True)+"\n")
+          PY
+      - name: Retain actual publisher-original EIA acquisition proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: data19-eia-original-csv
+          path: eia-seds-live-probe.json
+          retention-days: 30
       - name: Obtain authoritative no-key Btu source and verify original header and MSN codes
         run: |
           python - <<'PY'
