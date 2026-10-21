@@ -17,7 +17,7 @@ Each release uses original source columns `countyfips`, `countyname`,
 `stateabbr`, `<measure>_crudeprev`, `<measure>_crude95ci`
 for the six configured indicators: obesity, diagnosed diabetes, arthritis,
 cigarette smoking, leisure-time physical inactivity, and coronary heart
-disease. All 3,143 expected county source rows are required. Where CDC
+disease. The 2023 and 2025 official source releases each have 3,143 county rows; the 2024 source has 3,144. Each vintage is verified against its own exact publisher coverage rather than an assumed universal count. Where CDC
 omits a modeled value, ARFI preserves that absence; no missing value is
 filled, no confidence interval is recalculated, and modeled estimates
 are not represented as actual county-level survey observations.
