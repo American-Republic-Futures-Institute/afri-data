@@ -65,7 +65,19 @@ def validate_catalog(catalog):
         assert_that(isinstance(key, str) and ID.fullmatch(key) and key not in seen,
                     "Duplicate or unsafe source ID")
         seen.add(key)
-        if item.get("provider") == "bls-qcew":
+        if item.get("provider") == "census-acs5":
+            from tools.census_acs_source_library import source_url, PAGE, TABLES, VINTAGES
+            year = item.get("releaseYear")
+            table = item.get("table")
+            assert_that(year in VINTAGES and table in TABLES and
+                        key == f"census-acs5-{table}-{year}" and
+                        item.get("endpoint") == source_url(year, table) and
+                        item.get("sourcePage") == PAGE and
+                        item.get("dateField") == "record_date" and
+                        item.get("dateBasis") == "acs-five-year-pooled-vintage-index" and
+                        item.get("surveyReferencePeriod") == f"{year-4}-{year}",
+                        "Unapproved Census ACS publisher identity")
+        elif item.get("provider") == "bls-qcew":
             from tools.bls_qcew_source_library import BASE as BLS_BASE, SOURCE_PAGE, INDUSTRIES
             industry = item.get("industryCode")
             assert_that(industry in INDUSTRIES.values() and
@@ -108,7 +120,7 @@ def validate_catalog(catalog):
                     20 <= len(item["description"]) <= 450 and
                     isinstance(item.get("unit"), str) and len(item["unit"]) <= 40 and
                     (item.get("preferredField") is None or
-                     re.fullmatch(r"[a-z][a-z0-9_]{2,69}", item["preferredField"])) and
+                     re.fullmatch(r"[A-Za-z][A-Za-z0-9_]{2,69}", item["preferredField"])) and
                     type(item.get("maxRows")) is int and
                     1 <= item["maxRows"] <= 500000,
                     "Invalid source metric, description or row ceiling")
@@ -155,6 +167,9 @@ def pages(spec, opener=None):
     if spec.get("provider") == "bls-qcew":
         from tools.bls_qcew_source_library import bls_records
         return bls_records(spec)
+    if spec.get("provider") == "census-acs5":
+        from tools.census_acs_source_library import census_records
+        return census_records(spec)
     """Treasury pagination never silently truncates."""
     endpoint = spec["endpoint"]
     result = []
@@ -319,8 +334,9 @@ def refresh(root=ROOT, catalog=None, loader=pages, now=None):
         treasury = json.loads((root / CATALOG).read_text("utf-8"))
         from tools.cdc_places_source_library import registry_sources as cdc_sources
         from tools.bls_qcew_source_library import registry_sources as bls_sources
+        from tools.census_acs_source_library import registry_sources as census_sources
         catalog = {**treasury,
-                   "datasets": treasury["datasets"] + cdc_sources(root) + bls_sources(root)}
+                   "datasets": treasury["datasets"] + cdc_sources(root) + bls_sources(root) + census_sources(root)}
     validate_catalog(catalog)
     checked_at = now or datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
     directory = root / OUTPUT
@@ -347,7 +363,7 @@ def refresh(root=ROOT, catalog=None, loader=pages, now=None):
                 "id": spec["id"], "title": spec["title"], "domain": spec["domain"],
                 "description": spec["description"], "sourcePage": spec["sourcePage"],
                 "publisher": spec.get("publisher", catalog["publisher"]),
-                "endpoint": spec["endpoint"] if spec.get("provider") in ("cdc-places", "bls-qcew") else BASE + spec["endpoint"],
+                "endpoint": spec["endpoint"] if spec.get("provider") in ("cdc-places", "bls-qcew", "census-acs5") else BASE + spec["endpoint"],
                 "dateBasis": spec.get("dateBasis", "original-publisher-record-date"),
                 "dateField": spec["dateField"], "preferredField": spec["preferredField"],
                 "unit": spec["unit"], "refreshCadence": "weekly",
@@ -364,7 +380,7 @@ def refresh(root=ROOT, catalog=None, loader=pages, now=None):
                 "All authoritative source acquisitions failed; previous publication preserved")
     index = {"schemaVersion": "1.0.0",
              "sourceClass": "automated-official-source-copy",
-             "sourceSystem": "U.S. Treasury Fiscal Data API, CDC PLACES and BLS QCEW original sources" if any(d.get("provider") == "bls-qcew" for d in catalog["datasets"]) else ("U.S. Treasury Fiscal Data API and CDC PLACES official county sources" if any(d.get("provider") == "cdc-places" for d in catalog["datasets"]) else "U.S. Treasury Fiscal Data API"),
+             "sourceSystem": "Official U.S. Treasury, CDC PLACES, BLS QCEW and Census ACS original sources" if any(d.get("provider") == "census-acs5" for d in catalog["datasets"]) else ("U.S. Treasury Fiscal Data API, CDC PLACES and BLS QCEW original sources" if any(d.get("provider") == "bls-qcew" for d in catalog["datasets"]) else ("U.S. Treasury Fiscal Data API and CDC PLACES official county sources" if any(d.get("provider") == "cdc-places" for d in catalog["datasets"]) else "U.S. Treasury Fiscal Data API")),
              "refreshCadence": "weekly",
              "datasets": [fresh[id] for id in sorted(fresh)]}
     directory.mkdir(parents=True, exist_ok=True)
