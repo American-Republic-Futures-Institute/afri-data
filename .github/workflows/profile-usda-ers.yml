@@ -1,0 +1,56 @@
+name: DATA-21B USDA ERS original source streaming profile
+on:
+  pull_request:
+    paths:
+      - 'tools/profile_usda_ers_release.py'
+      - 'tools/probe_usda_ers_archive.py'
+      - '.github/workflows/profile-usda-ers.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  original-source-profile:
+    if: github.repository == 'American-Republic-Futures-Institute/afri-data'
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Stream and CRC-verify complete official ERS CSV
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m tools.profile_usda_ers_release > usda-ers-profile.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          doc=json.loads(Path("usda-ers-profile.json").read_text())
+          assert doc["memberCRCVerifiedByFullStream"]
+          assert doc["recordCount"] >= 10000
+          print("USDA ORIGINAL PROBE",json.dumps({
+             "archiveSha256":doc["archiveSha256"],
+             "memberCRC32":doc["memberCRC32"],
+             "memberOriginalBytes":doc["memberOriginalBytes"],
+             "recordCount":doc["recordCount"],
+             "stateCount":doc["stateCount"],
+             "stateIdentities":doc["stateIdentities"],
+             "yearRange":doc["yearRange"],
+             "artificialKeys":doc["artificialKeyCount"],
+             "matchedKeys":len(doc["matches"]),
+             "publicationDates":doc["publicationDateSamples"][:5],
+             "duplicateExamples":doc["duplicateIdentitySamples"][:5]
+          },sort_keys=True))
+          for m in doc["matches"][:90]:
+             print("USDA MATCH",json.dumps({k:m[k] for k in
+                ("key","description","rows","units","stateCount","years")},sort_keys=True))
+          PY
+      - name: Keep provenance and genuine source example evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: data21b-usda-original-profile
+          path: usda-ers-profile.json
+          if-no-files-found: warn
+          retention-days: 30
