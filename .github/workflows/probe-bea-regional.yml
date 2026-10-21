@@ -1,0 +1,72 @@
+name: DATA-18 BEA original-source acceptance probe
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/probe-bea-regional.yml'
+      - 'catalog/source-library/bea-regional.json'
+      - 'tools/bea_regional_source_library.py'
+      - 'tools/source_library.py'
+      - 'tests/test_bea_regional_source_library.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  live-bea-source-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify BEA adapter deterministic fixtures
+        run: python -m unittest discover -s tests -p 'test_bea_regional_source_library.py' -v
+      - name: Inspect current BEA publisher ZIP layouts before checking identities
+        run: |
+          python - <<'PY'
+          import io, json
+          from zipfile import ZipFile
+          from tools.bea_regional_source_library import download_archive
+          for archive in ("SAGDP","SAINC"):
+              with ZipFile(io.BytesIO(download_archive(archive))) as source:
+                  names=source.namelist()
+                  print("Archive",archive,"members",len(names))
+                  for prefix in (("SAGDP2_","SAGDP9_") if archive=="SAGDP" else ("SAINC1_",)):
+                      candidates=[name for name in names if name.startswith(prefix)]
+                      print(json.dumps({"prefix":prefix,"count":len(candidates),
+                                        "sample":candidates[:3]}))
+                      if candidates:
+                          with source.open(candidates[0]) as handle:
+                              print("Publisher first lines:",repr(handle.read(800).decode("utf-8-sig","replace")[:800]))
+          PY
+      - name: Acquire actual original BEA ZIP bundles and inspect all four series
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from tools.bea_regional_source_library import registry_sources, bea_records, STATES
+          result = []
+          for spec in registry_sources():
+              rows = bea_records(spec)
+              years = {r["record_date"][:4] for r in rows}
+              if len(rows) < 51 * 10 or len(rows) != len(years) * len(STATES):
+                  raise ValueError("Actual BEA original archive has insufficient annual state coverage")
+              signature = rows[0]["source_original_sha256"]
+              zip_signature = rows[0]["source_archive_sha256"]
+              if any(r["source_original_sha256"] != signature or
+                     r["source_archive_sha256"] != zip_signature for r in rows):
+                  raise ValueError("BEA publisher bytes changed within one source acquisition")
+              proof = {"id":spec["id"],"records":len(rows),
+                       "stateCount":len(STATES),"firstYear":min(years),
+                       "latestYear":max(years),"csvSha256":signature,
+                       "zipSha256":zip_signature,"originalMember":rows[0]["source_archive_member"]}
+              result.append(proof)
+              print(json.dumps(proof,sort_keys=True))
+          Path("bea-live-probe.json").write_text(json.dumps(result,sort_keys=True,indent=2)+"\n")
+          PY
+      - name: Retain publisher-live acceptance evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: bea-regional-original-source-probe
+          path: bea-live-probe.json
+          retention-days: 30
