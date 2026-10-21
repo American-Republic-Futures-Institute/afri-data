@@ -23,10 +23,11 @@ BASE = "https://api.fiscaldata.treasury.gov/services/api/fiscal_service/"
 PAGE_SIZE = 1000
 MAX_PAGES = 600
 MAX_PAGE_BYTES = 7_000_000
-MAX_YEAR_BYTES = 7_000_000
+MAX_YEAR_BYTES = 3_000_000  # bounded website response; large years split by month
 ID = re.compile(r"^[a-z][a-z0-9-]{3,70}$")
 ENDPOINT = re.compile(r"^v[12]/accounting/(?:od|dts|mts)/[a-z0-9_]{2,75}$")
 DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+PERIOD = re.compile(r"^(19|20|21)\d{2}-(?:0[1-9]|1[0-2])$")
 HEX = re.compile(r"^[0-9a-f]{64}$")
 
 
@@ -168,29 +169,55 @@ def pages(spec, opener=None):
 
 
 def partition(spec, records):
+    """Version source-native annual records; split oversized years by month.
+
+    Partitioning never truncates source history or aggregates reported values.
+    Old annual partitions remain byte-identical when below the budget.
+    """
     groups = {}
     for row in records:
         year = int(row[spec["dateField"]][:4])
         groups.setdefault(year, []).append(row)
     partitions = []
     blobs = {}
+
+    def emit(year, source_rows, period=None):
+        doc = {"schemaVersion": "1.0.0", "sourceClass": "official-raw-values",
+               "datasetId": spec["id"], "year": year,
+               "dateField": spec["dateField"], "records": source_rows}
+        if period is not None:
+            doc["period"] = period
+        payload = canonical(doc)
+        assert_that(len(payload) <= MAX_YEAR_BYTES,
+                    "Source month exceeds safe serving ceiling; require smaller source periods")
+        key = period or str(year)
+        path = f"publication/source-library/data/{spec['id']}/{key}.json"
+        metadata = {"year": year, "path": path, "sha256": digest(payload),
+                    "bytes": len(payload), "rows": len(source_rows),
+                    "firstDate": source_rows[0][spec["dateField"]],
+                    "lastDate": source_rows[-1][spec["dateField"]]}
+        if period is not None:
+            metadata["period"] = period
+        partitions.append(metadata)
+        blobs[path] = payload
+
     for year in sorted(groups):
         doc = {"schemaVersion": "1.0.0", "sourceClass": "official-raw-values",
                "datasetId": spec["id"], "year": year,
                "dateField": spec["dateField"], "records": groups[year]}
-        payload = canonical(doc)
-        assert_that(len(payload) <= MAX_YEAR_BYTES,
-                    "Annual source partition exceeds GitHub-serving limit")
-        path = f"publication/source-library/data/{spec['id']}/{year}.json"
-        parts = groups[year]
-        partitions.append({"year": year, "path": path, "sha256": digest(payload),
-                           "bytes": len(payload), "rows": len(parts),
-                           "firstDate": parts[0][spec["dateField"]],
-                           "lastDate": parts[-1][spec["dateField"]]})
-        blobs[path] = payload
-    assert_that(bool(partitions), "Source has no dated records")
+        if len(canonical(doc)) <= MAX_YEAR_BYTES:
+            emit(year, groups[year])
+        else:
+            months = {}
+            for row in groups[year]:
+                month = row[spec["dateField"]][:7]
+                assert_that(PERIOD.fullmatch(month), "Unexpected source month")
+                months.setdefault(month, []).append(row)
+            for month in sorted(months):
+                emit(year, months[month], month)
+    assert_that(bool(partitions) and len(partitions) <= 1200,
+                "Source has no dated records or exceeds bounded partition count")
     return partitions, blobs
-
 
 def verify(root=ROOT):
     index_path = Path(root) / OUTPUT / "index.json"
@@ -203,20 +230,46 @@ def verify(root=ROOT):
         assert_that(ID.fullmatch(entry["id"]) and
                     isinstance(entry.get("partitions"), list), "Invalid source metadata")
         total = 0
-        years = set()
+        keys = set()
+        annual_years = set()
+        monthly_years = set()
         for part in entry["partitions"]:
             year = part["year"]
-            assert_that(type(year) is int and 1900 <= year <= 2150 and year not in years and
-                        part["path"] == f"publication/source-library/data/{entry['id']}/{year}.json",
-                        "Unrecognized or duplicate annual partition")
-            years.add(year)
-            payload = (Path(root) / part["path"]).read_bytes()
-            assert_that(len(payload) == part["bytes"] and digest(payload) == part["sha256"] and
+            period = part.get("period")
+            assert_that(type(year) is int and 1900 <= year <= 2150 and
+                        (period is None or (type(period) is str and
+                         PERIOD.fullmatch(period) and period.startswith(str(year) + "-"))),
+                        "Unrecognized source date partition")
+            key = period or str(year)
+            assert_that(key not in keys and
+                        part["path"] == f"publication/source-library/data/{entry['id']}/{key}.json",
+                        "Unrecognized or duplicate source partition")
+            keys.add(key)
+            if period is None:
+                annual_years.add(year)
+            else:
+                monthly_years.add(year)
+            path = Path(root) / part["path"]
+            payload = path.read_bytes()
+            assert_that(0 < len(payload) <= MAX_YEAR_BYTES and
+                        len(payload) == part["bytes"] and digest(payload) == part["sha256"] and
                         HEX.fullmatch(part["sha256"]), "Source partition digest mismatch")
             doc = json.loads(payload)
+            records = doc.get("records")
             assert_that(doc["datasetId"] == entry["id"] and doc["year"] == year and
-                        len(doc["records"]) == part["rows"], "Source partition record mismatch")
+                        doc.get("period") == period and
+                        isinstance(records, list) and len(records) == part["rows"] and
+                        records and
+                        all(type(row) is dict and
+                            type(row.get("record_date")) is str and
+                            row["record_date"].startswith(key + ("-" if period is None else "-"))
+                            for row in records) and
+                        records[0]["record_date"] == part["firstDate"] and
+                        records[-1]["record_date"] == part["lastDate"],
+                        "Source partition record or date mismatch")
             total += part["rows"]
+        assert_that(not (annual_years & monthly_years),
+                    "Cannot mix annual and monthly partitions of one source year")
         assert_that(total == entry["rowCount"], "Source dataset row-count mismatch")
     return {"datasets": len(index["datasets"]),
             "records": sum(d["rowCount"] for d in index["datasets"])}
