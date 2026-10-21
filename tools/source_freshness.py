@@ -78,6 +78,17 @@ def source_fingerprint(entry):
                 orig + ".zip",
                 "EPA original archive missing from source fingerprint")
         payload.append(["original-zip-sha256", orig, 0, length])
+    if entry.get("provider") == "usgs-comcat":
+        # Exact official CSV response, not a reconstructed source projection.
+        # Its byte digest is a component of the revision/freshness identity.
+        orig = entry.get("originalCsvSha256")
+        length = entry.get("originalCsvBytes")
+        require(type(orig) is str and SHA256.fullmatch(orig) and
+                type(length) is int and 100 < length <= 1_600_000 and
+                entry.get("originalCsvPath") ==
+                "publication/source-library/originals/usgs-comcat/sha256/" +
+                orig + ".csv", "USGS original archive missing from source fingerprint")
+        payload.append(["original-csv-sha256", orig, 0, length])
     return sha256((json.dumps(sorted(payload), separators=(",", ":"), ensure_ascii=True)
                    + "\n").encode("utf-8")).hexdigest()
 
@@ -170,7 +181,7 @@ def report_for(catalog, index, health, prior_index=None, prior_report=None):
         past = previous_rows.get(key, {})
         error = failures.get(key)
         provider = spec.get("provider") or "treasury-fiscaldata"
-        require(provider in ("treasury-fiscaldata", "cdc-places", "bls-qcew", "census-acs5", "epa-airdata", "bea-regional"),
+        require(provider in ("treasury-fiscaldata", "cdc-places", "bls-qcew", "census-acs5", "epa-airdata", "bea-regional", "usgs-comcat"),
                 "unknown registered provider for source coverage")
         fingerprint = source_fingerprint(current_row) if current_row else None
         old_fp = source_fingerprint(old_row) if old_row else None
