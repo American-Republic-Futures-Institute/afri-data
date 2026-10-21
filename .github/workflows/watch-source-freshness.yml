@@ -1,0 +1,53 @@
+name: Federal source ingestion freshness watch
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '37 12 * * *'
+permissions:
+  contents: read
+jobs:
+  verify-federal-source-coverage:
+    if: github.repository == 'American-Republic-Futures-Institute/afri-data'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Check out canonical source-monitor implementation
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Use current Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Obtain retained originals index and monitor evidence from the source branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin refs/heads/data/source-library:refs/remotes/origin/data/source-library
+          git worktree add --detach "$RUNNER_TEMP/arfi-source-ledger" refs/remotes/origin/data/source-library
+          test -s "$RUNNER_TEMP/arfi-source-ledger/publication/source-library/index.json"
+          test -s "$RUNNER_TEMP/arfi-source-ledger/publication/source-library/health.json"
+          test -s "$RUNNER_TEMP/arfi-source-ledger/publication/source-library/acquisition-ledger.json"
+      - name: Verify the registered/mirrored federal sources and 7/14-day check cadence
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m tools.source_freshness --verify --check-cadence --root "$RUNNER_TEMP/arfi-source-ledger"
+      - name: Surface genuine publisher failures or discovery warnings separately
+        shell: bash
+        if: always()
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          import os
+          p=Path(os.environ["RUNNER_TEMP"])/"arfi-source-ledger"/"publication/source-library/health.json"
+          if not p.is_file():
+              print("::warning title=Source ingestion evidence unavailable::Source branch has not published the acquisition ledger")
+          else:
+              health=json.loads(p.read_text())
+              for key, msg in health.get("failed", {}).items():
+                  print(f"::warning title=Previously failed publisher acquisition::{key}: {msg[:140]}")
+              for key, msg in health.get("discoveryWarnings", {}).items():
+                  print(f"::warning title=Official new release discovery unavailable::{key}: {msg[:140]}")
+          PY
