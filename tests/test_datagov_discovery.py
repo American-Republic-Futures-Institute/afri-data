@@ -161,7 +161,7 @@ class DataGovDiscoveryTests(unittest.TestCase):
         def get(url, key):
             return response(organizations() if url == d.ORGANIZATIONS else extra)
         report = self.run_once(fetch=get)
-        self.assertEqual(report["rejected"].get("non_federal"), 2)  # recent + backfill
+        self.assertEqual(report["rejected"].get("non_federal"), 2, report)  # recent + backfill
         self.assertEqual(report["rejected"].get("not_public"), 2)
         self.assertEqual(report["uniqueCandidateIdentitiesKnown"], 1)
 
