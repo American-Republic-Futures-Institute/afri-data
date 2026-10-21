@@ -137,7 +137,7 @@ class EPAOriginalsTests(unittest.TestCase):
                 with self.assertRaisesRegex(e.EPAUnavailable,"unexpected or unsafe"):
                     e.parse_original(fixture(filename=name),year=2025,scope="county")
         with self.assertRaisesRegex(e.EPAUnavailable,"year or monitored-day"):
-            e.parse_original(fixture(year=2024),year=2025,scope="county")
+            e.parse_original(fixture(year=2024,filename="annual_aqi_by_county_2025.csv"),year=2025,scope="county")
         with self.assertRaisesRegex(e.EPAUnavailable,"header"):
             e.parse_original(fixture(header=["State","County","Year","Good Days","AQI Max"]),
                              year=2025,scope="county")
