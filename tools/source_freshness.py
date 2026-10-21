@@ -13,7 +13,7 @@ import re
 SCHEMA = "ARFI-SourceAcquisitionLedger/1.0.0"
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
 IDENTIFIER = re.compile(r"^[a-z][a-z0-9-]{3,70}$")
-MAX_FEEDS = 300
+MAX_FEEDS = 20000
 
 
 class LedgerError(ValueError):
@@ -89,6 +89,18 @@ def source_fingerprint(entry):
                 "publication/source-library/originals/usgs-comcat/sha256/" +
                 orig + ".csv", "USGS original archive missing from source fingerprint")
         payload.append(["original-csv-sha256", orig, 0, length])
+    if entry.get("provider") == "eia-seds":
+        # Retain the entire EIA CSV release's checksum, not only a subset of MSNs.
+        from tools.eia_seds_source_library import MAX_SOURCE_BYTES
+        original_sha = entry.get("originalCsvSha256")
+        length = entry.get("originalCsvBytes")
+        require(type(original_sha) is str and SHA256.fullmatch(original_sha) and
+                type(length) is int and 100 < length <= MAX_SOURCE_BYTES and
+                entry.get("originalCsvPath") ==
+                "publication/source-library/originals/eia-seds/sha256/" +
+                original_sha + ".csv",
+                "EIA original SEDS CSV missing from acquisition fingerprint")
+        payload.append(["original-eia-csv-sha256", original_sha, 0, length])
     if entry.get("provider") == "noaa-ncei":
         orig, orig_bytes = entry.get("originalTxtSha256"), entry.get("originalTxtBytes")
         readme, readme_bytes = entry.get("originalReadmeSha256"), entry.get("originalReadmeBytes")
@@ -201,7 +213,7 @@ def report_for(catalog, index, health, prior_index=None, prior_report=None):
         past = previous_rows.get(key, {})
         error = failures.get(key)
         provider = spec.get("provider") or "treasury-fiscaldata"
-        require(provider in ("treasury-fiscaldata", "cdc-places", "bls-qcew", "census-acs5", "epa-airdata", "bea-regional", "usgs-comcat", "noaa-ncei"),
+        require(provider in ("treasury-fiscaldata", "cdc-places", "bls-qcew", "census-acs5", "epa-airdata", "bea-regional", "usgs-comcat", "eia-seds", "noaa-ncei"),
                 "unknown registered provider for source coverage")
         fingerprint = source_fingerprint(current_row) if current_row else None
         old_fp = source_fingerprint(old_row) if old_row else None
