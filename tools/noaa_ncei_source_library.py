@@ -20,7 +20,8 @@ CATALOG = Path("catalog/source-library/noaa-ncei.json")
 BASE = "https://www.ncei.noaa.gov/monitoring-content/data/us/climdiv/monthly/current/"
 README_URL = BASE + "divisional-readme.txt"
 ALTERNATE_BASE = "https://www.ncei.noaa.gov/pub/data/cirs/climdiv/"
-OFFICIAL_BASES = (BASE, ALTERNATE_BASE)
+LEGACY_OFFICIAL_BASE = "https://www1.ncdc.noaa.gov/pub/data/cirs/climdiv/"
+OFFICIAL_BASES = (BASE, ALTERNATE_BASE, LEGACY_OFFICIAL_BASE)
 KINDS = {"pcpndv": ("Monthly precipitation", "publisher-reported inches"),
          "tmpcdv": ("Monthly average temperature", "publisher-reported degrees F")}
 FILENAME = re.compile(r"^climdiv-(pcpndv|tmpcdv)-v1\.0\.0-(20\d{6})$")
@@ -42,7 +43,7 @@ class NOAAUnavailable(ValueError):
 
 class NoRedirects(HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
-        raise NOAAUnavailable("NOAA source redirect forbidden")
+        raise NOAAUnavailable("NOAA source redirect forbidden; publisher target="+str(newurl)[:240])
 
 
 class OriginalNOAARows(list):
