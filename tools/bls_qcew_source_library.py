@@ -150,7 +150,9 @@ def bls_records(spec, fetch=official_csv, now=None):
             spec.get("endpoint")!=BASE or spec.get("startYear")!=2022):
         raise BLSUnavailable("Unapproved BLS QCEW source registration")
     year=(now or datetime.now(timezone.utc)).year
-    last=min(year,2026)
+    if not 2022 <= year <= 2150:
+        raise BLSUnavailable("Unrecognized current BLS acquisition year")
+    last=year
     output=[]
     quarters=0
     for y in range(2022,last+1):
