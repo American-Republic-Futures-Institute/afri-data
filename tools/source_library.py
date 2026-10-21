@@ -312,6 +312,10 @@ def partition(spec, records):
     """
     groups = {}
     for row in records:
+        assert_that(isinstance(row, dict) and
+                    1 <= len(row) <= MAX_ROW_FIELDS and
+                    len(canonical(row)) <= MAX_ROW_BYTES,
+                    "Original publisher row exceeds reviewed field or byte ceiling")
         year = int(row[spec["dateField"]][:4])
         groups.setdefault(year, []).append(row)
     partitions = []
