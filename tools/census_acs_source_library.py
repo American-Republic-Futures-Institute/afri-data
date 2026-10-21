@@ -130,7 +130,7 @@ def registry_sources(root=ROOT, *, discover=False, available=official_table_avai
                                        "housing units (ACS estimate)","occupied housing units",
                                        "persons in occupied housing units",
                                        "persons per occupied housing unit",
-                                       "year built (median)")):
+                                       "year built (median)","percent (median rent/income)")):
             raise ValueError("Malformed ACS table identity or units")
         for year in years:
             label=f"{year-4}-{year}"
