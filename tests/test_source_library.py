@@ -152,7 +152,7 @@ class SourceLibraryTests(unittest.TestCase):
             "from tools.census_acs_source_library import registry_sources as acs; "
             "from tools.cdc_places_source_library import registry_sources as cdc; "
             "from tools.bls_qcew_source_library import INDUSTRIES; "
-            "assert len(bls()) == len(INDUSTRIES) and len(acs()) == 36 and len(cdc()) == 42; "
+            "assert len(bls()) == len(INDUSTRIES) and len(acs()) == 48 and len(cdc()) == 42; "
             "import sys; "
             "assert 'shapefile' not in sys.modules; "
             "assert 'numpy' not in sys.modules"

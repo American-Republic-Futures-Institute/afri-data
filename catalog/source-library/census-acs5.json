@@ -94,6 +94,34 @@
       "description": "Source-published median construction year of structures, retaining original Census estimate and 90% margin of error.",
       "unit": "year built (median)",
       "preferredField": "B25035_E001"
+    },
+    {
+      "table": "b25057",
+      "title": "Lower contract rent quartile",
+      "description": "Original Census five-year lower quartile of contract rent for cash-rent renter housing units, including publisher 90% margin of error. This is not a current-year asking rent.",
+      "unit": "USD (inflation-adjusted vintage)",
+      "preferredField": "B25057_E001"
+    },
+    {
+      "table": "b25058",
+      "title": "Median contract rent",
+      "description": "Original Census five-year median contract rent among renter-occupied units paying cash rent, including publisher 90% margin of error and release-vintage dollar units.",
+      "unit": "USD (inflation-adjusted vintage)",
+      "preferredField": "B25058_E001"
+    },
+    {
+      "table": "b25059",
+      "title": "Upper contract rent quartile",
+      "description": "Original Census five-year upper contract rent quartile for renter-occupied units paying cash rent; preserves the publisher estimate and reported 90% margin of error.",
+      "unit": "USD (inflation-adjusted vintage)",
+      "preferredField": "B25059_E001"
+    },
+    {
+      "table": "b25071",
+      "title": "Median gross rent share of household income",
+      "description": "Original five-year Census estimate of median gross rent as a percentage of household income for renter-occupied units paying cash rent; not an ARFI-calculated affordability ratio.",
+      "unit": "percent (median rent/income)",
+      "preferredField": "B25071_E001"
     }
   ]
 }
