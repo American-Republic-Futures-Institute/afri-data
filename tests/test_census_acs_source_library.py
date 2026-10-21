@@ -39,7 +39,7 @@ def fixture(table,year,suppress=None):
 
 
 class ACSHistoryTests(unittest.TestCase):
-    def test_four_official_tables_across_three_pooled_five_year_editions(self):
+    def test_eight_official_tables_across_three_pooled_five_year_editions(self):
         sources=registry_sources()
         self.assertEqual(len(sources),24)
         self.assertEqual({s["table"] for s in sources},TABLES)
@@ -101,6 +101,46 @@ class ACSHistoryTests(unittest.TestCase):
             census_records(s,fetch=fetch)
         with self.assertRaises(ValueError):
             source_url(2024,"b05001")
+
+
+    def test_new_official_population_gini_and_housing_source_edition_projections(self):
+        original = registry_sources()
+        expected = {"b01003":"persons (ACS estimate)",
+                    "b19083":"unitless Gini index",
+                    "b25002":"housing units (ACS estimate)",
+                    "b25003":"occupied housing units"}
+        for table,unit in expected.items():
+            for year in VINTAGES:
+                with self.subTest(table=table,year=year):
+                    desc=next(x for x in original if x["id"]==f"census-acs5-{table}-{year}")
+                    self.assertEqual(desc["unit"],unit)
+                    self.assertEqual(desc["surveyReferencePeriod"],f"{year-4}-{year}")
+                    self.assertEqual(desc["preferredField"],table.upper()+"_E001")
+                    self.assertEqual(desc["endpoint"],source_url(year,table))
+                    self.assertTrue(desc["endpoint"].startswith(BASE))
+                    raw=fixture(table,year)
+                    if table=="b19083":
+                        raw=raw.replace(b"62000",b"0.4567").replace(b"1400",b"0.0180")
+                    rows=parse_table(raw,table=table,year=year)
+                    self.assertEqual(len(rows),52)
+                    self.assertEqual(rows[0][table.upper()+"_E001"],
+                                     "0.4567" if table=="b19083" else "62000")
+                    self.assertEqual(rows[0]["margin_of_error_confidence"],"0.90")
+                    self.assertEqual(rows[0]["survey_reference_period"],f"{year-4}-{year}")
+                    self.assertEqual(rows[0]["record_date"],f"{year}-12-31")
+
+    def test_gini_range_suppression_and_unsupported_table_fail_closed(self):
+        raw=fixture("b19083",2024).replace(b"62000",b"0.4500").replace(b"1400",b"0.0100")
+        self.assertEqual(parse_table(raw,table="b19083",year=2024)[0]["B19083_E001"],"0.4500")
+        over=raw.replace(b"0.4500",b"1.2500",1)
+        with self.assertRaisesRegex(ValueError,"unit interval"):
+            parse_table(over,table="b19083",year=2024)
+        suppressed=fixture("b25003",2023,suppress="01")
+        rows=parse_table(suppressed,table="b25003",year=2023)
+        self.assertEqual(rows[0]["estimate_status"],"not_available")
+        self.assertEqual(rows[0]["B25003_M001"],"-666666666")
+        with self.assertRaises(ValueError):
+            source_url(2024,"b25099")
 
 
 if __name__=="__main__":
