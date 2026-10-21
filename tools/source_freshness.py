@@ -158,7 +158,7 @@ def report_for(catalog, index, health, prior_index=None, prior_report=None):
         past = previous_rows.get(key, {})
         error = failures.get(key)
         provider = spec.get("provider") or "treasury-fiscaldata"
-        require(provider in ("treasury-fiscaldata", "cdc-places", "bls-qcew", "census-acs5"),
+        require(provider in ("treasury-fiscaldata", "cdc-places", "bls-qcew", "census-acs5", "bea-regional"),
                 "unknown registered provider for source coverage")
         fingerprint = source_fingerprint(current_row) if current_row else None
         old_fp = source_fingerprint(old_row) if old_row else None
