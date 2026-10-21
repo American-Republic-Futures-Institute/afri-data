@@ -41,14 +41,14 @@ def fixture(table,year,suppress=None):
 class ACSHistoryTests(unittest.TestCase):
     def test_four_official_tables_across_three_pooled_five_year_editions(self):
         sources=registry_sources()
-        self.assertEqual(len(sources),12)
+        self.assertEqual(len(sources),24)
         self.assertEqual({s["table"] for s in sources},TABLES)
         self.assertEqual({s["releaseYear"] for s in sources},VINTAGES)
         t=json.loads((ROOT/"catalog/source-library/treasury-fiscaldata.json").read_text("utf-8"))
         from tools.cdc_places_source_library import registry_sources as cdc
         from tools.bls_qcew_source_library import registry_sources as bls
         validate_catalog({**t,"datasets":t["datasets"]+cdc()+bls()+sources})
-        self.assertEqual(len(t["datasets"]+cdc()+bls()+sources),45)
+        self.assertEqual(len(t["datasets"]+cdc()+bls()+sources),57)
 
     def test_publisher_original_suppression_strings_and_90_percent_moe_survive(self):
         rows=parse_table(fixture("b01002",2023,suppress="01"),table="b01002",year=2023)
