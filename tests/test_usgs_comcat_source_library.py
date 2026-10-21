@@ -41,7 +41,7 @@ def publisher(year="2024", suffix="a", **replacements):
 
 def original(rows=None, *, field_names=FIELDS):
     buf = io.StringIO(newline="")
-    writer = csv.DictWriter(buf, fieldnames=field_names, lineterminator="\n")
+    writer = csv.DictWriter(buf, fieldnames=field_names, lineterminator="\n", extrasaction="ignore")
     writer.writeheader()
     for row in rows or [publisher(), publisher(suffix="b", place="Pacific, south of Hawaii")]:
         writer.writerow(row)
