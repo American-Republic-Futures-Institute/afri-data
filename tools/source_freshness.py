@@ -330,6 +330,42 @@ def verify_report(report, index, health):
             "verifiedPartitions": report["totals"]["sourcePartitions"],
             "publisherReleaseLagMeasurable": False}
 
+def check_cadence(report, as_of):
+    """Operational last-success ages, deliberately NOT publisher-release latency."""
+    now = utc_date(as_of)
+    checked = utc_date(report["checkedAt"])
+    require(now >= checked, "check-cadence time before source refresh")
+    overdue, escalated, never_acquired = [], [], []
+    for row in report["sources"]:
+        if row["status"] == "registered_not_acquired":
+            never_acquired.append(row["id"])
+            continue
+        last = row.get("lastSuccessfulCheckAt")
+        if last is None:
+            overdue.append(row["id"])
+            continue
+        age = now - utc_date(last)
+        require(age >= timedelta(0), "source last-success clock in the future")
+        if age > timedelta(days=14):
+            escalated.append(row["id"])
+        elif age > timedelta(days=7):
+            overdue.append(row["id"])
+    age = now - checked
+    status = ("escalation_required"
+              if age > timedelta(days=14) or escalated else
+              "overdue_or_unacquired"
+              if age > timedelta(days=7) or overdue or never_acquired else
+              "within_seven_day_check_target")
+    return {
+        "daysSinceLatestRefreshCheck": round(age.total_seconds() / 86400, 4),
+        "checkCadenceStatus": status,
+        "overdueSourceIds": sorted(overdue),
+        "escalatedSourceIds": sorted(escalated),
+        "neverAcquiredSourceIds": sorted(never_acquired),
+        "publisherReleaseLagMeasurable": False,
+    }
+
+
 def main():
     """Verify the Git branch's report without claiming publisher release timeliness."""
     import argparse
@@ -351,13 +387,8 @@ def main():
     ledger = json.loads((path / "acquisition-ledger.json").read_text("utf-8"))
     result = verify_report(ledger, index, health)
     if args.check_cadence:
-        now = utc_date(args.as_of or utc_string(datetime.now(timezone.utc)))
-        age = now - utc_date(ledger["checkedAt"])
-        require(age >= timedelta(0), "acquisition clock in the future")
-        result["daysSinceSuccessfulRefreshCheck"] = round(age.total_seconds() / 86400, 4)
-        result["checkCadenceStatus"] = ("escalation_required" if age > timedelta(days=14)
-             else "overdue" if age > timedelta(days=7) else "within_seven_day_check_target")
-        result["publisherReleaseLagMeasurable"] = False
+        result.update(check_cadence(
+            ledger, args.as_of or utc_string(datetime.now(timezone.utc))))
     print(json.dumps(result, sort_keys=True))
     if args.check_cadence and result["checkCadenceStatus"] != "within_seven_day_check_target":
         raise SystemExit(2 if result["checkCadenceStatus"]=="escalation_required" else 1)
