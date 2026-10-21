@@ -297,7 +297,8 @@ def persist_page(root, *, mode, epoch, sequence, source, page, raw_sha,
     ensure(next_cursor is None or (isinstance(next_cursor, str) and
            CURSOR_PATTERN.fullmatch(next_cursor) and len(next_cursor) <= MAX_CURSOR_LENGTH),
            "invalid returned next cursor")
-    ensure(next_cursor != cursor, "repeated catalog cursor without progress")
+    ensure(next_cursor is None or next_cursor != cursor,
+           "repeated catalog cursor without progress")
     keys = set()
     projected = []
     rejected = {}
