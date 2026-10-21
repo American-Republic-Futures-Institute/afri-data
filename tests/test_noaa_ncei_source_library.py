@@ -6,9 +6,11 @@ from pathlib import Path
 import tempfile
 import unittest
 
+from urllib.request import Request
 from tools.noaa_ncei_source_library import (
-    BASE, README_URL, KINDS, MAX_ROWS, NOAAUnavailable, OriginalNOAARows,
-    NoRedirects, discover_filenames, original_path, parse_original, parse_readme,
+    BASE, ALTERNATE_BASE, README_URL, KINDS, MAX_ROWS, NOAAUnavailable,
+    OriginalNOAARows, NoRedirects, approved_response_url, _read_exact,
+    discover_filenames, original_path, parse_original, parse_readme,
     registry_sources, source_url, validate_registry, noaa_records,
 )
 from tools.source_library import BASE as TREASURY_BASE, refresh, verify, validate_catalog
@@ -96,6 +98,45 @@ class NOAAOriginalTests(unittest.TestCase):
                 source_url("pcpndv",val)
         with self.assertRaises(NOAAUnavailable):
             NoRedirects().redirect_request(None,None,302,"Moved",None,"https://bad.example")
+
+    def test_exact_noaa_archive_to_canonical_redirect_and_same_origin_security(self):
+        filename="climdiv-pcpndv-v1.0.0-20261006"
+        archive=ALTERNATE_BASE+filename
+        canonical=BASE+filename
+        handler=NoRedirects()
+        request=Request(archive)
+        follow=handler.redirect_request(request,None,302,"Found",{},canonical)
+        self.assertEqual(follow.full_url,canonical)
+        self.assertTrue(approved_response_url(archive,canonical))
+        self.assertTrue(approved_response_url(BASE,BASE))
+        for source,target in (
+            (BASE+filename,canonical+"?x=1"),
+            (archive,"https://evil.example/"+filename),
+            (archive,"http://www.ncei.noaa.gov"+canonical.split("noaa.gov",1)[1]),
+            (archive,BASE+"climdiv-tmpcdv-v1.0.0-20261006"),
+            (archive,BASE+filename+"/suffix"),
+            (archive,BASE+filename+"?download=1"),
+            (archive,BASE+filename+"#fragment"),
+            (BASE+filename,ALTERNATE_BASE+filename),
+        ):
+            with self.subTest(source=source,target=target):
+                self.assertFalse(approved_response_url(source,target))
+                with self.assertRaises(NOAAUnavailable):
+                    handler.redirect_request(Request(source),None,302,"Found",{},target)
+
+    def test_canonical_redirected_original_bytes_keep_strict_response_url(self):
+        filename="climdiv-pcpndv-v1.0.0-20261006"
+        archive=ALTERNATE_BASE+filename
+        canonical=BASE+filename
+        raw=original_single()
+        mock=MockOpener({archive:MockResponse(canonical,raw)})
+        observed,modified=_read_exact(archive,8000000,opener=mock,mime="data")
+        self.assertEqual(observed,raw)
+        self.assertEqual(mock.calls,[archive])
+        self.assertEqual(modified,"Tue, 06 Oct 2026 04:58:04 GMT")
+        wrong=MockOpener({archive:MockResponse("https://evil.example/"+filename,raw)})
+        with self.assertRaises(NOAAUnavailable):
+            _read_exact(archive,8000000,opener=wrong,mime="data")
 
     def test_preserve_raw_month_tokens_no_imputation_or_fips_inference(self):
         rows=parse_original(original_single(),kind="pcpndv")
