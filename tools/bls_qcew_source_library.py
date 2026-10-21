@@ -26,7 +26,7 @@ SOURCE_PAGE="https://www.bls.gov/cew/additional-resources/open-data/csv-data-sli
 INDUSTRIES={"all-industry":"10","manufacturing":"31_33",
             "health-care":"62","professional-services":"54"}
 QUARTER_DATE={1:"03-31",2:"06-30",3:"09-30",4:"12-31"}
-MAX_BYTES=12_000_000
+MAX_BYTES=30_000_000
 FIELDS={"area_fips","year","qtr","industry_code","own_code"}
 
 
