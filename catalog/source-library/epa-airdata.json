@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "1.0.0",
+  "publisher": "U.S. Environmental Protection Agency",
+  "sourceFamily": "epa-airdata-annual-aqi",
+  "startYear": 1990,
+  "approvedThroughYear": 2026,
+  "refreshCadence": "weekly",
+  "datasetClass": "source-native-unreviewed",
+  "scopes": [
+    {
+      "id": "county",
+      "stem": "annual_aqi_by_county",
+      "title": "annual AQI by county",
+      "description": "Authoritative EPA AirData annual source records for monitored counties, preserving the publisher original AQI category counts, denominators and geographic names."
+    },
+    {
+      "id": "cbsa",
+      "stem": "annual_aqi_by_cbsa",
+      "title": "annual AQI by metropolitan statistical area",
+      "description": "Authoritative EPA AirData annual source records for monitored Core Based Statistical Areas, preserving original category-day denominators, period and geography labels."
+    }
+  ]
+}
