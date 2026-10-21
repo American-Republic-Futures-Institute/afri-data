@@ -1,6 +1,6 @@
 """Keyless CDC PLACES county source snapshots, not new ARFI statistics.
 
-Reads six publisher-modeled health measures across the official 2023, 2024,
+Reads fourteen publisher-modeled health measures across the official 2023, 2024,
 and 2025 GIS-friendly county releases. Copies source fields and CDC-reported
 intervals; record_date is an explicitly labeled release-vintage index marker,
 not a survey observation date. No prevalence is calculated or inferred.
@@ -21,7 +21,11 @@ BASE = "https://data.cdc.gov/resource/"
 KNOWN = {2023: ("7cmc-7y5g", 2021),
          2024: ("d3i6-k6z5", 2022),
          2025: ("i46a-9kgh", 2023)}
-MEASURES = {"obesity", "diabetes", "arthritis", "csmoking", "lpa", "chd"}
+MEASURES = {
+    "obesity", "diabetes", "arthritis", "csmoking", "lpa", "chd",
+    "access2", "casthma", "cancer", "copd", "depression",
+    "mhlth", "phlth", "stroke",
+}
 COUNTIES = {2023: 3143, 2024: 3144, 2025: 3143}  # source-release-specific official county row counts
 
 
