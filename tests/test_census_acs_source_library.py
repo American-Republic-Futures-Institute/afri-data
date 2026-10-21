@@ -5,7 +5,9 @@ import json
 from pathlib import Path
 import unittest
 
-from pipelines.census_state_population import FIPS
+from tools.stat05_geography import STATE_NAMES
+
+FIPS = frozenset(STATE_NAMES)
 from tools.census_acs_source_library import (
     BASE, CATALOG, PAGE, ROOT, TABLES, VINTAGES, census_records,
     parse_table, registry_sources, source_url,
