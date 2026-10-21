@@ -16,6 +16,8 @@ import io
 import json
 from pathlib import Path
 import re
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, build_opener, HTTPRedirectHandler
 
 from pipelines.source_io import download_official
 from tools.stat05_geography import STATE_NAMES
@@ -30,16 +32,73 @@ TABLES={"b19013","b25077","b25064","b01002"}
 VINTAGES={2022,2023,2024}
 MISSING={"", "N", "null", "-666666666", "-888888888", "-999999999", "-555555555"}
 MAX_SOURCE_BYTES=30_000_000
+MAX_VINTAGE=2099
+
+
+def supported_year(year, *, now=None):
+    """Only plausible published Census 5YR edition years, never future surveys."""
+    now = now or datetime.now(timezone.utc)
+    return (type(year) is int and min(VINTAGES) <= year <= MAX_VINTAGE and
+            year <= now.year - 1)
 
 
 def source_url(year,table):
-    if type(year) is not int or year not in VINTAGES or table not in TABLES:
+    if not supported_year(year) or table not in TABLES:
         raise ValueError("Unapproved historical Census ACS source")
     return (f"{BASE}{year}/table-based-SF/data/5YRData/"
             f"acsdt5y{year}-{table}.dat")
 
 
-def registry_sources(root=ROOT):
+class NoPublisherRedirects(HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        raise RuntimeError("Census ACS publisher HEAD redirect rejected")
+
+
+def official_table_available(url, *, opener=None):
+    """Bounded source existence check; does not download a full Census file."""
+    expected=re.fullmatch(
+        r"https://www2\.census\.gov/programs-surveys/acs/summary_file/(20\d{2})/"
+        r"table-based-SF/data/5YRData/acsdt5y(20\d{2})-(b19013|b25077|b25064|b01002)\.dat",
+        url)
+    if (not expected or expected[1] != expected[2] or
+            not supported_year(int(expected[1]))):
+        raise ValueError("Unapproved Census HEAD source")
+    opener=opener or build_opener(NoPublisherRedirects())
+    try:
+        req=Request(url, method="HEAD", headers={
+            "User-Agent":"ARFI-Source-Library/1.0 (https://www.arfinstitute.org/)",
+            "Accept-Encoding":"identity"})
+        with opener.open(req, timeout=20) as response:
+            if response.geturl()!=url:
+                raise RuntimeError("Census source redirected unexpectedly")
+            size=response.headers.get("Content-Length")
+            if size is not None and not 0 < int(size) <= MAX_SOURCE_BYTES:
+                raise RuntimeError("Census source exceeds verified acquisition byte ceiling")
+            return True
+    except HTTPError as exc:
+        if exc.code in (404,410):
+            return False
+        raise RuntimeError("Census official publisher availability check failed") from None
+    except (URLError,OSError,TimeoutError):
+        raise RuntimeError("Census official publisher availability check unavailable") from None
+
+
+def discovered_vintages(*, now=None, available=official_table_available):
+    """Extend fixed base editions only after *all four* official tables exist.
+
+    Do not skip an intermediate unpublished or partially available vintage.
+    """
+    now=now or datetime.now(timezone.utc)
+    years=sorted(VINTAGES)
+    for year in range(max(years)+1, min(MAX_VINTAGE,now.year-1)+1):
+        published=[available(source_url(year,table)) for table in sorted(TABLES)]
+        if not all(published):
+            break
+        years.append(year)
+    return years
+
+
+def registry_sources(root=ROOT, *, discover=False, available=official_table_available, now=None):
     doc=json.loads((Path(root)/CATALOG).read_text("utf-8"))
     if (doc.get("schemaVersion")!="1.0.0" or
         doc.get("sourceFamily")!="census-acs5-table-based" or
@@ -53,6 +112,7 @@ def registry_sources(root=ROOT):
     if not isinstance(tables,list) or len(tables)!=len(TABLES) or {
         item["table"] for item in tables}!=TABLES:
         raise ValueError("Unapproved ACS detailed table list")
+    years=(discovered_vintages(now=now,available=available) if discover else sorted(VINTAGES))
     result=[]
     for table in tables:
         key=table["table"]
@@ -63,7 +123,7 @@ def registry_sources(root=ROOT):
             table.get("preferredField")!=key.upper()+"_E001" or
             table.get("unit") not in ("years of age","USD (inflation-adjusted vintage)")):
             raise ValueError("Malformed ACS table identity or units")
-        for year in sorted(VINTAGES):
+        for year in years:
             label=f"{year-4}-{year}"
             result.append({
                 "id":f"census-acs5-{key}-{year}",
@@ -89,7 +149,7 @@ def registry_sources(root=ROOT):
 
 
 def parse_table(original, *, table, year):
-    if table not in TABLES or year not in VINTAGES:
+    if table not in TABLES or not supported_year(year):
         raise ValueError("Unrecognized ACS publisher table")
     try:
         source=csv.DictReader(io.StringIO(original.decode("utf-8-sig")),delimiter="|")
