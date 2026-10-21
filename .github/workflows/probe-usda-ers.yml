@@ -1,0 +1,52 @@
+name: DATA-21 USDA ERS original source archive format probe
+on:
+  pull_request:
+    paths:
+      - 'tools/probe_usda_ers_archive.py'
+      - 'tests/test_usda_ers_probe.py'
+      - '.github/workflows/probe-usda-ers.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-original-archive:
+    if: github.repository == 'American-Republic-Futures-Institute/afri-data'
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate exact USDA government download and unmodified archive safeguards
+        run: python -m unittest discover -s tests -p 'test_usda_ers_probe.py' -v
+      - name: Inspect pinned official USDA ERS September 2026 ZIP, without publishing feeds
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m tools.probe_usda_ers_archive > usda-ers-source-format.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          doc=json.loads(Path("usda-ers-source-format.json").read_text())
+          assert doc["noDataPublished"] is True and doc["publicationClaimed"] is False
+          assert doc["csvEntryCount"] > 0 and len(doc["originalZipSha256"]) == 64
+          print(json.dumps({
+              "format": doc["format"],"publisher":doc["publisher"],
+              "archiveBytes":doc["originalZipBytes"],
+              "sourceSha256":doc["originalZipSha256"],
+              "entries":doc["archiveEntryCount"],
+              "csvFiles":doc["csvEntryCount"],
+              "csvHeaders":[{"member":m["filename"],"fields":m.get("header",[])}
+                            for m in doc["csvMembers"]][:18],
+              "notYetMirrored": True
+          },sort_keys=True,indent=2))
+          PY
+      - name: Retain USDA original-source format evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: data21-usda-ers-format
+          path: usda-ers-source-format.json
+          if-no-files-found: warn
+          retention-days: 30

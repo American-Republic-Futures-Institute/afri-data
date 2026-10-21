@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "1.0.0",
+  "publisher": "USDA Economic Research Service",
+  "sourceFamily": "usda-ers-state-farm-finance-september-2026",
+  "sourcePage": "https://www.ers.usda.gov/data-products/farm-income-and-wealth-statistics/data-files-us-and-state-level-farm-income-and-wealth-statistics",
+  "sourceZip": "https://www.ers.usda.gov/media/29517/september-3-2026-release.zip",
+  "refreshCadence": "weekly",
+  "datasetClass": "source-native-unreviewed",
+  "dateBasis": "usda-ers-annual-reference-year-not-source-release",
+  "unit": "$1,000",
+  "releaseDate": "2026-09-03",
+  "series": [
+    {
+      "id": "usda-ers-net-farm-income",
+      "title": "USDA ERS — Net farm income, states and U.S.",
+      "variableDescription": "Net farm income",
+      "description": "Original USDA ERS historical net farm income in publisher $1,000 units for all 50 states and the U.S. aggregate. State estimates extend through 2025; 2026 appears in the U.S. aggregate forecast and is not a state estimate."
+    },
+    {
+      "id": "usda-ers-production-expenses",
+      "title": "USDA ERS — Production expenses excluding operator dwellings",
+      "variableDescription": "Production expenses, all, excl. operator dwellings",
+      "description": "Original USDA ERS reported farm production expenses excluding operator dwellings, in publisher $1,000 units for the states and national aggregate. Reference years and release status are retained without independent computations."
+    }
+  ],
+  "description": "Original USDA ERS September 3, 2026 farm income and wealth state-level source ZIP, with byte-exact custody and complete member CRC verification; publisher strings and USDA artificialKey identities remain unchanged. No FIPS inference, transformation or statistical approval."
+}

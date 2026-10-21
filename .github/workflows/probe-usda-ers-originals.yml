@@ -1,0 +1,70 @@
+name: DATA-21B USDA ERS complete original ZIP and historical source acceptance
+on:
+  pull_request:
+    paths:
+      - 'catalog/source-library/usda-ers.json'
+      - 'tools/usda_ers_source_library.py'
+      - 'tools/source_library.py'
+      - 'tools/source_freshness.py'
+      - 'tests/test_usda_ers_source_library.py'
+      - '.github/workflows/probe-usda-ers-originals.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  official-usda-original:
+    if: github.repository == 'American-Republic-Futures-Institute/afri-data'
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test USDA original ZIP streaming, source identities, replay and tamper denial
+        run: python -m unittest discover -s tests -p 'test_usda_ers_source_library.py' -v
+      - name: Acquire real original ZIP and validate complete genuine 1910-2026 selected histories
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY' | tee usda-ers-live-evidence.json
+          import json
+          from hashlib import sha256
+          from tools.usda_ers_source_library import (
+              SERIES, STATES, ers_records, registry_sources)
+          from tools.probe_usda_ers_archive import fetch_original
+          original, resolved=fetch_original()
+          digest=sha256(original).hexdigest()
+          assert digest=="90df42fe47981e9b6291ec7c3589603a544c1408b26b3b2d8c7fe8046b4bf245",(
+              "September 2026 pinned source ZIP revised; inspect release provenance")
+          result=[]
+          for spec in registry_sources():
+              rows=ers_records(spec,fetch=lambda:original)
+              assert len(rows)>=3900
+              assert {r["State"] for r in rows}==STATES
+              assert any(r["Year"]=="1910" and r["State"]=="US" for r in rows)
+              assert any(r["Year"]=="2026" and r["State"]=="US" for r in rows)
+              assert not any(r["Year"]=="2026" and r["State"]!="US" for r in rows)
+              assert all(r["source_original_sha256"]==digest for r in rows)
+              assert all(r["unit_desc"]=="$1,000"+"\u00a0"*5 for r in rows)
+              result.append({"id":spec["id"],"records":len(rows),
+                "crc32":rows.member_crc32,"originalMemberBytes":rows.member_bytes,
+                "statesAndNational":len({r["State"] for r in rows}),
+                "firstYear":min(r["Year"] for r in rows),
+                "lastYear":max(r["Year"] for r in rows)})
+          print(json.dumps({
+            "status":"verified-genuine-usda-originals", "publisher":"USDA ERS",
+            "release":"2026-09-03", "zipSha256":digest,
+            "zipBytes":len(original),"publisherUrl":resolved,
+            "fullPublisherZipAndMemberCRCVerified":True,
+            "datasets":result, "noCanonicalSourcePublicationYet":True
+          },sort_keys=True))
+          PY
+      - name: Retain original source acceptance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: data21b-usda-ers-original-replay
+          path: usda-ers-live-evidence.json
+          if-no-files-found: warn
+          retention-days: 30
