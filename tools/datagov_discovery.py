@@ -31,7 +31,7 @@ MAX_PAGE_BUDGET = 80
 MAX_PAGE_NUMBER = 100_000
 MAX_DISTRIBUTIONS = 8
 KEY_PATTERN = re.compile(r"^[A-Za-z0-9_-]{8,160}$")
-CURSOR_PATTERN = re.compile(r"^[A-Za-z0-9_=+-]{1,512}$")
+CURSOR_PATTERN = re.compile(r"^[A-Za-z0-9_=/+-]{1,512}$")
 UUID_PATTERN = re.compile(r"^[0-9a-fA-F-]{36}$")
 ISO_DATE = re.compile(r"^\d{4}-\d\d-\d\d(?:T\d\d:\d\d(?::\d\d(?:\.\d+)?)?(?:Z|[+-]\d\d:?\d\d)?)?$")
 
@@ -334,9 +334,106 @@ def persist_page(root, *, mode, epoch, sequence, source, page, raw_sha,
         ensure(previous["originalResponseSha256Unarchived"] == raw_sha,
                "revisited cursor yielded a different page; requires new scan edition")
     atomic_json(target, receipt)
+    # One canonical latest-candidate view per SHA-256 dataset identity. Historical
+    # metadata snapshots remain in append-only page receipts and in Git history;
+    # an upstream revision never silently changes an old page's provenance.
+    project_candidates(root, projected, checked)
     return {"accepted": len(projected), "rejected": rejected,
             "originalSha": raw_sha, "next": next_cursor,
             "relativePath": str(target.relative_to(root))}
+
+
+def project_candidates(root, projected, checked):
+    buckets = {}
+    for row in projected:
+        key = row["candidateKey"]
+        buckets.setdefault(key[:2], {})[key] = row
+    for prefix, incoming in buckets.items():
+        target = root / "candidates" / (prefix + ".json")
+        old = load_json(target, {"schemaVersion": SCHEMA, "records": {}})
+        ensure(set(old) == {"schemaVersion", "records"} and old["schemaVersion"] == SCHEMA and
+               isinstance(old["records"], dict), "invalid candidate shard")
+        records = old["records"]
+        changed = False
+        for key, rec in incoming.items():
+            earlier = records.get(key)
+            if earlier is not None:
+                ensure(earlier.get("candidateKey") == key and
+                       earlier.get("sourceIngestionApproved") is False and
+                       earlier.get("sourceOriginalByteAcquired") is False and
+                       earlier.get("releaseToGitLagDays") is None and
+                       type(earlier.get("metadataRevisionCount")) is int and
+                       earlier["metadataRevisionCount"] >= 1,
+                       "candidate history or non-approval tampered")
+                if earlier["metadataFingerprint"] == rec["metadataFingerprint"]:
+                    continue
+                rec["firstDiscoveredAt"] = earlier["firstDiscoveredAt"]
+                rec["metadataRevisionCount"] = earlier["metadataRevisionCount"] + 1
+                rec["previousMetadataFingerprint"] = earlier["metadataFingerprint"]
+            else:
+                rec["metadataRevisionCount"] = 1
+                rec["previousMetadataFingerprint"] = None
+            rec["lastMetadataChangeObservedAt"] = checked
+            records[key] = rec
+            changed = True
+        if changed:
+            atomic_json(target, old)
+
+
+def publish_queue(root, checked):
+    """Small human/source-adapter priority queue, not an automatic admission."""
+    seen = set()
+    choices = []
+    reviewed = 0
+    restricted = 0
+    revisions = 0
+    organizations = {}
+    for path in sorted((root / "candidates").glob("??.json")):
+        shard = load_json(path)
+        ensure(shard.get("schemaVersion") == SCHEMA and
+               isinstance(shard.get("records"), dict), "invalid candidate shard")
+        for key, row in shard["records"].items():
+            ensure(re.fullmatch(r"[a-f0-9]{64}", key) and key[:2] == path.stem and
+                   row.get("candidateKey") == key and key not in seen and
+                   row.get("sourceIngestionApproved") is False and
+                   row.get("sourceOriginalByteAcquired") is False and
+                   row.get("publisherReleaseTimestampIndependentlyVerified") is False and
+                   row.get("releaseToGitLagDays") is None,
+                   "forged canonical candidate identity or source release")
+            seen.add(key)
+            slug = row["federalOrganization"]["slug"]
+            organizations[slug] = organizations.get(slug, 0) + 1
+            revisions += int(row["metadataRevisionCount"] > 1)
+            if row["catalogAccessReview"] != "explicit_catalog_public_unapproved":
+                restricted += 1
+                continue
+            reviewed += 1
+            if row["governmentHttpsDistributionCandidates"]:
+                choices.append(row)
+    choices.sort(key=lambda x: (x["seedPublisherIdExactMatch"] is None,
+                                -len(x["governmentHttpsDistributionCandidates"]),
+                                x["federalOrganization"]["slug"], x["candidateKey"]))
+    output = {
+        "schemaVersion": SCHEMA, "status": "discovered_unapproved_metadata_only",
+        "checkedAtUtc": checked,
+        "uniqueFederalCandidateIdentitiesSeen": len(seen),
+        "explicitPublicMetadataUnapproved": reviewed,
+        "accessUnclearNeedsReview": restricted,
+        "identitiesWithMetadataRevisions": revisions,
+        "countsByFederalOrganizationSlug": dict(sorted(organizations.items())),
+        "priorityQueueIsTruncated": len(choices) > 250,
+        "priorityQueue": [
+            {"candidateKey": x["candidateKey"], "title": x["title"],
+             "federalOrganization": x["federalOrganization"],
+             "publisherSeedId": x["seedPublisherIdExactMatch"],
+             "officialDistributionCandidates": x["governmentHttpsDistributionCandidates"],
+             "sourceIngestionApproved": False}
+            for x in choices[:250]],
+        "officialSourceOriginalsMirroredByDiscovery": 0,
+        "federalCatalogEnumerationComplete": False,
+    }
+    atomic_json(root / "queue.json", output)
+    return output
 
 
 def read_seeds(repository_root):
@@ -400,7 +497,7 @@ def run(root, *, api_key, repository_root, page_budget=30, recent_pages=3,
         for seq in range(1, recent_pages + 1):
             payload, raw_sha, raw_length = get(search_url(recent_cursor), api_key)
             next_cursor = payload.get("after")
-            stats = persist_page(root, mode="recent", epoch=int(checked[:10].replace("-", "")),
+            stats = persist_page(root, mode="recent", epoch=int(checked[:19].replace("-", "").replace("T", "").replace(":", "")),
                                  sequence=seq, source=SEARCH, page=payload,
                                  raw_sha=raw_sha, raw_length=raw_length,
                                  cursor=recent_cursor, next_cursor=next_cursor,
@@ -446,6 +543,14 @@ def run(root, *, api_key, repository_root, page_budget=30, recent_pages=3,
         status["lastErrorCategory"] = summarize_error(exc)
     status["exhausted"] = state["exhausted"]
     status["scanEdition"] = state["edition"]
+    # A catalog cursor exhausted in one scan does not establish a permanent
+    # federal-government source inventory or a verified publication lag.
+    try:
+        queue = publish_queue(root, checked)
+        status["uniqueCandidateIdentitiesKnown"] = queue["uniqueFederalCandidateIdentitiesSeen"]
+    except DiscoveryError as exc:
+        status["status"] = "degraded_source_or_validation"
+        status["lastErrorCategory"] = summarize_error(exc)
     atomic_json(root / "status.json", status)
     return status
 
@@ -479,6 +584,14 @@ def verify(root):
         page_count += 1
     ensure(not state["pagesCommitted"] or page_count >= state["pagesCommitted"],
            "missing committed catalog page receipts")
+    q = load_json(root / "queue.json")
+    if q is not None:
+        ensure(q.get("schemaVersion") == SCHEMA and
+               q.get("officialSourceOriginalsMirroredByDiscovery") == 0 and
+               q.get("federalCatalogEnumerationComplete") is False and
+               isinstance(q.get("priorityQueue"), list) and
+               all(x.get("sourceIngestionApproved") is False for x in q["priorityQueue"]),
+               "discovered catalog metadata was misreported as approved or complete")
     return {"verified": True, "pageReceipts": page_count,
             "sourceOriginalBytesQualified": False, "status": status["status"]}
 
