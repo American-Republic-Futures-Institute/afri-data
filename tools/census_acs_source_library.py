@@ -29,7 +29,8 @@ CATALOG=Path("catalog/source-library/census-acs5.json")
 BASE="https://www2.census.gov/programs-surveys/acs/summary_file/"
 PAGE="https://www.census.gov/programs-surveys/acs/data/summary-file.html"
 TABLES={"b19013","b25077","b25064","b01002",
-        "b01003","b19083","b25002","b25003"}
+        "b01003","b19083","b25002","b25003",
+        "b25001","b25008","b25010","b25035"}
 VINTAGES={2022,2023,2024}
 MISSING={"", "N", "null", "-666666666", "-888888888", "-999999999", "-555555555"}
 MAX_SOURCE_BYTES=30_000_000
@@ -60,7 +61,7 @@ def official_table_available(url, *, opener=None):
     expected=re.fullmatch(
         r"https://www2\.census\.gov/programs-surveys/acs/summary_file/(20\d{2})/"
         r"table-based-SF/data/5YRData/acsdt5y(20\d{2})-"
-        r"(b19013|b25077|b25064|b01002|b01003|b19083|b25002|b25003)\.dat",
+        r"(b19013|b25077|b25064|b01002|b01003|b19083|b25002|b25003|b25001|b25008|b25010|b25035)\.dat",
         url)
     if (not expected or expected[1] != expected[2] or
             not supported_year(int(expected[1]))):
@@ -125,7 +126,10 @@ def registry_sources(root=ROOT, *, discover=False, available=official_table_avai
             table.get("preferredField")!=key.upper()+"_E001" or
             table.get("unit") not in ("years of age","USD (inflation-adjusted vintage)",
                                        "persons (ACS estimate)","unitless Gini index",
-                                       "housing units (ACS estimate)","occupied housing units")):
+                                       "housing units (ACS estimate)","occupied housing units",
+                                       "persons in occupied housing units",
+                                       "persons per occupied housing unit",
+                                       "year built (median)")):
             raise ValueError("Malformed ACS table identity or units")
         for year in years:
             label=f"{year-4}-{year}"
