@@ -28,7 +28,12 @@ SOURCE_PAGE="https://www.bls.gov/cew/additional-resources/open-data/csv-data-sli
 INDUSTRIES={"all-industry":"10","manufacturing":"31_33",
             "health-care":"62","professional-services":"54",
             "construction":"23","wholesale-trade":"42","information":"51",
-            "finance-insurance":"52","accommodation-food":"72","other-services":"81"}
+            "finance-insurance":"52","accommodation-food":"72","other-services":"81",
+            "agriculture-forestry":"11","mining":"21","utilities":"22",
+            "retail-trade":"44_45","transport-warehousing":"48_49",
+            "real-estate":"53","company-management":"55",
+            "administrative-services":"56","education":"61",
+            "arts-recreation":"71","public-administration":"92"}
 QUARTER_DATE={1:"03-31",2:"06-30",3:"09-30",4:"12-31"}
 MAX_BYTES=30_000_000
 FIELDS={"area_fips","year","qtr","industry_code","own_code"}
@@ -51,7 +56,7 @@ def validate_registry(catalog):
             catalog.get("refreshCadence")!="weekly"):
         raise ValueError("Unapproved BLS registry")
     industries=catalog.get("industries")
-    if (not isinstance(industries,list) or len(industries)!=10 or
+    if (not isinstance(industries,list) or len(industries)!=21 or
             {entry["id"]:entry["code"] for entry in industries}!=INDUSTRIES):
         raise ValueError("Unrecognized BLS QCEW industry list")
     for source in industries:
@@ -84,7 +89,7 @@ def registry_sources(root=ROOT):
 
 
 def official_csv(url, *, year, latest_year, opener=None):
-    if not re.fullmatch(r"https://data\.bls\.gov/cew/data/api/\d{4}/[1-4]/industry/(?:10|23|31_33|42|51|52|54|62|72|81)\.csv",url):
+    if not re.fullmatch(r"https://data\.bls\.gov/cew/data/api/\d{4}/[1-4]/industry/(?:10|11|21|22|23|31_33|42|44_45|48_49|51|52|53|54|55|56|61|62|71|72|81|92)\.csv",url):
         raise BLSUnavailable("Unapproved BLS QCEW source URL")
     opener=opener or build_opener(NoRedirects())
     request=Request(url,headers={"User-Agent":"ARFI-Source-Library/1.0 (+https://www.arfinstitute.org/)",
