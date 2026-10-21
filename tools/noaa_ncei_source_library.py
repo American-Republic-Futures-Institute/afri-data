@@ -19,6 +19,8 @@ ROOT = Path(__file__).resolve().parents[1]
 CATALOG = Path("catalog/source-library/noaa-ncei.json")
 BASE = "https://www.ncei.noaa.gov/monitoring-content/data/us/climdiv/monthly/current/"
 README_URL = BASE + "divisional-readme.txt"
+ALTERNATE_BASE = "https://www.ncei.noaa.gov/pub/data/cirs/climdiv/"
+OFFICIAL_BASES = (BASE, ALTERNATE_BASE)
 KINDS = {"pcpndv": ("Monthly precipitation", "publisher-reported inches"),
          "tmpcdv": ("Monthly average temperature", "publisher-reported degrees F")}
 FILENAME = re.compile(r"^climdiv-(pcpndv|tmpcdv)-v1\.0\.0-(20\d{6})$")
@@ -65,13 +67,14 @@ def original_path(digest, *, readme=False):
             + digest + (".txt" if readme else ".dat"))
 
 
-def source_url(kind, filename):
+def source_url(kind, filename, *, base=BASE):
     require(kind in KINDS and isinstance(filename, str) and
             FILENAME.fullmatch(filename) and
             FILENAME.fullmatch(filename).group(1) == kind,
             "NOAA original is not an allowed nClimDiv edition")
     datetime.strptime(filename[-8:], "%Y%m%d")  # Reject calendar-invalid dates.
-    return BASE + filename
+    require(base in OFFICIAL_BASES, "NOAA data origin outside official allowlist")
+    return base + filename
 
 
 def validate_registry(registry):
@@ -139,8 +142,9 @@ def discover_filenames(payload):
 
 def _read_exact(url, ceiling, *, opener=None, mime=None):
     require(type(url) is str and
-            (url == BASE or url == README_URL or
-             (url.startswith(BASE) and FILENAME.fullmatch(url[len(BASE):]))) and
+            any(url == base or url == base+"divisional-readme.txt" or
+                (url.startswith(base) and FILENAME.fullmatch(url[len(base):]))
+                for base in OFFICIAL_BASES) and
             type(ceiling) is int and 0 < ceiling <= MAX_SOURCE_BYTES,
             "NOAA source URL not allowlisted")
     op = opener or build_opener(NoRedirects())
@@ -182,13 +186,26 @@ def registry_sources(root=ROOT, *, discover=False, opener=None, listing=None):
     config = validate_registry(json.loads((Path(root) / CATALOG).read_text("utf-8")))
     baseline = config["baselineEdition"]
     filenames = {k: f"climdiv-{k}-v1.0.0-{baseline}" for k in KINDS}
+    chosen_base = BASE
     if discover:
         html = listing
         if html is None:
-            html, _ = _read_exact(BASE, MAX_DIRECTORY_BYTES, opener=opener, mime="html")
-        filenames = discover_filenames(html)
+            errors = []
+            for candidate in OFFICIAL_BASES:
+                try:
+                    html, _ = _read_exact(candidate, MAX_DIRECTORY_BYTES, opener=opener, mime="html")
+                    filenames = discover_filenames(html)
+                    chosen_base = candidate
+                    break
+                except NOAAUnavailable as exc:
+                    errors.append(str(exc)[:160])
+            else:
+                raise NOAAUnavailable("Both exact official NOAA directories unavailable: "+
+                                      "; ".join(errors))
+        else:
+            filenames = discover_filenames(html)
         require(all(name[-8:] >= baseline for name in filenames.values()),
-                "Publisher directory rolled back to an older unapproved edition")
+                "Publisher directory rolled back to older unapproved edition")
     result = []
     for var in config["variables"]:
         kind = var["code"]
@@ -198,9 +215,9 @@ def registry_sources(root=ROOT, *, discover=False, opener=None, listing=None):
             "title": var["title"] + " by NOAA climate division",
             "description": var["description"],
             "domain": "climate",
-            "endpoint": source_url(kind, filenames[kind]),
+            "endpoint": source_url(kind, filenames[kind], base=chosen_base),
             "sourcePage": BASE,
-            "readmeUrl": README_URL,
+            "readmeUrl": chosen_base + "divisional-readme.txt",
             "sourceKind": kind,
             "dateField": "record_date",
             "dateBasis": "noaa-monthly-values-in-annual-source-record-not-release",
@@ -258,22 +275,32 @@ def parse_original(raw, *, kind, min_rows=1):
 def noaa_records(spec, *, fetch=None):
     kind = spec.get("sourceKind")
     url = spec.get("endpoint")
-    require(kind in KINDS and url == source_url(kind, url[len(BASE):]),
+    require(kind in KINDS and type(url) is str and
+            any(url.startswith(base) and
+                url == source_url(kind, url[len(base):], base=base)
+                for base in OFFICIAL_BASES),
             "NOAA source descriptor points outside its official edition")
     get = fetch or _read_exact
     raw, last_modified = get(url, MAX_SOURCE_BYTES, mime="data")
-    readme, _ = get(README_URL, MAX_README_BYTES)
+    readme_url = spec.get("readmeUrl")
+    base = next(base for base in OFFICIAL_BASES if url.startswith(base))
+    require(readme_url == base + "divisional-readme.txt",
+            "NOAA readme must be the matching government publication directory")
+    readme, _ = get(readme_url, MAX_README_BYTES)
     parse_readme(readme)
     rows = parse_original(raw, kind=kind, min_rows=1000)
     require(max(int(r["year"]) for r in rows) >= 2024,
             "NOAA climate division history appears truncated before 2024")
-    return OriginalNOAARows(rows, raw, readme, url[len(BASE):], last_modified)
+    return OriginalNOAARows(rows, raw, readme, url[len(base):], last_modified)
 
 
 def verify_original_file(root, entry):
     kind = entry.get("sourceKind")
     require(entry.get("provider") == "noaa-ncei" and
-            entry.get("endpoint") == source_url(kind, entry.get("sourceFilename")) and
+            type(entry.get("endpoint")) is str and
+            any(entry["endpoint"] == source_url(kind, entry.get("sourceFilename"), base=base) and
+                entry.get("originalReadmeUrl") == base + "divisional-readme.txt"
+                for base in OFFICIAL_BASES) and
             entry.get("originalTxtPath") == original_path(entry.get("originalTxtSha256")) and
             entry.get("originalReadmePath") == original_path(
                 entry.get("originalReadmeSha256"), readme=True) and
