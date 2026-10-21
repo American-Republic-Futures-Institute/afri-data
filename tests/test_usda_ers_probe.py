@@ -61,10 +61,9 @@ class USDAERSProbeTests(unittest.TestCase):
     def test_broken_archive_fails(self):
         with self.assertRaises(USDAProbeError):
             inspect_original(b"PK\x03\x04"+b"x"*300)
-        bad = bytearray(fixture())
-        bad[-1] ^= 0x3f
+        truncated = fixture()[:-20]  # Delete central directory terminator.
         with self.assertRaises(USDAProbeError):
-            inspect_original(bytes(bad))
+            inspect_original(truncated)
 
     def test_redirect_can_only_target_same_publisher_release(self):
         from urllib.request import Request
