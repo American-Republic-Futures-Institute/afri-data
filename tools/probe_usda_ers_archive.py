@@ -23,8 +23,9 @@ PUBLISHER_PAGE = ("https://www.ers.usda.gov/data-products/"
 SOURCE_URL = "https://www.ers.usda.gov/media/29517/september-3-2026-release.zip"
 HOSTS = frozenset(("www.ers.usda.gov", "ers.usda.gov"))
 MAX_ARCHIVE = 80_000_000
-MAX_EXTRACTED = 200_000_000
-MAX_MEMBER = 35_000_000
+# These ceilings bound metadata, not decompression: only MAX_PREVIEW bytes are read.
+MAX_EXTRACTED = 5_000_000_000
+MAX_MEMBER = 2_000_000_000
 MAX_MEMBERS = 300
 MAX_PREVIEW = 32_768
 FORMAT = "usda-ers-source-archive-format-probe-v1"
@@ -115,7 +116,9 @@ def inspect_original(raw, *, resolved=SOURCE_URL):
                         (member.compress_type in (zipfile.ZIP_STORED,zipfile.ZIP_DEFLATED)),
                         "Unsafe USDA archive entry")
                 require(0 <= member.file_size <= MAX_MEMBER and
-                        0 <= member.compress_size <= MAX_ARCHIVE,
+                        0 <= member.compress_size <= MAX_ARCHIVE and
+                        (member.file_size == 0 or
+                         (member.file_size / max(1,member.compress_size)) <= 2000),
                         "USDA archive member exceeds extraction budget")
                 total_extracted += member.file_size
                 require(total_extracted <= MAX_EXTRACTED,
@@ -143,7 +146,8 @@ def inspect_original(raw, *, resolved=SOURCE_URL):
                                 "Original USDA CSV header drift or duplicate columns")
                         item.update({"header": header, "textEncodingPreview": encoding})
                 members.append(item)
-            require(archive.testzip() is None, "USDA archive file CRC verification failed")
+            # CRC verification is deferred to the future bounded-streaming ingestion.
+            # testzip() would decompress every member and can be multi-gigabyte.
             csv_members = [x for x in members if x["filename"].lower().endswith(".csv")]
             require(csv_members, "USDA original ZIP includes no CSV members")
             return {
@@ -160,6 +164,8 @@ def inspect_original(raw, *, resolved=SOURCE_URL):
                 "csvMembers": csv_members,
                 "noDataPublished": True,
                 "publisherValuesPreserved": True,
+                "memberCrcVerified": False,
+                "memberCrcCheckDeferredUntilStreamingIngestion": True,
                 "publicationClaimed": False,
                 "probeAt": datetime.now(timezone.utc).isoformat(),
             }
