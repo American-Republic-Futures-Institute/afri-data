@@ -114,6 +114,23 @@ def validate_catalog(catalog):
                         item.get("preferredField") == "mag" and
                         item.get("maxRows") == MAX_EVENTS_PER_YEAR,
                         "Unapproved USGS ComCat source/period identity")
+        elif item.get("provider") == "noaa-ncei":
+            from tools.noaa_ncei_source_library import (
+                BASE as NOAA_BASE, README_URL, KINDS, MAX_ROWS, source_url)
+            kind, endpoint = item.get("sourceKind"), item.get("endpoint")
+            assert_that(kind in KINDS and
+                        key == f"noaa-ncei-climdiv-{kind}" and
+                        item.get("readmeUrl") == README_URL and
+                        item.get("sourcePage") == NOAA_BASE and
+                        type(endpoint) is str and endpoint.startswith(NOAA_BASE) and
+                        endpoint == source_url(kind, endpoint[len(NOAA_BASE):]) and
+                        item.get("dateField") == "record_date" and
+                        item.get("dateBasis") ==
+                            "noaa-monthly-values-in-annual-source-record-not-release" and
+                        item.get("unit") == KINDS[kind][1] and
+                        item.get("preferredField") == "month_01" and
+                        item.get("maxRows") == MAX_ROWS,
+                        "Unapproved NOAA source edition or geography contract")
         elif item.get("provider") == "epa-airdata":
             from tools.epa_airdata_source_library import KINDS, SOURCE_PAGE as EPA_PAGE, source_url
             scope, year = item.get("sourceScope"), item.get("releaseYear")
@@ -216,6 +233,9 @@ def pages(spec, opener=None):
     if spec.get("provider") == "usgs-comcat":
         from tools.usgs_comcat_source_library import usgs_records
         return usgs_records(spec)
+    if spec.get("provider") == "noaa-ncei":
+        from tools.noaa_ncei_source_library import noaa_records
+        return noaa_records(spec)
     """Treasury pagination never silently truncates."""
     endpoint = spec["endpoint"]
     result = []
@@ -331,13 +351,15 @@ def verify(root=ROOT):
         total = 0
         epa_rows = [] if entry.get("provider") == "epa-airdata" else None
         usgs_rows = [] if entry.get("provider") == "usgs-comcat" else None
+        noaa_rows = [] if entry.get("provider") == "noaa-ncei" else None
         keys = set()
         annual_years = set()
         monthly_years = set()
         for part in entry["partitions"]:
             year = part["year"]
             period = part.get("period")
-            assert_that(type(year) is int and 1900 <= year <= 2150 and
+            assert_that(type(year) is int and
+                        (1895 if entry.get("provider") == "noaa-ncei" else 1900) <= year <= 2150 and
                         (period is None or (type(period) is str and
                          PERIOD.fullmatch(period) and period.startswith(str(year) + "-"))),
                         "Unrecognized source date partition")
@@ -373,6 +395,8 @@ def verify(root=ROOT):
                 epa_rows.extend(records)
             if usgs_rows is not None:
                 usgs_rows.extend(records)
+            if noaa_rows is not None:
+                noaa_rows.extend(records)
         if epa_rows is not None:
             from tools.epa_airdata_source_library import verify_original_file
             authoritative_rows = verify_original_file(root, entry)
@@ -385,6 +409,12 @@ def verify(root=ROOT):
             assert_that(sorted(canonical(x) for x in usgs_rows) ==
                         sorted(canonical(x) for x in original_rows),
                         "USGS public projection differs from retained original CSV")
+        if noaa_rows is not None:
+            from tools.noaa_ncei_source_library import verify_original_file
+            archived = verify_original_file(root, entry)
+            assert_that(sorted(canonical(x) for x in noaa_rows) ==
+                        sorted(canonical(x) for x in archived),
+                        "NOAA projection differs from retained original nClimDiv text")
         assert_that(not (annual_years & monthly_years),
                     "Cannot mix annual and monthly partitions of one source year")
         assert_that(total == entry["rowCount"], "Source dataset row-count mismatch")
@@ -409,6 +439,8 @@ def refresh(root=ROOT, catalog=None, loader=pages, now=None):
         from tools.bea_regional_source_library import registry_sources as bea_sources
         from tools.usgs_comcat_source_library import (
             registry_sources as usgs_sources, USGSUnavailable)
+        from tools.noaa_ncei_source_library import (
+            registry_sources as noaa_sources, NOAAUnavailable)
         from tools.epa_airdata_source_library import (
             registry_sources as epa_sources, EPAUnavailable)
         try:
@@ -428,9 +460,14 @@ def refresh(root=ROOT, catalog=None, loader=pages, now=None):
         except USGSUnavailable as exc:
             discovery_warnings["usgs-comcat"] = str(exc)[:200]
             usgs = usgs_sources(root)
+        try:
+            noaa = noaa_sources(root, discover=True)
+        except NOAAUnavailable as exc:
+            discovery_warnings["noaa-ncei"] = str(exc)[:200]
+            noaa = noaa_sources(root)
         catalog = {**treasury,
                    "datasets": treasury["datasets"] + cdc_sources(root) +
-                   bls_sources(root) + census + epa + bea_sources(root) + usgs}
+                   bls_sources(root) + census + epa + bea_sources(root) + usgs + noaa}
     validate_catalog(catalog)
     checked_at = now or datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
     directory = root / OUTPUT
@@ -447,6 +484,7 @@ def refresh(root=ROOT, catalog=None, loader=pages, now=None):
             assert_that(isinstance(records, list) and records, "Empty publisher result")
             epa_extra = {}
             usgs_extra = {}
+            noaa_extra = {}
             if spec.get("provider") == "epa-airdata":
                 from tools.epa_airdata_source_library import (
                     OriginalEPARows, parse_original, original_path, MAX_ZIP_BYTES)
@@ -488,6 +526,36 @@ def refresh(root=ROOT, catalog=None, loader=pages, now=None):
                     "originalCsvSha256": original_sha,
                     "originalCsvBytes": len(records.original_csv),
                 }
+            if spec.get("provider") == "noaa-ncei":
+                from tools.noaa_ncei_source_library import (
+                    OriginalNOAARows, parse_original, parse_readme, original_path,
+                    MAX_SOURCE_BYTES, MAX_README_BYTES)
+                assert_that(isinstance(records, OriginalNOAARows) and
+                            type(records.original_text) is bytes and
+                            100 < len(records.original_text) <= MAX_SOURCE_BYTES and
+                            type(records.original_readme) is bytes and
+                            100 < len(records.original_readme) <= MAX_README_BYTES,
+                            "Exact NOAA publisher text/readme bytes required")
+                parse_readme(records.original_readme)
+                assert_that(sorted(canonical(x) for x in records) ==
+                            sorted(canonical(x) for x in parse_original(
+                                records.original_text, kind=spec["sourceKind"], min_rows=1000)),
+                            "NOAA projection differs from source text")
+                data_sha, readme_sha = digest(records.original_text), digest(records.original_readme)
+                noaa_extra = {
+                    "provider": "noaa-ncei",
+                    "sourceKind": spec["sourceKind"],
+                    "sourceFilename": records.filename,
+                    "sourceEditionDateCode": records.filename[-8:],
+                    "publisherHttpLastModified": records.source_last_modified,
+                    "publisherPublishedAt": None,
+                    "originalTxtPath": original_path(data_sha),
+                    "originalTxtSha256": data_sha,
+                    "originalTxtBytes": len(records.original_text),
+                    "originalReadmePath": original_path(readme_sha, readme=True),
+                    "originalReadmeSha256": readme_sha,
+                    "originalReadmeBytes": len(records.original_readme),
+                }
             records.sort(key=lambda r: (r[spec["dateField"]], canonical(r)))
             partitions, blobs = partition(spec, records)
             if spec["id"] in previous:
@@ -498,6 +566,9 @@ def refresh(root=ROOT, catalog=None, loader=pages, now=None):
                 blobs[epa_extra["originalZipPath"]] = records.original_zip
             if usgs_extra:
                 blobs[usgs_extra["originalCsvPath"]] = records.original_csv
+            if noaa_extra:
+                blobs[noaa_extra["originalTxtPath"]] = records.original_text
+                blobs[noaa_extra["originalReadmePath"]] = records.original_readme
             for path, payload in blobs.items():
                 target = root / path
                 target.parent.mkdir(parents=True, exist_ok=True)
@@ -508,7 +579,7 @@ def refresh(root=ROOT, catalog=None, loader=pages, now=None):
                 "description": spec["description"], "sourcePage": spec["sourcePage"],
                 "publisher": spec.get("publisher", catalog["publisher"]),
                 "endpoint": spec["endpoint"] if spec.get("provider") in
-                    ("cdc-places", "bls-qcew", "census-acs5", "bea-regional", "epa-airdata", "usgs-comcat")
+                    ("cdc-places", "bls-qcew", "census-acs5", "bea-regional", "epa-airdata", "usgs-comcat", "noaa-ncei")
                     else BASE + spec["endpoint"],
                 "dateBasis": spec.get("dateBasis", "original-publisher-record-date"),
                 **({"surveyReferencePeriod": spec["surveyReferencePeriod"]}
@@ -520,6 +591,7 @@ def refresh(root=ROOT, catalog=None, loader=pages, now=None):
                 "partitions": partitions, "sourceClass": "source-native-unreviewed",
                 **epa_extra,
                 **usgs_extra,
+                **noaa_extra,
             }
         except (ValueError, RuntimeError, KeyError, TypeError, OSError) as exc:
             failures[spec["id"]] = str(exc)[:250]
@@ -538,6 +610,8 @@ def refresh(root=ROOT, catalog=None, loader=pages, now=None):
                 else "Official U.S. Treasury, CDC PLACES, BLS QCEW, Census ACS and EPA AirData originals" if any(d.get("provider") == "epa-airdata" for d in catalog["datasets"]) else ("Official U.S. Treasury, CDC PLACES, BLS QCEW and Census ACS original sources" if any(d.get("provider") == "census-acs5" for d in catalog["datasets"]) else ("U.S. Treasury Fiscal Data API, CDC PLACES and BLS QCEW original sources" if any(d.get("provider") == "bls-qcew" for d in catalog["datasets"]) else ("U.S. Treasury Fiscal Data API and CDC PLACES official county sources" if any(d.get("provider") == "cdc-places" for d in catalog["datasets"]) else "U.S. Treasury Fiscal Data API")))),
              "refreshCadence": "weekly",
              "datasets": [fresh[id] for id in sorted(fresh)]}
+    if any(d.get("provider") == "noaa-ncei" for d in catalog["datasets"]):
+        index["sourceSystem"] += " and NOAA NCEI nClimDiv monthly original text"
     directory.mkdir(parents=True, exist_ok=True)
     contents = canonical(index)
     if not old_file.is_file() or old_file.read_bytes() != contents:
