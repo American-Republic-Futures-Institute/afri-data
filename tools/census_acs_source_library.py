@@ -40,7 +40,6 @@ MAX_VINTAGE=2099
 # publisher schemas rather than dropping original estimate/MOE columns.
 MAX_WEBSITE_FIELDS=160
 OTHER_MOE_SENTINELS={"-222222222","-333333333","**","***","*****"}
-SOURCE_NUMBER_SENTINELS=MISSING|OTHER_MOE_SENTINELS
 ANNOTATION_PATTERN=re.compile(r"^(?:B[0-9]{5}_(?:EA|MA)[0-9]{3}|B[0-9]{5}_[EM][0-9]{3}A)$")
 
 
@@ -241,7 +240,11 @@ def parse_table(original, *, table, year):
                     raise ValueError("Invalid or oversized ACS original source cell")
                 if column in source_fields:
                     candidate=value.strip()
-                    if candidate not in SOURCE_NUMBER_SENTINELS:
+                    # The extra ACS annotation codes are legal in MOE
+                    # columns only; an E### estimate containing ***** is
+                    # malformed and cannot be silently marked available.
+                    allowed=MISSING|(OTHER_MOE_SENTINELS if "_M" in column else set())
+                    if candidate not in allowed:
                         try:
                             number=Decimal(candidate)
                         except (ValueError,InvalidOperation):
