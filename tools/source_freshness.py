@@ -66,6 +66,18 @@ def source_fingerprint(entry):
         payload.append([part["path"], part["sha256"], part["rows"], part["bytes"]])
     require(type(entry.get("rowCount")) is int and rows == entry["rowCount"],
             "source row count mismatch")
+    if entry.get("provider") == "epa-airdata":
+        # Publisher ZIP bytes are separately materialized in Git and must
+        # affect the source revision identity even if a projection is unchanged.
+        orig = entry.get("originalZipSha256")
+        length = entry.get("originalZipBytes")
+        require(type(orig) is str and SHA256.fullmatch(orig) and
+                type(length) is int and 0 < length <= 1_000_000 and
+                entry.get("originalZipPath") ==
+                "publication/source-library/originals/epa-airdata/sha256/" +
+                orig + ".zip",
+                "EPA original archive missing from source fingerprint")
+        payload.append(["original-zip-sha256", orig, 0, length])
     return sha256((json.dumps(sorted(payload), separators=(",", ":"), ensure_ascii=True)
                    + "\n").encode("utf-8")).hexdigest()
 
@@ -158,7 +170,7 @@ def report_for(catalog, index, health, prior_index=None, prior_report=None):
         past = previous_rows.get(key, {})
         error = failures.get(key)
         provider = spec.get("provider") or "treasury-fiscaldata"
-        require(provider in ("treasury-fiscaldata", "cdc-places", "bls-qcew", "census-acs5", "bea-regional"),
+        require(provider in ("treasury-fiscaldata", "cdc-places", "bls-qcew", "census-acs5", "epa-airdata", "bea-regional"),
                 "unknown registered provider for source coverage")
         fingerprint = source_fingerprint(current_row) if current_row else None
         old_fp = source_fingerprint(old_row) if old_row else None

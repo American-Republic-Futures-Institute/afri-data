@@ -1,0 +1,66 @@
+name: Probe actual official EPA annual AQI ZIP editions
+on:
+  pull_request:
+    paths:
+      - 'tools/epa_airdata_source_library.py'
+      - 'catalog/source-library/epa-airdata.json'
+      - '.github/workflows/probe-epa-airdata.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  official-epa-source-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Retrieve independent original EPA ZIP samples and validate source rows
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p epa-probe
+          python - <<'PY'
+          from hashlib import sha256
+          from pathlib import Path
+          import json
+          from datetime import datetime,timezone
+          from tools.epa_airdata_source_library import registry_sources,epa_records
+          repo=Path('.')
+          out=Path('epa-probe')
+          all_sources=registry_sources(now=datetime(2026,10,21,tzinfo=timezone.utc))
+          expected=['epa-airdata-county-1990','epa-airdata-county-2025',
+                    'epa-airdata-cbsa-2026']
+          results=[]
+          for name in expected:
+              spec=next(x for x in all_sources if x['id']==name)
+              rows=epa_records(spec)
+              raw=rows.original_zip
+              original_sha=sha256(raw).hexdigest()
+              path=f'{name}-{original_sha}.zip'
+              (out/path).write_bytes(raw)
+              result={'datasetId':name,'originalUrl':spec['endpoint'],
+                      'originalSha256':original_sha,
+                      'originalBytes':len(raw),'publisherRows':len(rows),
+                      'sourceYear':spec['releaseYear'],
+                      'scope':spec['sourceScope'],
+                      'publisherReleaseDateVerified':False,
+                      'statisticalAnalysisApproved':False}
+              assert 120<=len(rows)<=2500
+              print(json.dumps(result,sort_keys=True))
+              results.append(result)
+          (out/'source-evidence.json').write_text(json.dumps(
+              {'status':'source_original_samples_acquired',
+               'candidateOnly':False,'fullBackfillComplete':False,
+               'publisherReleaseToGitLagDays':None,'results':results},indent=2)+'\n')
+          PY
+      - name: Retain exact original EPA ZIP byte samples and SHA-256 receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: epa-airdata-exact-publisher-samples
+          path: epa-probe/
+          if-no-files-found: warn
+          retention-days: 30

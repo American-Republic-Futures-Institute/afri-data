@@ -1,0 +1,94 @@
+name: Discover federal Data.gov v4 dataset candidates
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 12 * * *'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/discover-datagov.yml'
+      - 'tools/datagov_discovery.py'
+      - 'tests/test_datagov_discovery.py'
+permissions:
+  contents: write
+concurrency:
+  group: federal-datagov-discovery
+  cancel-in-progress: false
+jobs:
+  federal-dataset-metadata:
+    if: github.repository == 'American-Republic-Futures-Institute/afri-data'
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify strict Data.gov source metadata contract and cursor defenses
+        run: python -m unittest discover -s tests -p 'test_datagov_discovery.py' -v
+      - name: Reconcile data candidate branch with the latest validated main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          if git ls-remote --exit-code --heads origin data/discovery-candidates >/dev/null 2>&1; then
+            git fetch origin refs/heads/data/discovery-candidates
+            git switch -C data/discovery-candidates FETCH_HEAD
+            git merge --no-edit origin/main
+          else
+            git switch -c data/discovery-candidates
+          fi
+      - name: Acquire bounded current and historical federal catalog metadata
+        shell: bash
+        env:
+          DATA_GOV_API_KEY: ${{ secrets.DATA_GOV_API_KEY }}
+        run: |
+          set +e
+          python -m tools.datagov_discovery discover \
+            --root publication/discovery/datagov-v4 --page-budget 40 --recent-pages 4
+          result=$?
+          echo "DATA_GOV_DISCOVERY_EXIT=$result" >> "$GITHUB_ENV"
+          exit 0
+      - name: Validate persisted source-candidate metadata without an API key
+        run: python -m tools.datagov_discovery verify --root publication/discovery/datagov-v4
+      - name: Persist source metadata, precise cursor and blocked reason to canonical Git branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add -- publication/discovery/datagov-v4/
+          if ! git diff --cached --quiet; then
+            git commit -m "data: append federal Data.gov metadata observations and discovery checkpoint"
+          fi
+          git push origin HEAD:refs/heads/data/discovery-candidates
+      - name: Report candidate coverage honestly (never mislabel discovery as ingested original data)
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          root=Path("publication/discovery/datagov-v4")
+          status=json.loads((root/"status.json").read_text())
+          print("Status:", status["status"])
+          print("Checked:", status["checkedAtUtc"])
+          print("API pages checked:", status["pagesFetched"])
+          print("Projected candidates this run:", status["candidatesAcceptedThisRun"])
+          print("Rejected/restricted/non-federal:", status["rejected"])
+          print("Backfill complete:", status["exhausted"])
+          print("Actual original publisher datasets acquired by discovery:",
+                status["publisherOriginalDatasetFeedsAcquired"])
+          print("Publisher release-to-Git latency:", status["publisherReleaseToGitLatencySlo"])
+          if status["status"].startswith("blocked"):
+              print("::warning title=Data.gov private API key required::Add the protected DATA_GOV_API_KEY repository secret; public DEMO_KEY is unsuitable for unattended jobs.")
+          elif status["status"]=="degraded_source_or_validation":
+              print("::warning title=Catalog source or integrity issue::"+
+                    str(status["lastErrorCategory"])[:160])
+          PY
+          if [ "${DATA_GOV_DISCOVERY_EXIT:-99}" -ne 0 ]; then
+            echo "::error::Data.gov federal catalog discovery incomplete or blocked. Evidence/status committed to data/discovery-candidates."
+            exit 1
+          fi
