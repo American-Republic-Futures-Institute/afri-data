@@ -91,6 +91,47 @@ class SourceLibraryTests(unittest.TestCase):
             self.assertEqual(archive["sourceClass"],"official-raw-values")
             self.assertEqual(verify(Path(tmp))["records"],2)
 
+    def test_data22_wide_original_field_cells_are_not_silently_truncated(self):
+        from tools.source_library import (
+            MAX_SOURCE_FIELDS, MAX_SOURCE_ROW_BYTES, MAX_SOURCE_CELL_BYTES,
+            validate_original_row, partition)
+        self.assertEqual(MAX_SOURCE_FIELDS, 512)
+        self.assertEqual(MAX_SOURCE_CELL_BYTES, 16384)
+        self.assertEqual(MAX_SOURCE_ROW_BYTES, 131072)
+        for count in (161, 256, 512):
+            with self.subTest(original_fields=count):
+                record={"record_date": "2025-12-31"}
+                record.update({f"source_field_{i:03d}": f"unchanged-value-{i:03d}"
+                               for i in range(count-1)})
+                self.assertIs(validate_original_row(record), record)
+                self.assertEqual(len(record), count)
+                parts, blobs=partition(spec(), [record])
+                self.assertEqual(parts[0]["rows"], 1)
+                preserved=json.loads(blobs[parts[0]["path"]])["records"][0]
+                self.assertEqual(preserved, record)
+                self.assertEqual(len(preserved), count)
+                self.assertEqual(parts[0]["sha256"],digest(blobs[parts[0]["path"]]))
+        too_wide={"record_date":"2025-12-31"}
+        too_wide.update({f"source_field_{i:03d}":"1" for i in range(512)})
+        with self.assertRaisesRegex(SourceLibraryError, "field ceiling"):
+            validate_original_row(too_wide)
+        self.assertEqual(len(too_wide), 513)
+
+    def test_data22_invalid_wide_original_rows_fail_closed(self):
+        from tools.source_library import validate_original_row
+        valid={"record_date":"2025-12-31","amount":"-19.005"}
+        for changed in (
+            {**valid,"__proto__":"attacker"},
+            {**valid,"constructor":"attacker"},
+            {**valid,"unsafe<script>":"x"},
+            {**valid,"another": ["not", "a source scalar"]},
+            {**valid,"amount":float("nan")},
+            {**valid,"amount":"A"*16385},
+            {**valid,**{f"column_{i:03d}":"B"*500 for i in range(260)}},
+        ):
+            with self.subTest(fields=len(changed)), self.assertRaises(SourceLibraryError):
+                validate_original_row(changed)
+
     def test_large_original_outlay_history_has_explicit_bounded_budget(self):
         from tools.source_library import ROOT, CATALOG, MAX_PAGES, PAGE_SIZE
         import json
