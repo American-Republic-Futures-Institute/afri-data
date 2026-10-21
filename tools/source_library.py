@@ -100,6 +100,20 @@ def validate_catalog(catalog):
                         item.get("dateBasis") == "bea-annual-reference-year-index" and
                         item.get("preferredField") == "value",
                         "Unapproved BEA economic source identity")
+        elif item.get("provider") == "usgs-comcat":
+            from tools.usgs_comcat_source_library import (
+                SOURCE_PAGE as USGS_PAGE, source_url, MAX_EVENTS_PER_YEAR)
+            year = item.get("releaseYear")
+            assert_that(type(year) is int and 2000 <= year <= 2150 and
+                        key == f"usgs-comcat-m6-{year}" and
+                        item.get("endpoint") == source_url(year) and
+                        item.get("sourcePage") == USGS_PAGE and
+                        item.get("dateField") == "record_date" and
+                        item.get("dateBasis") ==
+                            "usgs-earthquake-origin-utc-not-catalog-release" and
+                        item.get("preferredField") == "mag" and
+                        item.get("maxRows") == MAX_EVENTS_PER_YEAR,
+                        "Unapproved USGS ComCat source/period identity")
         elif item.get("provider") == "epa-airdata":
             from tools.epa_airdata_source_library import KINDS, SOURCE_PAGE as EPA_PAGE, source_url
             scope, year = item.get("sourceScope"), item.get("releaseYear")
@@ -199,6 +213,9 @@ def pages(spec, opener=None):
     if spec.get("provider") == "epa-airdata":
         from tools.epa_airdata_source_library import epa_records
         return epa_records(spec)
+    if spec.get("provider") == "usgs-comcat":
+        from tools.usgs_comcat_source_library import usgs_records
+        return usgs_records(spec)
     """Treasury pagination never silently truncates."""
     endpoint = spec["endpoint"]
     result = []
@@ -313,6 +330,7 @@ def verify(root=ROOT):
                     isinstance(entry.get("partitions"), list), "Invalid source metadata")
         total = 0
         epa_rows = [] if entry.get("provider") == "epa-airdata" else None
+        usgs_rows = [] if entry.get("provider") == "usgs-comcat" else None
         keys = set()
         annual_years = set()
         monthly_years = set()
@@ -353,12 +371,20 @@ def verify(root=ROOT):
             total += part["rows"]
             if epa_rows is not None:
                 epa_rows.extend(records)
+            if usgs_rows is not None:
+                usgs_rows.extend(records)
         if epa_rows is not None:
             from tools.epa_airdata_source_library import verify_original_file
             authoritative_rows = verify_original_file(root, entry)
             assert_that(sorted(canonical(x) for x in epa_rows) ==
                         sorted(canonical(x) for x in authoritative_rows),
                         "EPA published JSON source rows differ from retained original ZIP")
+        if usgs_rows is not None:
+            from tools.usgs_comcat_source_library import verify_original_file
+            original_rows = verify_original_file(root, entry)
+            assert_that(sorted(canonical(x) for x in usgs_rows) ==
+                        sorted(canonical(x) for x in original_rows),
+                        "USGS public projection differs from retained original CSV")
         assert_that(not (annual_years & monthly_years),
                     "Cannot mix annual and monthly partitions of one source year")
         assert_that(total == entry["rowCount"], "Source dataset row-count mismatch")
@@ -381,6 +407,8 @@ def refresh(root=ROOT, catalog=None, loader=pages, now=None):
         from tools.bls_qcew_source_library import registry_sources as bls_sources
         from tools.census_acs_source_library import registry_sources as census_sources
         from tools.bea_regional_source_library import registry_sources as bea_sources
+        from tools.usgs_comcat_source_library import (
+            registry_sources as usgs_sources, USGSUnavailable)
         from tools.epa_airdata_source_library import (
             registry_sources as epa_sources, EPAUnavailable)
         try:
@@ -395,9 +423,14 @@ def refresh(root=ROOT, catalog=None, loader=pages, now=None):
         except EPAUnavailable as exc:
             discovery_warnings["epa-airdata"] = str(exc)[:200]
             epa = epa_sources(root)
+        try:
+            usgs = usgs_sources(root, discover=True)
+        except USGSUnavailable as exc:
+            discovery_warnings["usgs-comcat"] = str(exc)[:200]
+            usgs = usgs_sources(root)
         catalog = {**treasury,
                    "datasets": treasury["datasets"] + cdc_sources(root) +
-                   bls_sources(root) + census + epa + bea_sources(root)}
+                   bls_sources(root) + census + epa + bea_sources(root) + usgs}
     validate_catalog(catalog)
     checked_at = now or datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
     directory = root / OUTPUT
@@ -413,6 +446,7 @@ def refresh(root=ROOT, catalog=None, loader=pages, now=None):
             records = loader(spec)
             assert_that(isinstance(records, list) and records, "Empty publisher result")
             epa_extra = {}
+            usgs_extra = {}
             if spec.get("provider") == "epa-airdata":
                 from tools.epa_airdata_source_library import (
                     OriginalEPARows, parse_original, original_path, MAX_ZIP_BYTES)
@@ -435,6 +469,25 @@ def refresh(root=ROOT, catalog=None, loader=pages, now=None):
                     "originalZipSha256": zip_sha,
                     "originalZipBytes": len(records.original_zip),
                 }
+            if spec.get("provider") == "usgs-comcat":
+                from tools.usgs_comcat_source_library import (
+                    OriginalUSGSRows, parse_original, original_path, MAX_CSV_BYTES)
+                assert_that(isinstance(records, OriginalUSGSRows) and
+                            type(records.original_csv) is bytes and
+                            100 < len(records.original_csv) <= MAX_CSV_BYTES,
+                            "Exact original USGS CSV bytes required")
+                assert_that(sorted(canonical(x) for x in records) ==
+                            sorted(canonical(x) for x in parse_original(
+                                records.original_csv, year=spec["releaseYear"])),
+                            "USGS projection differs from original government CSV")
+                original_sha = digest(records.original_csv)
+                usgs_extra = {
+                    "provider": "usgs-comcat",
+                    "releaseYear": spec["releaseYear"],
+                    "originalCsvPath": original_path(original_sha),
+                    "originalCsvSha256": original_sha,
+                    "originalCsvBytes": len(records.original_csv),
+                }
             records.sort(key=lambda r: (r[spec["dateField"]], canonical(r)))
             partitions, blobs = partition(spec, records)
             if spec["id"] in previous:
@@ -443,6 +496,8 @@ def refresh(root=ROOT, catalog=None, loader=pages, now=None):
                             "Publisher history shrank unexpectedly; keeping prior snapshot")
             if epa_extra:
                 blobs[epa_extra["originalZipPath"]] = records.original_zip
+            if usgs_extra:
+                blobs[usgs_extra["originalCsvPath"]] = records.original_csv
             for path, payload in blobs.items():
                 target = root / path
                 target.parent.mkdir(parents=True, exist_ok=True)
@@ -453,7 +508,7 @@ def refresh(root=ROOT, catalog=None, loader=pages, now=None):
                 "description": spec["description"], "sourcePage": spec["sourcePage"],
                 "publisher": spec.get("publisher", catalog["publisher"]),
                 "endpoint": spec["endpoint"] if spec.get("provider") in
-                    ("cdc-places", "bls-qcew", "census-acs5", "bea-regional", "epa-airdata")
+                    ("cdc-places", "bls-qcew", "census-acs5", "bea-regional", "epa-airdata", "usgs-comcat")
                     else BASE + spec["endpoint"],
                 "dateBasis": spec.get("dateBasis", "original-publisher-record-date"),
                 **({"surveyReferencePeriod": spec["surveyReferencePeriod"]}
@@ -464,6 +519,7 @@ def refresh(root=ROOT, catalog=None, loader=pages, now=None):
                 "latestDate": partitions[-1]["lastDate"],
                 "partitions": partitions, "sourceClass": "source-native-unreviewed",
                 **epa_extra,
+                **usgs_extra,
             }
         except (ValueError, RuntimeError, KeyError, TypeError, OSError) as exc:
             failures[spec["id"]] = str(exc)[:250]
@@ -474,7 +530,7 @@ def refresh(root=ROOT, catalog=None, loader=pages, now=None):
                 "All authoritative source acquisitions failed; previous publication preserved")
     index = {"schemaVersion": "1.0.0",
              "sourceClass": "automated-official-source-copy",
-             "sourceSystem": ("Official U.S. Treasury, CDC PLACES, BLS QCEW, Census ACS, EPA AirData and BEA regional originals"
+             "sourceSystem": "Official U.S. Treasury, CDC PLACES, BLS QCEW, Census ACS, EPA AirData, BEA regional and USGS ComCat originals" if any(d.get("provider") == "usgs-comcat" for d in catalog["datasets"]) else ("Official U.S. Treasury, CDC PLACES, BLS QCEW, Census ACS, EPA AirData and BEA regional originals"
                 if any(d.get("provider") == "bea-regional" for d in catalog["datasets"]) and
                    any(d.get("provider") == "epa-airdata" for d in catalog["datasets"])
                 else "Official U.S. Treasury, CDC PLACES, BLS QCEW, Census ACS and BEA regional originals"
