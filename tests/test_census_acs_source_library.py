@@ -181,6 +181,34 @@ class ACSHistoryTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"Invalid official ACS numeric"):
             parse_table(invalid,table="b01003",year=2024)
 
+    def test_irregular_nonstate_rows_do_not_invalidate_complete_original_state_source(self):
+        # Only the requested 52 state geographies form this source product.
+        # Census multi-geography full files can contain rows with missing or
+        # extra columns outside the selected state-level GEO_ID subset.
+        original=fixture("b25002",2022)
+        nonstate_irregular=(
+            b"0500000US01003|1000|20|unexpected-extra-source-column\n"
+            b"0500000US01005|1000\n"
+            b"1400000US01001020100|2000|50|extra\n")
+        rows=parse_table(original+nonstate_irregular,table="b25002",year=2022)
+        self.assertEqual(len(rows),52)
+        self.assertEqual([r["state_fips"] for r in rows],sorted(FIPS))
+        self.assertEqual(rows[0]["B25002_E001"],"62000")
+        # The source-original digest necessarily reflects the entire exact
+        # publisher byte stream, including non-state geographies.
+        self.assertNotEqual(rows[0]["source_original_sha256"],
+                            parse_table(original,table="b25002",year=2022)[0]["source_original_sha256"])
+
+    def test_selected_acs_state_row_missing_or_extra_columns_still_fails_closed(self):
+        original=fixture("b25002",2022)
+        state_line=b"0400000US01|62000|1400"
+        self.assertIn(state_line,original)
+        for tampered in (state_line+b"|unexpected",b"0400000US01|62000"):
+            with self.subTest(row=tampered):
+                broken=original.replace(state_line,tampered,1)
+                with self.assertRaisesRegex(ValueError,"Unexpected ACS state row width"):
+                    parse_table(broken,table="b25002",year=2022)
+
     def test_no_imputation_if_moe_missing_or_bad_upstream_geography(self):
         raw=fixture("b19013",2024)
         broken=raw.replace(b"1400",b"-666666666",1)

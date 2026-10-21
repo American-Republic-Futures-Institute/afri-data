@@ -171,14 +171,19 @@ def parse_table(original, *, table, year):
         rows={}
         digest=sha256(original).hexdigest()
         for line in source:
-            if None in line or any(v is None for v in line.values()):
-                raise ValueError("Unexpected ACS row width")
-            geoid=line["GEO_ID"]
+            # The original table-based file also contains county, tract,
+            # block-group and other geographies. We materialize the state
+            # projection only, so their row-shape peculiarities are outside
+            # the state's E001/M001 acceptance boundary. Inspect GEO_ID
+            # before enforcing exact width *on a selected state row*.
+            geoid=line.get("GEO_ID")
             if not isinstance(geoid,str) or not geoid.startswith("0400000US"):
                 continue
             state=geoid.removeprefix("0400000US")
             if state not in FIPS:
                 continue
+            if None in line or any(v is None for v in line.values()):
+                raise ValueError("Unexpected ACS state row width")
             if state in rows:
                 raise ValueError("Duplicate ACS state geography")
             rawEstimate=line[estimate].strip()
