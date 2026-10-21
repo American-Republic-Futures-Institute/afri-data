@@ -42,8 +42,33 @@ class NOAAUnavailable(ValueError):
 
 
 class NoRedirects(HTTPRedirectHandler):
+    """Admit one exact archive-to-canonical NOAA redirect, never an arbitrary host.
+
+    NOAA's legacy /pub location redirects each unmodified filename into the
+    official monitoring-content directory. An untrusted redirect, changed
+    filename, extra query, scheme downgrade, or second redirect fails closed.
+    """
     def redirect_request(self, req, fp, code, msg, headers, newurl):
-        raise NOAAUnavailable("NOAA source redirect forbidden; publisher target="+str(newurl)[:240])
+        requested = req.full_url if req is not None else ""
+        require(code in (301, 302, 307, 308) and
+                any(requested.startswith(base) and
+                    newurl == BASE + requested[len(base):] and
+                    (requested[len(base):] in ("", "divisional-readme.txt") or
+                     FILENAME.fullmatch(requested[len(base):]))
+                    for base in (ALTERNATE_BASE, LEGACY_OFFICIAL_BASE)),
+                "NOAA redirect changes official origin or publisher source identity")
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+def approved_response_url(requested, resolved):
+    """The bytes must be from the original request or its exact NOAA canonical path."""
+    return type(resolved) is str and (
+        resolved == requested or
+        any(requested.startswith(base) and
+            resolved == BASE + requested[len(base):] and
+            (requested[len(base):] in ("", "divisional-readme.txt") or
+             FILENAME.fullmatch(requested[len(base):]))
+            for base in (ALTERNATE_BASE, LEGACY_OFFICIAL_BASE)))
 
 
 class OriginalNOAARows(list):
@@ -156,7 +181,8 @@ def _read_exact(url, ceiling, *, opener=None, mime=None):
     })
     try:
         with op.open(req, timeout=50) as response:
-            require(response.geturl() == url and getattr(response, "status", 200) == 200,
+            require(approved_response_url(url, response.geturl()) and
+                    getattr(response, "status", 200) == 200,
                     "NOAA source redirected or did not return HTTP 200")
             supplied = (response.headers.get("Content-Type") or "").split(";", 1)[0].lower().strip()
             require(supplied in ("text/plain", "application/octet-stream", "text/html", ""),
