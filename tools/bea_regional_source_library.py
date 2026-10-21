@@ -124,8 +124,7 @@ def download_archive(archive):
     url = BASE + archive + ".zip"
     request = Request(url, headers={
         "User-Agent": "ARFI-Source-Library/1.0 (https://www.arfinstitute.org/)",
-        "Accept": "application/zip,application/octet-stream",
-        "Accept-Encoding": "identity"})
+        "Accept": "*/*"})
     opener = build_opener(NoRedirects())
     for attempt in range(3):
         try:
