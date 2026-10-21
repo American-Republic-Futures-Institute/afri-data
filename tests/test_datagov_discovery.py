@@ -165,6 +165,17 @@ class DataGovDiscoveryTests(unittest.TestCase):
         self.assertEqual(report["rejected"].get("not_public"), 2)
         self.assertEqual(report["uniqueCandidateIdentitiesKnown"], 1)
 
+    def test_single_terminal_catalog_page_without_after_cursor_is_valid(self):
+        single = page([result()])
+        def get(url, key):
+            return response(organizations() if url == d.ORGANIZATIONS else single)
+        report = self.run_once(fetch=get)
+        self.assertEqual(report["status"], "catalog_scan_complete", report)
+        self.assertEqual(report["pagesFetched"], 2)
+        self.assertEqual(report["uniqueCandidateIdentitiesKnown"], 1)
+        self.assertTrue(json.loads((self.root / "checkpoint.json").read_text())
+                        ["exhausted"])
+
     def test_empty_or_truncated_page_is_rejected_not_marked_exhaustive(self):
         def get(url, key):
             return response(organizations() if url == d.ORGANIZATIONS else page([]))
