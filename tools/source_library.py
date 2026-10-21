@@ -324,6 +324,12 @@ def verify(root=ROOT):
         assert_that(not (annual_years & monthly_years),
                     "Cannot mix annual and monthly partitions of one source year")
         assert_that(total == entry["rowCount"], "Source dataset row-count mismatch")
+    ledger_path = Path(root) / OUTPUT / "acquisition-ledger.json"
+    if ledger_path.is_file():
+        from tools.source_freshness import verify_report
+        health = json.loads((Path(root) / OUTPUT / "health.json").read_text("utf-8"))
+        ledger = json.loads(ledger_path.read_text("utf-8"))
+        verify_report(ledger, index, health)
     return {"datasets": len(index["datasets"]),
             "records": sum(d["rowCount"] for d in index["datasets"])}
 
@@ -351,6 +357,9 @@ def refresh(root=ROOT, catalog=None, loader=pages, now=None):
     old_file = directory / "index.json"
     old = json.loads(old_file.read_text("utf-8")) if old_file.exists() else {"datasets": []}
     previous = {d["id"]: d for d in old.get("datasets", [])}
+    ledger_path = directory / "acquisition-ledger.json"
+    previous_ledger = (json.loads(ledger_path.read_text("utf-8"))
+                       if ledger_path.exists() else None)
     fresh, failures = {}, {}
     for spec in catalog["datasets"]:
         try:
@@ -404,6 +413,12 @@ def refresh(root=ROOT, catalog=None, loader=pages, now=None):
               "discoveryWarnings": discovery_warnings,
               "nextExpectedCheck": "within 7 days of last successful scheduled run"}
     (directory / "health.json").write_bytes(canonical(health))
+    from tools.source_freshness import report_for
+    ledger = report_for(catalog, index, health,
+                        prior_index=old if previous else None,
+                        prior_report=previous_ledger)
+    if not ledger_path.is_file() or ledger_path.read_bytes() != canonical(ledger):
+        ledger_path.write_bytes(canonical(ledger))
     verification = verify(root)
     return {**verification, "failedSources": failures,
             "checkedAt": checked_at}
