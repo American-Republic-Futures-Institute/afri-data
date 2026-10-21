@@ -18,8 +18,9 @@ from pathlib import Path
 import re
 
 from pipelines.source_io import download_official
-from pipelines.census_state_population import FIPS
 from tools.stat05_geography import STATE_NAMES
+
+FIPS = frozenset(STATE_NAMES)  # fixed 52 state-equivalent publisher keys
 
 ROOT=Path(__file__).resolve().parents[1]
 CATALOG=Path("catalog/source-library/census-acs5.json")
