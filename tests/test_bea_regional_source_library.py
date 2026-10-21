@@ -59,8 +59,8 @@ def make_original(table, line="1", years=(2023, 2024), override=None,
 def make_zip(archive, payloads=None, **opts):
     if payloads is None:
         payloads = {
-            "SAGDP2N": make_original("SAGDP2N", **opts),
-            "SAGDP9N": make_original("SAGDP9N", **opts),
+            "SAGDP2": make_original("SAGDP2", **opts),
+            "SAGDP9": make_original("SAGDP9", **opts),
         } if archive == "SAGDP" else {
             "SAINC1": make_original("SAINC1", line="1", **opts) +
             make_original("SAINC1", line="3", **opts).split(b"\n", 1)[1]}
@@ -105,7 +105,7 @@ class BEAOriginalTests(unittest.TestCase):
                     ValueError, "Unapproved BEA|Invalid source metric"):
                 validate_catalog({**treasury, "datasets": sources})
         with self.assertRaises(BEAUnavailable):
-            member_bytes(b"<html>fake ZIP</html>", archive="SAGDP", table="SAGDP2N")
+            member_bytes(b"<html>fake ZIP</html>", archive="SAGDP", table="SAGDP2")
 
     def test_full_publisher_strings_geography_and_archive_replay(self):
         archive = make_zip("SAGDP")
@@ -118,7 +118,7 @@ class BEAOriginalTests(unittest.TestCase):
                    x["record_date"] == "2023-12-31")
         self.assertEqual(row["value"], "(D)")
         self.assertEqual(row["time_basis"], "bea_annual_reference_year_not_release_date")
-        self.assertEqual(row["TableName"], "SAGDP2N")
+        self.assertEqual(row["TableName"], "SAGDP2")
         self.assertEqual(row["LineCode"], "1")
         self.assertEqual(row["source_archive_sha256"], sha256(archive).hexdigest())
         self.assertRegex(row["source_original_sha256"], "^[a-f0-9]{64}$")
@@ -141,26 +141,26 @@ class BEAOriginalTests(unittest.TestCase):
 
     def test_missing_state_and_duplicate_are_not_silently_published(self):
         for tweak in [{"missing_state": "56"}, {"duplicate": True}]:
-            src = make_original("SAGDP2N", **tweak)
+            src = make_original("SAGDP2", **tweak)
             with self.subTest(tweak=tweak), self.assertRaisesRegex(
                     BEAUnavailable, "incomplete|duplicate"):
-                parse_member(src, table="SAGDP2N", line_code="1",
-                             member="SAGDP2N__ALL_AREAS_2023_2024.csv",
+                parse_member(src, table="SAGDP2", line_code="1",
+                             member="SAGDP2__ALL_AREAS_2023_2024.csv",
                              archive_sha="a" * 64)
         with self.assertRaisesRegex(BEAUnavailable, "Unrecognized publisher"):
-            src = make_original("SAGDP2N", override="=cmd|'evil'")
-            parse_member(src, table="SAGDP2N", line_code="1",
-                         member="SAGDP2N__ALL_AREAS_2023_2024.csv",
+            src = make_original("SAGDP2", override="=cmd|'evil'")
+            parse_member(src, table="SAGDP2", line_code="1",
+                         member="SAGDP2__ALL_AREAS_2023_2024.csv",
                          archive_sha="a" * 64)
 
     def test_wrong_zip_member_rejected_without_falling_back_to_similar_table(self):
         with self.assertRaisesRegex(BEAUnavailable, "absent|ambiguous"):
             member_bytes(make_zip("SAGDP", {"SAGDP3N": make_original("SAGDP3N")}),
-                         archive="SAGDP", table="SAGDP2N")
+                         archive="SAGDP", table="SAGDP2")
         with self.assertRaisesRegex(BEAUnavailable, "unsafe"):
-            archive = make_zip("SAGDP", {"../SAGDP2N__ALL_AREAS_2023_2024.csv":
-                                           make_original("SAGDP2N")})
-            member_bytes(archive, archive="SAGDP", table="SAGDP2N")
+            archive = make_zip("SAGDP", {"../SAGDP2__ALL_AREAS_2023_2024.csv":
+                                           make_original("SAGDP2")})
+            member_bytes(archive, archive="SAGDP", table="SAGDP2")
 
     def test_revisions_have_verified_partition_hashes_and_remain_distinct(self):
         registry = json.loads((ROOT / CATALOG).read_text("utf-8"))
