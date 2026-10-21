@@ -129,6 +129,8 @@ def parse_table(original, *, table, year):
                     raise ValueError("Invalid official ACS numeric source") from None
                 if not num.is_finite() or num<0 or num>1_000_000_000:
                     raise ValueError("Unreasonable official ACS source estimate")
+                if table=="b19083" and num>1:
+                    raise ValueError("ACS publisher Gini estimate or margin exceeds unit interval")
             rows[state]={
                 "GEO_ID":geoid,
                 "state_fips":state,
