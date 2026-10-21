@@ -49,14 +49,14 @@ class ACSHistoryTests(unittest.TestCase):
             return True
         self.assertEqual(discovered_vintages(now=now, available=all_available),
                          [2022, 2023, 2024, 2025])
-        self.assertEqual(len(checked), 12)
+        self.assertEqual(len(checked), 16)
         self.assertTrue(all(url.startswith(BASE+"2025/") for url in checked))
         self.assertTrue(supported_year(2025, now=now))
         self.assertFalse(supported_year(2026, now=now))
         result = registry_sources(discover=True, now=now, available=all_available)
-        self.assertEqual(len(result), 48)
+        self.assertEqual(len(result), 64)
         newest = [x for x in result if x["releaseYear"] == 2025]
-        self.assertEqual(len(newest), 12)
+        self.assertEqual(len(newest), 16)
         self.assertEqual({x["surveyReferencePeriod"] for x in newest}, {"2021-2025"})
 
     def test_partial_or_unreleased_acs_vintage_stays_unpublished(self):
@@ -66,8 +66,8 @@ class ACSHistoryTests(unittest.TestCase):
         available = lambda url: "b19013.dat" in url or "b25077.dat" in url
         self.assertEqual(discovered_vintages(now=now, available=available),
                          [2022, 2023, 2024])
-        self.assertEqual(len(registry_sources(discover=True, now=now, available=available)),36)
-        self.assertEqual(len(registry_sources(discover=True, now=now, available=lambda _: False)),36)
+        self.assertEqual(len(registry_sources(discover=True, now=now, available=available)),48)
+        self.assertEqual(len(registry_sources(discover=True, now=now, available=lambda _: False)),48)
 
     def test_twelve_registered_acs_tables_are_allowed_in_official_vintage_head_probe(self):
         from tools.census_acs_source_library import official_table_available
@@ -89,7 +89,7 @@ class ACSHistoryTests(unittest.TestCase):
                 url=source_url(2025,table)
                 self.assertTrue(official_table_available(url,opener=opener))
                 self.assertEqual(opener.request.get_method(),"HEAD")
-        self.assertEqual(len(opener.requests),12)
+        self.assertEqual(len(opener.requests),16)
         self.assertEqual(len(set(opener.requests)),12)
         with self.assertRaisesRegex(ValueError,"Unapproved Census HEAD"):
             official_table_available(
@@ -119,9 +119,9 @@ class ACSHistoryTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"Unapproved Census HEAD"):
             official_table_available("https://attacker.example/file.dat",opener=fake)
 
-    def test_twelve_official_tables_across_three_pooled_five_year_editions(self):
+    def test_sixteen_official_tables_across_three_pooled_five_year_editions(self):
         sources=registry_sources()
-        self.assertEqual(len(sources),36)
+        self.assertEqual(len(sources),48)
         self.assertEqual({s["table"] for s in sources},TABLES)
         self.assertEqual({s["releaseYear"] for s in sources},VINTAGES)
         t=json.loads((ROOT/"catalog/source-library/treasury-fiscaldata.json").read_text("utf-8"))
@@ -299,6 +299,35 @@ class ACSHistoryTests(unittest.TestCase):
         self.assertEqual(rows[0]["B25001_M001"],"-555555555")
         self.assertEqual(rows[0]["margin_of_error_status"],"publisher_controlled")
         self.assertEqual(rows[0]["estimate_status"],"available")
+
+    def test_rent_cost_quartiles_and_burden_percent_retained_as_source_estimates(self):
+        published=registry_sources()
+        cases={
+            "b25057": ("USD (inflation-adjusted vintage)", "880"),
+            "b25058": ("USD (inflation-adjusted vintage)", "1200"),
+            "b25059": ("USD (inflation-adjusted vintage)", "1800"),
+            "b25071": ("percent (median rent/income)", "32.4"),
+        }
+        for table,(unit,original_estimate) in cases.items():
+            for vintage in VINTAGES:
+                with self.subTest(table=table,vintage=vintage):
+                    key=f"census-acs5-{table}-{vintage}"
+                    spec=next(x for x in published if x["id"]==key)
+                    self.assertEqual(spec["unit"],unit)
+                    self.assertEqual(spec["preferredField"],table.upper()+"_E001")
+                    self.assertEqual(spec["surveyReferencePeriod"],
+                                     f"{vintage-4}-{vintage}")
+                    self.assertEqual(spec["endpoint"],source_url(vintage,table))
+                    source=fixture(table,vintage)
+                    source=source.replace(b"62000",original_estimate.encode())
+                    source=source.replace(b"1400",b"20")
+                    rows=parse_table(source,table=table,year=vintage)
+                    self.assertEqual(len(rows),52)
+                    self.assertEqual(rows[0][table.upper()+"_E001"],original_estimate)
+                    self.assertEqual(rows[0][table.upper()+"_M001"],"20")
+                    self.assertEqual(rows[0]["margin_of_error_confidence"],"0.90")
+                    self.assertEqual(rows[0]["time_basis"],
+                                     "acs_five_year_pooled_vintage_index_not_single_year")
 
     def test_gini_range_suppression_and_unsupported_table_fail_closed(self):
         raw=fixture("b19083",2024).replace(b"62000",b"0.4500").replace(b"1400",b"0.0100")
