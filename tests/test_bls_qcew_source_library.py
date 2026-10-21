@@ -81,11 +81,76 @@ class QcewSourceTests(unittest.TestCase):
                 self.assertRegex(official,
                   r"^https://data\.bls\.gov/cew/data/api/2025/2/industry/(?:23|42|51|52|72|81)\.csv$")
 
+    def test_remaining_naics_sectors_have_exact_original_bls_identities(self):
+        """Official 2-digit and hyphenated sector codes remain publisher-native."""
+        new = {
+            "agriculture-forestry": "11",
+            "mining": "21",
+            "utilities": "22",
+            "retail-trade": "44_45",
+            "transport-warehousing": "48_49",
+            "real-estate": "53",
+            "company-management": "55",
+            "administrative-services": "56",
+            "education": "61",
+            "arts-recreation": "71",
+            "public-administration": "92",
+        }
+        sources = {x["id"]: x for x in registry_sources()}
+        self.assertEqual(len(sources), 21)
+        self.assertEqual(len(set(INDUSTRIES.values())), 21)
+        for key, code in new.items():
+            with self.subTest(sector=key):
+                desc = sources["bls-qcew-" + key]
+                self.assertEqual(desc["industryCode"], code)
+                self.assertEqual(desc["endpoint"], BASE)
+                self.assertEqual(desc["dateBasis"], "publisher-quarter-end-marker")
+                rows = parse_quarter(original(2025, 3, industry=code),
+                                     year=2025, quarter=3, industry=code)
+                self.assertEqual(len(rows), 2 * len(FIPS))
+                self.assertEqual(rows[0]["record_date"], "2025-09-30")
+                self.assertEqual(rows[0]["industry_code"],
+                                 code.replace("_", "-"))
+                self.assertEqual(rows[0]["total_qtrly_wages"], "120000.09")
+                self.assertEqual(rows[0]["own_code"], "0")
+
+    def test_official_qcew_source_url_allowlist_cannot_be_redirected_or_extended(self):
+        """The source reader cannot be coerced onto an unregistered NAICS code."""
+        import re
+        valid = [f"{BASE}2026/1/industry/{code}.csv"
+                 for code in INDUSTRIES.values()]
+        class Response:
+            headers = {"Content-Length": "16"}
+            def __init__(self, url): self.url = url
+            def geturl(self): return self.url
+            def read(self, max_bytes): return b"csv source bytes"
+            def __enter__(self): return self
+            def __exit__(self, *_): pass
+        class Fake:
+            def open(self, request, timeout):
+                self.url = request.full_url
+                return Response(self.url)
+        opener = Fake()
+        for url in valid:
+            with self.subTest(url=url):
+                self.assertEqual(official_csv(url, year=2026, latest_year=2026,
+                                              opener=opener), b"csv source bytes")
+                self.assertEqual(opener.url, url)
+        for invalid in (
+            BASE + "2026/1/industry/99.csv",
+            BASE + "2026/1/industry/44-45.csv",
+            "https://untrusted.example/cew/data/api/2026/1/industry/11.csv",
+            BASE + "2026/1/industry/../../../other.csv",
+        ):
+            with self.subTest(denied=invalid):
+                with self.assertRaisesRegex(BLSUnavailable, "Unapproved"):
+                    official_csv(invalid, year=2026, latest_year=2026, opener=opener)
+
     def test_new_sector_cannot_be_replaced_by_arbitrary_qcew_code(self):
         from tools.bls_qcew_source_library import validate_registry
         import copy
         source=json.loads((ROOT/"catalog/source-library/bls-qcew.json").read_text())
-        self.assertEqual(len(source["industries"]),10)
+        self.assertEqual(len(source["industries"]),21)
         tampered=copy.deepcopy(source)
         tampered["industries"][-1]["code"]="99"
         with self.assertRaisesRegex(ValueError,"Unrecognized BLS"):
@@ -107,7 +172,7 @@ class QcewSourceTests(unittest.TestCase):
 
     def test_all_registered_official_industry_sources_with_cdc_and_treasury(self):
         s=registry_sources()
-        self.assertEqual(len(s),10)
+        self.assertEqual(len(s),21)
         self.assertEqual({x["industryCode"] for x in s},set(INDUSTRIES.values()))
         treasury=json.loads((ROOT/CATALOG).read_text("utf-8"))
         from tools.cdc_places_source_library import registry_sources as cdc
