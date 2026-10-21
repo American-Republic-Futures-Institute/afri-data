@@ -108,7 +108,7 @@ def validate_catalog(catalog):
                     20 <= len(item["description"]) <= 450 and
                     isinstance(item.get("unit"), str) and len(item["unit"]) <= 40 and
                     (item.get("preferredField") is None or
-                     re.fullmatch(r"[a-z_]{3,70}", item["preferredField"])) and
+                     re.fullmatch(r"[a-z][a-z0-9_]{2,69}", item["preferredField"])) and
                     type(item.get("maxRows")) is int and
                     1 <= item["maxRows"] <= 500000,
                     "Invalid source metric, description or row ceiling")
