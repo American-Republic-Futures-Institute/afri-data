@@ -101,6 +101,30 @@ def source_fingerprint(entry):
                 original_sha + ".csv",
                 "EIA original SEDS CSV missing from acquisition fingerprint")
         payload.append(["original-eia-csv-sha256", original_sha, 0, length])
+    if entry.get("provider") == "usda-ers":
+        from tools.usda_ers_source_library import (
+            SOURCE_URL, SOURCE_PAGE, RELEASE_DATE, SERIES, MAX_ARCHIVE,
+            original_path)
+        original_sha = entry.get("originalZipSha256")
+        length = entry.get("originalZipBytes")
+        require(entry.get("id") in SERIES and
+                entry.get("endpoint") == SOURCE_URL and
+                entry.get("sourcePage") == SOURCE_PAGE and
+                entry.get("releaseDate") == RELEASE_DATE and
+                entry.get("sourceVariableDescription") ==
+                    SERIES[entry["id"]]["label"] and
+                type(original_sha) is str and SHA256.fullmatch(original_sha) and
+                type(length) is int and 1000 < length <= MAX_ARCHIVE and
+                entry.get("originalZipPath") == original_path(original_sha) and
+                type(entry.get("originalMemberBytes")) is int and
+                1000000 < entry["originalMemberBytes"] <= 2000000000 and
+                type(entry.get("originalMemberCrc32")) is str and
+                __import__("re").fullmatch(r"[0-9a-f]{8}",
+                                          entry["originalMemberCrc32"]) is not None,
+                "USDA ERS original ZIP custody or publication identity mutated")
+        payload.extend([["original-usda-zip-sha256",original_sha,0,length],
+                        ["original-usda-member-crc32",entry["originalMemberCrc32"],
+                         0,entry["originalMemberBytes"]]])
     return sha256((json.dumps(sorted(payload), separators=(",", ":"), ensure_ascii=True)
                    + "\n").encode("utf-8")).hexdigest()
 
@@ -193,7 +217,7 @@ def report_for(catalog, index, health, prior_index=None, prior_report=None):
         past = previous_rows.get(key, {})
         error = failures.get(key)
         provider = spec.get("provider") or "treasury-fiscaldata"
-        require(provider in ("treasury-fiscaldata", "cdc-places", "bls-qcew", "census-acs5", "epa-airdata", "bea-regional", "usgs-comcat", "eia-seds"),
+        require(provider in ("treasury-fiscaldata", "cdc-places", "bls-qcew", "census-acs5", "epa-airdata", "bea-regional", "usgs-comcat", "eia-seds", "usda-ers"),
                 "unknown registered provider for source coverage")
         fingerprint = source_fingerprint(current_row) if current_row else None
         old_fp = source_fingerprint(old_row) if old_row else None
