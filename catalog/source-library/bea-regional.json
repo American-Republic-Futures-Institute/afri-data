@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "1.0.0",
+  "sourceFamily": "bea-regional-state-annual",
+  "publisher": "U.S. Bureau of Economic Analysis",
+  "sourcePage": "https://apps.bea.gov/regional/downloadzip.htm",
+  "datasetClass": "source-native-unreviewed",
+  "refreshCadence": "weekly",
+  "datasets": [
+    {
+      "id": "bea-state-gdp-nominal",
+      "title": "BEA — State gross domestic product, current dollars",
+      "description": "Original BEA annual state gross domestic product, all industries, current-dollar series. Not an ARFI-derived estimate.",
+      "archive": "SAGDP",
+      "table": "SAGDP2",
+      "lineCode": "1",
+      "unit": "millions of current dollars",
+      "domain": "economy"
+    },
+    {
+      "id": "bea-state-gdp-real",
+      "title": "BEA — State real gross domestic product",
+      "description": "Original BEA annual state chained-dollar real gross domestic product, all industries. Preserve release-specific base-year units.",
+      "archive": "SAGDP",
+      "table": "SAGDP9",
+      "lineCode": "1",
+      "unit": "publisher chained-dollar units",
+      "domain": "economy"
+    },
+    {
+      "id": "bea-state-income-total",
+      "title": "BEA — State total personal income",
+      "description": "Original BEA annual state personal income, all sources, with publisher unit and without adjusted or per-capita inference.",
+      "archive": "SAINC",
+      "table": "SAINC1",
+      "lineCode": "1",
+      "unit": "millions of current dollars",
+      "domain": "economy"
+    },
+    {
+      "id": "bea-state-income-per-capita",
+      "title": "BEA — State per-capita personal income",
+      "description": "Original BEA annual published per-capita personal income. This is a source value, not an ARFI-computed ratio.",
+      "archive": "SAINC",
+      "table": "SAINC1",
+      "lineCode": "3",
+      "unit": "dollars per person",
+      "domain": "economy"
+    }
+  ]
+}

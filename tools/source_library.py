@@ -89,6 +89,17 @@ def validate_catalog(catalog):
                         item.get("dateBasis") == "publisher-quarter-end-marker" and
                         item.get("startYear") == 2022,
                         "Unapproved BLS QCEW publisher")
+        elif item.get("provider") == "bea-regional":
+            from tools.bea_regional_source_library import BASE as BEA_BASE, PAGE as BEA_PAGE, SERIES
+            code = SERIES.get(key)
+            assert_that(code is not None and
+                        (item.get("archive"), item.get("table"), item.get("lineCode")) == code and
+                        item.get("endpoint") == BEA_BASE + code[0] + ".zip" and
+                        item.get("sourcePage") == BEA_PAGE and
+                        item.get("dateField") == "record_date" and
+                        item.get("dateBasis") == "bea-annual-reference-year-index" and
+                        item.get("preferredField") == "value",
+                        "Unapproved BEA economic source identity")
         elif item.get("provider") == "epa-airdata":
             from tools.epa_airdata_source_library import KINDS, SOURCE_PAGE as EPA_PAGE, source_url
             scope, year = item.get("sourceScope"), item.get("releaseYear")
@@ -182,6 +193,9 @@ def pages(spec, opener=None):
     if spec.get("provider") == "census-acs5":
         from tools.census_acs_source_library import census_records
         return census_records(spec)
+    if spec.get("provider") == "bea-regional":
+        from tools.bea_regional_source_library import bea_records
+        return bea_records(spec)
     if spec.get("provider") == "epa-airdata":
         from tools.epa_airdata_source_library import epa_records
         return epa_records(spec)
@@ -366,6 +380,7 @@ def refresh(root=ROOT, catalog=None, loader=pages, now=None):
         from tools.cdc_places_source_library import registry_sources as cdc_sources
         from tools.bls_qcew_source_library import registry_sources as bls_sources
         from tools.census_acs_source_library import registry_sources as census_sources
+        from tools.bea_regional_source_library import registry_sources as bea_sources
         from tools.epa_airdata_source_library import (
             registry_sources as epa_sources, EPAUnavailable)
         try:
@@ -382,7 +397,7 @@ def refresh(root=ROOT, catalog=None, loader=pages, now=None):
             epa = epa_sources(root)
         catalog = {**treasury,
                    "datasets": treasury["datasets"] + cdc_sources(root) +
-                   bls_sources(root) + census + epa}
+                   bls_sources(root) + census + epa + bea_sources(root)}
     validate_catalog(catalog)
     checked_at = now or datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
     directory = root / OUTPUT
@@ -438,7 +453,7 @@ def refresh(root=ROOT, catalog=None, loader=pages, now=None):
                 "description": spec["description"], "sourcePage": spec["sourcePage"],
                 "publisher": spec.get("publisher", catalog["publisher"]),
                 "endpoint": spec["endpoint"] if spec.get("provider") in
-                    ("cdc-places", "bls-qcew", "census-acs5", "epa-airdata")
+                    ("cdc-places", "bls-qcew", "census-acs5", "bea-regional", "epa-airdata")
                     else BASE + spec["endpoint"],
                 "dateBasis": spec.get("dateBasis", "original-publisher-record-date"),
                 **({"surveyReferencePeriod": spec["surveyReferencePeriod"]}
@@ -459,7 +474,12 @@ def refresh(root=ROOT, catalog=None, loader=pages, now=None):
                 "All authoritative source acquisitions failed; previous publication preserved")
     index = {"schemaVersion": "1.0.0",
              "sourceClass": "automated-official-source-copy",
-             "sourceSystem": "Official U.S. Treasury, CDC PLACES, BLS QCEW, Census ACS and EPA AirData originals" if any(d.get("provider") == "epa-airdata" for d in catalog["datasets"]) else ("Official U.S. Treasury, CDC PLACES, BLS QCEW and Census ACS original sources" if any(d.get("provider") == "census-acs5" for d in catalog["datasets"]) else ("U.S. Treasury Fiscal Data API, CDC PLACES and BLS QCEW original sources" if any(d.get("provider") == "bls-qcew" for d in catalog["datasets"]) else ("U.S. Treasury Fiscal Data API and CDC PLACES official county sources" if any(d.get("provider") == "cdc-places" for d in catalog["datasets"]) else "U.S. Treasury Fiscal Data API"))),
+             "sourceSystem": ("Official U.S. Treasury, CDC PLACES, BLS QCEW, Census ACS, EPA AirData and BEA regional originals"
+                if any(d.get("provider") == "bea-regional" for d in catalog["datasets"]) and
+                   any(d.get("provider") == "epa-airdata" for d in catalog["datasets"])
+                else "Official U.S. Treasury, CDC PLACES, BLS QCEW, Census ACS and BEA regional originals"
+                if any(d.get("provider") == "bea-regional" for d in catalog["datasets"])
+                else "Official U.S. Treasury, CDC PLACES, BLS QCEW, Census ACS and EPA AirData originals" if any(d.get("provider") == "epa-airdata" for d in catalog["datasets"]) else ("Official U.S. Treasury, CDC PLACES, BLS QCEW and Census ACS original sources" if any(d.get("provider") == "census-acs5" for d in catalog["datasets"]) else ("U.S. Treasury Fiscal Data API, CDC PLACES and BLS QCEW original sources" if any(d.get("provider") == "bls-qcew" for d in catalog["datasets"]) else ("U.S. Treasury Fiscal Data API and CDC PLACES official county sources" if any(d.get("provider") == "cdc-places" for d in catalog["datasets"]) else "U.S. Treasury Fiscal Data API")))),
              "refreshCadence": "weekly",
              "datasets": [fresh[id] for id in sorted(fresh)]}
     directory.mkdir(parents=True, exist_ok=True)
