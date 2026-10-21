@@ -140,7 +140,11 @@ def download_archive(archive):
                         content.startswith(b"PK"),
                         "BEA returned empty, oversized or non-ZIP source")
                 return content
-        except (HTTPError, URLError, TimeoutError, OSError) as exc:
+        except HTTPError as exc:
+            if attempt == 2:
+                raise BEAUnavailable("Official BEA ZIP returned HTTP " + str(exc.code)) from None
+            time.sleep(1 + attempt)
+        except (URLError, TimeoutError, OSError) as exc:
             if attempt == 2:
                 raise BEAUnavailable("Official BEA ZIP unavailable: " +
                                      type(exc).__name__) from None
