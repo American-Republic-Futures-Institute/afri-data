@@ -179,11 +179,18 @@ def parse_table(original, *, table, year):
                 raise ValueError("Duplicate ACS state geography")
             rawEstimate=line[estimate].strip()
             rawMoe=line[moe].strip()
-            absent=rawEstimate in MISSING or rawMoe in MISSING
-            if absent and (rawEstimate not in MISSING or rawMoe not in MISSING):
+            # An ACS-controlled population/housing total may have a numeric
+            # estimate and a publisher MOE sentinel (***** / -555555555).
+            # Retain the exact estimate/MOE strings. This is not a missing
+            # estimate, nor permission to synthesize a numeric 0 MOE.
+            controlled_moe = rawMoe in ("-555555555", "*****") and rawEstimate not in MISSING
+            estimate_missing = rawEstimate in MISSING
+            moe_missing = rawMoe in MISSING or rawMoe == "*****"
+            if estimate_missing != moe_missing and not controlled_moe:
                 raise ValueError("Estimate and Census 90% MOE must be paired")
             for item in (rawEstimate, rawMoe):
-                if item in MISSING:continue
+                if item in MISSING or (item == "*****" and controlled_moe):
+                    continue
                 try:
                     num=Decimal(item)
                 except (ValueError, InvalidOperation):
@@ -201,7 +208,10 @@ def parse_table(original, *, table, year):
                 "source_year":str(year),
                 "survey_reference_period":f"{year-4}-{year}",
                 "time_basis":"acs_five_year_pooled_vintage_index_not_single_year",
-                "estimate_status":"not_available" if absent else "available",
+                "estimate_status":"not_available" if estimate_missing else "available",
+                "margin_of_error_status":("publisher_controlled" if controlled_moe
+                                          else "not_available" if moe_missing
+                                          else "published"),
                 "margin_of_error_confidence":"0.90",
                 "source_original_sha256":digest,
             }
