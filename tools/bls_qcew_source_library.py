@@ -130,7 +130,7 @@ def parse_quarter(original, *, year, quarter, industry):
             continue  # other original federal, county or metro geography
         if (str(entry.get("year","")).strip()!=str(year) or
                 str(entry.get("qtr","")).strip().removeprefix("Q")!=str(quarter) or
-                entry.get("industry_code","").strip()!=industry):
+                entry.get("industry_code","").strip() not in (industry, industry.replace("_", "-"))):
             raise BLSUnavailable("BLS source quarter/industry identity mismatched")
         states.add(area[:2])
         rows.append({**entry,
