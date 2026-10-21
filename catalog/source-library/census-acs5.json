@@ -15,21 +15,21 @@
       "table": "b19013",
       "title": "Median household income",
       "description": "Source-published median household income for states and equivalents, Census original 90% margin of error, five-year pooled ACS reference period.",
-      "unit": "USD inflation-adjusted to release vintage",
+      "unit": "USD (inflation-adjusted vintage)",
       "preferredField": "B19013_E001"
     },
     {
       "table": "b25077",
       "title": "Median owner-occupied home value",
       "description": "Source-published median owner-occupied housing unit value in inflation-adjusted vintage dollars, with original 90% margin of error.",
-      "unit": "USD inflation-adjusted to release vintage",
+      "unit": "USD (inflation-adjusted vintage)",
       "preferredField": "B25077_E001"
     },
     {
       "table": "b25064",
       "title": "Median gross rent",
       "description": "Source-published median gross rent in inflation-adjusted vintage dollars with original 90% margin of error, not a single-year market rent index.",
-      "unit": "USD inflation-adjusted to release vintage",
+      "unit": "USD (inflation-adjusted vintage)",
       "preferredField": "B25064_E001"
     },
     {
