@@ -116,6 +116,31 @@ class SourceLibraryTests(unittest.TestCase):
                                 cwd=ROOT, capture_output=True, text=True, timeout=30)
         self.assertEqual(result.returncode, 0, result.stderr)
 
+    def test_new_census_edition_keeps_five_year_reference_period_in_public_index(self):
+        from datetime import datetime, timezone
+        from tools.census_acs_source_library import registry_sources as census_sources
+        all_published = lambda _url: True
+        specs=census_sources(discover=True,
+                             now=datetime(2026,10,20,tzinfo=timezone.utc),
+                             available=all_published)
+        income = next(x for x in specs if x["id"]=="census-acs5-b19013-2025")
+        treasury=json.loads((ROOT/CATALOG).read_text("utf-8"))
+        catalog={**treasury,"datasets":[income]}
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)
+            result=refresh(root=root,catalog=catalog,
+                loader=lambda _: [{"record_date":"2025-12-31",
+                                    "GEO_ID":"0400000US01",
+                                    "B19013_E001":"75000",
+                                    "B19013_M001":"1500",
+                                    "survey_reference_period":"2021-2025"}])
+            self.assertEqual(result["datasets"],1)
+            output=json.loads((root/"publication/source-library/index.json").read_text())
+            item=output["datasets"][0]
+            self.assertEqual(item["surveyReferencePeriod"],"2021-2025")
+            self.assertEqual(item["dateBasis"],"acs-five-year-pooled-vintage-index")
+            self.assertEqual(item["publisher"],"U.S. Census Bureau")
+
     def test_source_registration_is_allowlisted_and_rejects_redirect_targets(self):
         baseline = catalog()
         validate_catalog(baseline)
