@@ -25,6 +25,8 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_datagov_discovery.py' -v
       - name: Test EPA AirData original ZIP custody, geography and source-family contracts
         run: python -m unittest discover -s tests -p "test_epa_airdata_source_library.py" -v
+      - name: Verify NOAA original-byte and redirect safety regressions
+        run: python -m unittest discover -s tests -p "test_noaa_ncei_source_library.py" -v
       - name: Validate original USDA ERS farm income ZIP identity and historical replay
         run: python -m unittest discover -s tests -p 'test_usda_ers_source_library.py' -v
       - name: Verify reviewed README source program inventory matches pinned acquisition receipts

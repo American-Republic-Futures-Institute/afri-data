@@ -50,6 +50,7 @@ def mirror_program(source_id):
         "eia-seds-":"eia-state-energy",
         "usgs-comcat-":"usgs-earthquakes",
         "usda-ers-":"ers-farm-finance",
+        "noaa-ncei-climdiv-":"noaa-ncei",
     }
     for prefix, program in prefixes.items():
         if source_id.startswith(prefix):

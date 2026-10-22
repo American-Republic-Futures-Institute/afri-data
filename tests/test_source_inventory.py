@@ -69,6 +69,13 @@ class TestSourceInventory(unittest.TestCase):
         self.assertEqual(updated["sourceLibraryCommit"], commit)
         self.assertEqual(updated["mirroredSourceIds"], ["treasury-debt-to-penny"])
 
+    def test_noaa_climate_source_family_maps_to_approved_program(self):
+        self.assertEqual(mirror_program("noaa-ncei-climdiv-pcpndv"),
+                         "noaa-ncei")
+        self.assertEqual(mirror_program("noaa-ncei-climdiv-tmpcdv"),
+                         "noaa-ncei")
+        self.assertIn("noaa-ncei", {p["id"] for p in self.programs})
+
     def test_unrecognized_mirrored_id_fails_closed(self):
         with self.assertRaises(InventoryError):
             mirror_program("untrusted-feed-id")

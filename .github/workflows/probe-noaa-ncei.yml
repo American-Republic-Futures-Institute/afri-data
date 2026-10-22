@@ -1,0 +1,97 @@
+name: Probe NOAA NCEI climate divisional original monthly datasets
+on:
+  pull_request:
+    paths:
+      - 'catalog/source-library/noaa-ncei.json'
+      - 'tools/noaa_ncei_source_library.py'
+      - 'tests/test_noaa_ncei_source_library.py'
+      - '.github/workflows/probe-noaa-ncei.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  official-noaa-originals:
+    if: github.repository == 'American-Republic-Futures-Institute/afri-data'
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify offline NOAA original byte, README, and anti-tamper test contracts
+        run: python -m unittest discover -s tests -p 'test_noaa_ncei_source_library.py' -v
+      - name: Download only approved NOAA monthly divisional official text
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p noaa-probe
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from datetime import datetime, timezone
+          from hashlib import sha256
+          from tools.noaa_ncei_source_library import (
+              registry_sources, noaa_records, NOAAUnavailable, BASE, ALTERNATE_BASE)
+          p=Path("noaa-probe")
+          report={"schemaVersion":"1.0.0","publisher":"NOAA NCEI",
+                  "testedAt":datetime.now(timezone.utc).isoformat(),
+                  "originalsCaptured":0,"sourcePublicationDateVerified":False,
+                  "measurementsNotPublisherPublishDates":True,
+                  "fullFederalGovernmentDataSaturation":False,
+                  "readmeCaptured":False,"sources":[],"failures":{}}
+          try:
+              try:
+                  specs=registry_sources(discover=True)
+                  report["latestEditionDiscoveryVerified"]=True
+              except NOAAUnavailable as err:
+                  report["latestEditionDiscoveryVerified"]=False
+                  report["discoveryWarning"]=str(err)[:450]
+                  print("NOAA live directory blocked; probe *pinned known edition* from official NCEI archive:",str(err),flush=True)
+                  specs=registry_sources(baseline_base=ALTERNATE_BASE)
+              for spec in specs:
+                  try:
+                      rows=noaa_records(spec)
+                      original=rows.original_text
+                      digest=sha256(original).hexdigest()
+                      out=p/(digest+".dat")
+                      out.write_bytes(original)
+                      readme=rows.original_readme
+                      rsha=sha256(readme).hexdigest()
+                      (p/(rsha+".txt")).write_bytes(readme)
+                      sample={"dataset":spec["id"],"url":spec["endpoint"],
+                              "filename":rows.filename,
+                              "readmeUrl":spec["readmeUrl"],
+                              "latestEditionDiscoveryVerified":report["latestEditionDiscoveryVerified"],
+                              "sourceFileBytes":len(original),"sourceFileSHA256":digest,
+                              "readmeSHA256":rsha,"readmeBytes":len(readme),
+                              "sourceRows":len(rows),
+                              "firstSourceYear":min(r["year"] for r in rows),
+                              "lastSourceYear":max(r["year"] for r in rows),
+                              "httpLastModified":rows.source_last_modified,
+                              "publisherPublishedAt":None}
+                      print(json.dumps(sample,sort_keys=True),flush=True)
+                      report["sources"].append(sample)
+                      report["readmeCaptured"]=True
+                      report["originalsCaptured"]+=1
+                  except (NOAAUnavailable, ValueError, OSError) as exc:
+                      report["failures"][spec["id"]]=str(exc)[:450]
+                      print("NOAA error:",spec["id"],str(exc),flush=True)
+              report["sourceCatalogCount"]=len(specs)
+          except (NOAAUnavailable, OSError) as exc:
+              report["failures"]["directory"]=str(exc)[:450]
+              print("NOAA directory discovery failed:",str(exc),flush=True)
+          finally:
+              (p/"evidence.json").write_text(json.dumps(report,sort_keys=True,
+                                             indent=2)+"\n")
+          if report["originalsCaptured"]!=2:
+              raise SystemExit("Missing genuine NOAA original(s); do not certify this publisher family")
+          PY
+      - name: Retain genuine NOAA original bytes, README and SHA audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: data10g2-noaa-ncei-official-originals
+          path: noaa-probe/
+          if-no-files-found: warn
+          retention-days: 30
