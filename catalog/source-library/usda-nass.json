@@ -1,0 +1,73 @@
+{
+  "schemaVersion": "1.0.0",
+  "publisher": "USDA National Agricultural Statistics Service",
+  "sourceProgramId": "nass-quickstats",
+  "sourcePage": "https://www.nass.usda.gov/datasets/",
+  "apiDocumentation": "https://quickstats.nass.usda.gov/api",
+  "apiBase": "https://quickstats.nass.usda.gov/api/",
+  "admissionStatus": "pending-dedicated-key-and-publisher-count-replay",
+  "datasetClass": "source-native-unreviewed",
+  "keySecret": "NASS_API_KEY",
+  "attribution": "This product uses the NASS API but is not endorsed or certified by NASS.",
+  "initialCandidates": [
+    {
+      "id": "nass-corn-grain-harvested-acres",
+      "title": "NASS SURVEY — Corn grain harvested acreage (state, annual)",
+      "sourceCategory": "crop",
+      "selectors": {
+        "source_desc": "SURVEY",
+        "sector_desc": "CROPS",
+        "commodity_desc": "CORN",
+        "short_desc": "CORN, GRAIN - ACRES HARVESTED",
+        "statisticcat_desc": "AREA HARVESTED",
+        "agg_level_desc": "STATE",
+        "freq_desc": "ANNUAL",
+        "reference_period_desc": "YEAR",
+        "domain_desc": "TOTAL"
+      },
+      "unitDesc": "ACRES"
+    },
+    {
+      "id": "nass-corn-grain-production-bu",
+      "title": "NASS SURVEY — Corn grain production in bushels (state, annual)",
+      "sourceCategory": "crop",
+      "selectors": {
+        "source_desc": "SURVEY",
+        "sector_desc": "CROPS",
+        "commodity_desc": "CORN",
+        "short_desc": "CORN, GRAIN - PRODUCTION, MEASURED IN BU",
+        "statisticcat_desc": "PRODUCTION",
+        "agg_level_desc": "STATE",
+        "freq_desc": "ANNUAL",
+        "reference_period_desc": "YEAR",
+        "domain_desc": "TOTAL"
+      },
+      "unitDesc": "BU"
+    },
+    {
+      "id": "nass-cattle-milk-cows-inventory-average-head",
+      "title": "NASS SURVEY — Average milk cow inventory (state, annual)",
+      "sourceCategory": "animal",
+      "selectors": {
+        "source_desc": "SURVEY",
+        "sector_desc": "ANIMALS & PRODUCTS",
+        "commodity_desc": "CATTLE",
+        "short_desc": "CATTLE, COWS, MILK - INVENTORY, AVG, MEASURED IN HEAD",
+        "statisticcat_desc": "INVENTORY, AVG",
+        "agg_level_desc": "STATE",
+        "freq_desc": "ANNUAL",
+        "reference_period_desc": "YEAR",
+        "domain_desc": "TOTAL"
+      },
+      "unitDesc": "HEAD"
+    }
+  ],
+  "evidence": {
+    "publisherEdition": "20261022",
+    "cropPrefixSha256": "bf99d62fea578d2419918133bb32732bc4992b64c0091591bca4368b37172532",
+    "animalPrefixSha256": "d65f5611b7eef915545329a14a6df7edc89ca0f5d6e3c4c7f11fe6ac9b7c7fef",
+    "prefixBytesEach": 1048576,
+    "eachPrefixComplete": false,
+    "liveKeyedApiResponsesVerified": false
+  }
+}

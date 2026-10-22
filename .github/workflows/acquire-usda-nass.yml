@@ -1,0 +1,73 @@
+name: DATA-23B acquire verified USDA NASS Quick Stats originals
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: arfi-nass-original-acquisition
+  cancel-in-progress: false
+jobs:
+  acquire:
+    if: github.repository == 'American-Republic-Futures-Institute/afri-data'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Reject malformed NASS source/credential paths before any acquisition
+        run: |
+          python -m unittest discover -s tests -p test_usda_nass_quickstats.py -v
+          python -m unittest discover -s tests -p test_usda_nass_probe.py -v
+      - name: Dedicated API credential required (not DATA_GOV_API_KEY)
+        shell: bash
+        env:
+          NASS_API_KEY: ${{ secrets.NASS_API_KEY }}
+        run: |
+          set -euo pipefail
+          if test -z "$NASS_API_KEY"; then
+            echo '::error::NASS_API_KEY not configured; no source bytes will be admitted'
+            exit 1
+          fi
+      - name: Reconcile persistent data branch with current main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin main
+          if git ls-remote --exit-code --heads origin data/source-library >/dev/null 2>&1; then
+            git fetch origin data/source-library
+            git switch -C data/source-library FETCH_HEAD
+            git merge --no-edit origin/main
+          else
+            git switch -c data/source-library
+          fi
+      - name: Acquire bounded official count-preflighted NASS original JSON responses
+        env:
+          NASS_API_KEY: ${{ secrets.NASS_API_KEY }}
+        run: |
+          set -euo pipefail
+          python -m tools.usda_nass_quickstats --acquire
+          python -m tools.usda_nass_quickstats --verify
+      - name: Publish immutable source originals and append-only revision index (not curated)
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add -- publication/source-library/nass-api/ publication/source-library/originals/usda-nass/
+          if ! git diff --cached --quiet; then
+            git commit -m 'data: acquire NASS original API responses with count and revision receipts'
+          fi
+          git push origin HEAD:refs/heads/data/source-library
+      - name: Retain source manifest evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: data23b-nass-original-source-manifest
+          path: publication/source-library/nass-api/manifest.json
+          if-no-files-found: ignore
+          retention-days: 30
