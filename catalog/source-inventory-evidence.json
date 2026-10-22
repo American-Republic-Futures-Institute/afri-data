@@ -1,13 +1,11 @@
 {
   "schemaVersion": "1.0.0",
   "sourceLibraryRef": "data/source-library",
-  "sourceLibraryCommit": "cb8eaa2eb21b95f71ade8644e2a0a1c0389eba22",
-  "sourceIndexBlobSha": "2abf545973d582a74ed17d3a823024ad63e9eaa2",
-  "acquisitionLedgerBlobSha": "122335d408d4fe92b9386969580dbd4bb5ca5d39",
-  "checkedAt": "2026-10-21T23:27:15Z",
+  "sourceLibraryCommit": "e688a8190b98f936ae673799811c38d6bdcad11c",
+  "checkedAt": "2026-10-22T20:29:38Z",
   "totals": {
     "attempted": 238,
-    "changedMirroredAtThisRefresh": 1,
+    "changedMirroredAtThisRefresh": 6,
     "failed": 0,
     "mirrored": 238,
     "newlyMirroredAtThisRefresh": 0,
@@ -15,7 +13,7 @@
     "registeredNotAcquired": 0,
     "retainedAfterFailure": 0,
     "sourcePartitions": 1487,
-    "sourceRecords": 584785,
+    "sourceRecords": 584802,
     "succeeded": 238
   },
   "mirroredSourceIds": [
@@ -258,5 +256,9 @@
     "usgs-comcat-m6-2025",
     "usgs-comcat-m6-2026"
   ],
-  "custodyMeaning": "Listed sources are mirrored source-native repository projections. This inventory does not assert exact full upstream original bytes are present for every source."
+  "custodyMeaning": "Listed sources are mirrored source-native repository projections. This inventory does not assert exact full upstream original bytes are present for every source.",
+  "sourceIndexBlobSha": "7958e1b306a39aed14a2618f14a07f738f265ebe",
+  "acquisitionLedgerBlobSha": "4619eb495f5cce1ce8b31d9b91d12fe80327ee0a",
+  "sourceIndexSha256": "f41b6084dbbf6184cc935145ecd427771157d4c6e29b5ca0d8898bf3b75c8b33",
+  "acquisitionLedgerSha256": "2043a209fd2da45827b5a4462cb22c863af5947932dec052583723b94fcd9611"
 }
