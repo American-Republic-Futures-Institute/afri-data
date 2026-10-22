@@ -333,7 +333,18 @@ def acquire(root, *, key=None, transport=None, checked_at=None):
     }
     for rel, payload in blobs.items():
         _write_atomic(root / rel, payload)
-    _write_atomic(root / MANIFEST, (json.dumps(manifest,indent=2,sort_keys=True)+"\n").encode())
+    # The immutable source blobs are write-once; the manifest itself is a
+    # revisioned, atomically replaced index so later source editions are visible.
+    manifest_path = root / MANIFEST
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile(dir=manifest_path.parent, prefix=".nass-index-",
+                                     delete=False) as handle:
+        temporary = Path(handle.name)
+        handle.write((json.dumps(manifest,indent=2,sort_keys=True)+"\n").encode())
+    try:
+        os.replace(temporary, manifest_path)
+    finally:
+        temporary.unlink(missing_ok=True)
     return verify(root)
 
 
