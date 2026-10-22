@@ -1,20 +1,20 @@
 # Branch reconciliation audit — 2026-10-22
 
-Repository: [`American-Republic-Futures-Institute/afri-data`](https://github.com/American-Republic-Futures-Institute/afri-data). Snapshot of **89 pre-audit branch refs** and **83 PRs**. Excludes the new `chore/trunk-branch-policy-audit` work branch opened solely to record this audit. Trunk baseline: `82018b26460a1b007d6d272f65e9c2422a280287`. Branch presence is not evidence of unmerged work.
+Repository: [`American-Republic-Futures-Institute/afri-data`](https://github.com/American-Republic-Futures-Institute/afri-data). Snapshot of **89 pre-audit branch refs** and **83 PRs**. Excludes the new `chore/trunk-branch-policy-audit` work branch opened solely to record this audit. Trunk after NOAA acceptance: `6f9137b8b27bee69a9cdc79ada8c26375cce2ecb`. Branch presence is not evidence of unmerged work.
 
 | Class | Refs | Treatment |
 |---|---:|---|
 | Primary `main` | 1 | Trunk |
-| Merged PR head refs | 81 | Work is already integrated; refs are cleanup candidates |
-| Active review | 1 | Gate on exact-head publisher and repository tests |
+| Merged PR head refs | 82 | Work is already integrated; refs are cleanup candidates |
+| Active review (excluding audit PR) | 0 | No unfinished source feature PR remains |
 | Superseded/rejected | 4 | Do **not** merge obsolete/inaccurate work |
 | Rolling evidence branches | 2 | Keep isolated from general code trunk |
 
 ## Exceptions
 
-### Open publisher-origin PR
+### Resolved NOAA publisher-origin exception
 
-- [PR #94](https://github.com/American-Republic-Futures-Institute/afri-data/pull/94): `feat/data10g2-noaa-ncei-climdiv-originals`. Draft at audit. NOAA NCEI source acceptance is mandatory. Never merge an upstream-503 build without subsequent exact-file and publisher README verification and exact-head repository checks.
+- [PR #94](https://github.com/American-Republic-Futures-Institute/afri-data/pull/94) was **merged** after resolving the earlier publisher HTTP 503 and integrating later USDA/NASS and source-inventory changes. GitHub confirmed two genuine NCEI 20261006 official original files (47,166 rows each) plus the publisher README with full SHA-256 receipts. All four exact-head checks passed. This merges the **source adapter code**, not a claim that the rolling original mirror has already acquired both feeds.
 
 ### Persistent data and discovery branches
 
@@ -30,13 +30,14 @@ Repository: [`American-Republic-Futures-Institute/afri-data`](https://github.com
 
 ## Merged PRs whose historical branch refs remain
 
-**81 heads already have merged PRs**; do not open duplicate PRs. Squash merges can leave a historical branch appearing graph-ahead without any uncaptured functional code. Check the merged PR and source/release lineage before retiring old refs.
+**82 heads already have merged PRs**; do not open duplicate PRs. Squash merges can leave a historical branch appearing graph-ahead without any uncaptured functional code. Check the merged PR and source/release lineage before retiring old refs.
 
-<details><summary>Show all 81 merged-but-retained branch refs</summary>
+<details><summary>Show all 82 merged-but-retained branch refs</summary>
 
 | Merged PR | Branch ref |
 |---|---|
 | [#104](https://github.com/American-Republic-Futures-Institute/afri-data/pull/104) | `bot/source-status-39849196584` |
+| [#94](https://github.com/American-Republic-Futures-Institute/afri-data/pull/94) | `feat/data10g2-noaa-ncei-climdiv-originals` |
 | [#103](https://github.com/American-Republic-Futures-Institute/afri-data/pull/103) | `data23b-nass-acquisition-source-inventory` |
 | [#101](https://github.com/American-Republic-Futures-Institute/afri-data/pull/101) | `data23a-nass-source-feasibility` |
 | [#99](https://github.com/American-Republic-Futures-Institute/afri-data/pull/99) | `feat/data22-original-wide-row-producer` |
