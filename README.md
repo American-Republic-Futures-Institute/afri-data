@@ -4,7 +4,7 @@
 
 This is the research-data publication and provenance repository for the proposed ARFI Data Observatory. It is not the authoritative source for the Institute's Plan text or constitutional models; those remain in their own repositories. The purpose is to make public-sector evidence discoverable, reproducible and visualization-ready without introducing a new managed database or paid ETL service.
 
-**Current status:** Source and schema bootstrap. The first reviewed publication will be Census Bureau Vintage 2025 resident population estimates for 50 states, Washington DC and Puerto Rico, with official simplified state boundaries and a six-year 2020–2025 series. **Never treat test fixtures as real government data.** Real release files appear only after a verified Census refresh and review PR merge.
+**Current status (acquisition snapshot, 2026-10-21):** 238 source-native government feeds mirrored across nine publisher families (1,487 historical partitions; 584,785 records); five separately curated releases appear in the publication index. The source library lives on the [rolling acquisition branch](https://github.com/American-Republic-Futures-Institute/afri-data/tree/data/source-library), while reviewed publication metadata lives on `main`. The source-program inventory below tracks both acquired subsets and pending programs. This is not a claim of complete federal coverage, independent scientific review, or custody of every full upstream original. **Never treat test fixtures as real government data.**
 
 ## Repository structure
 
@@ -42,7 +42,7 @@ This is the research-data publication and provenance repository for the proposed
 4. Only approved releases are published to the website. The source discovery registry does not imply that an unreviewed research publisher or dataset is unbiased, approved or freely redistributable.
 5. Static-first deployment: GitHub Actions, small versioned JSON/CSV/GeoJSON and an existing website. Budget target is **zero incremental paid infrastructure**, subject to account and usage limits.
 
-## Initial sources
+## Census bootstrap source example
 
 - Official Census 2025 resident population estimates, source CSV:
   https://www2.census.gov/programs-surveys/popest/datasets/2020-2025/state/totals/NST-EST2025-ALLDATA.csv
@@ -365,7 +365,7 @@ Website repository: https://github.com/American-Republic-Futures-Institute/afri-
 
 ## Status / limitations
 
-- Initial scope is one primary government source family; other publisher programs are **discovery entries only**.
+- Nine source families are currently mirrored on the rolling data branch, but many cataloged federal data programs are **discovery entries only**. The current 238-feed snapshot is a bounded set of source-native subsets, not a census of all federal data.
 - No private/restricted microdata and no derived or fabricated rates.
 - No automated cross-publisher trust scoring or claim that 501(c)(3) sources are intrinsically impartial.
 - Reviewed data publication and visual website integration are distinct activities.
