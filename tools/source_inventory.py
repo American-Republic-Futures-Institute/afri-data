@@ -67,7 +67,7 @@ def validate_programs(root):
             type(item.get(key)) is str and item[key] for key in
             ("id", "title", "publisherId", "domain", "url")
         ) and item["id"] not in ids and
-            item.get("ingestionApproved") is False and
+            type(item.get("ingestionApproved")) is bool and
             item["url"].startswith("https://"),
             "Malformed or duplicate pending publisher program")
         ids.add(item["id"])
@@ -119,7 +119,7 @@ def publication_counts(root, programs):
 
 
 def cell(value):
-    return str(value).replace("|", "\|").replace("\n"," ").replace("\r"," ")
+    return str(value).replace("|", "\\|").replace("\n"," ").replace("\r"," ")
 
 
 def make_table(root):
@@ -139,7 +139,7 @@ def make_table(root):
         "**Generated from the [reviewed program registry](catalog/source-programs.json), "
         "[source evidence snapshot](catalog/source-inventory-evidence.json), and "
         "[published release index](publication/index.json).** "
-        "Never edit the statuses by hand; run \`python -m tools.source_inventory --write\` "
+        "Never edit the statuses by hand; run `python -m tools.source_inventory --write` "
         "after updating the reviewed registry or source receipts.",
         "",
         f"- **{len(programs)} targeted source programs**; "
@@ -147,8 +147,8 @@ def make_table(root):
         f"(across {imported_programs} mapped programs); "
         f"**{published_programs} programs** have at least one curated publication.",
         f"- Source mirror evidence: "
-        f"\`{evidence['sourceLibraryRef']}@{evidence['sourceLibraryCommit'][:12]}\` "
-        f"(last checked \`{evidence['checkedAt']}\`). "
+        f"`{evidence['sourceLibraryRef']}@{evidence['sourceLibraryCommit'][:12]}` "
+        f"(last checked `{evidence['checkedAt']}`). "
         "These are bounded source-native mirrors, not claims that every upstream full "
         "original archive was saved byte-for-byte.",
         "- **Imported** = an acquired source feed in the independently verified rolling "
@@ -185,13 +185,13 @@ def make_table(root):
             pending = "Expansion" if (feeds or releases) else "Yes"
             out.append(
                 f"| [{cell(item['title'])}]({item['url']}) "
-                f"(\`{cell(id)}\`) | {imported} | {analyzed} | {publication} | {pending} |"
+                f"(`{cell(id)}`) | {imported} | {analyzed} | {publication} | {pending} |"
             )
         out.extend(["","</details>",""])
     out.extend([
         "To extend coverage: add a *reviewed candidate* to "
-        "\`catalog/source-programs.json\`; add exact import identity mapping to "
-        "\`tools/source_inventory.py\` only when a verified original/source mirror "
+        "`catalog/source-programs.json`; add exact import identity mapping to "
+        "`tools/source_inventory.py` only when a verified original/source mirror "
         "exists; admit originals independently; then regenerate. "
         "The scheduled inventory-sync workflow proposes README updates when "
         "the rolling source ledger changes.",
@@ -213,7 +213,7 @@ def render(readme, block):
     return readme.replace(anchor, block+"\n\n"+anchor,1)
 
 
-def refresh_evidence(root, source_index, ledger_path, commit):
+def refresh_evidence(root, source_index, ledger_path, commit, nass_manifest=None):
     """Source branch must be fetched and verified before syncing into main."""
     require(type(commit) is str and len(commit)==40 and
             all(c in "0123456789abcdef" for c in commit),
@@ -235,6 +235,17 @@ def refresh_evidence(root, source_index, ledger_path, commit):
     # not guessed from file bytes or an unverified mutable ref.
     old.pop("sourceIndexBlobSha",None)
     old.pop("acquisitionLedgerBlobSha",None)
+    if nass_manifest is not None:
+        nass = json.loads(Path(nass_manifest).read_text("utf8"))
+        require(nass.get("format") == "arfi-nass-original-api-custody-v1" and
+                nass.get("publicationStatus") == "source-originals-only" and
+                nass.get("noStatisticalApproval") is True and
+                type(nass.get("datasets")) is list and nass["datasets"] and
+                all(type(x.get("id")) is str and
+                    type(x.get("latestSha256")) is str and
+                    len(x["latestSha256"]) == 64 for x in nass["datasets"]),
+                "NASS source manifest unqualified; require --verify on source branch")
+        old["nassAcquiredSourceIds"] = sorted(x["id"] for x in nass["datasets"])
     (root / EVIDENCE).write_text(json.dumps(old,indent=2)+"\n",encoding="utf8")
 
 
@@ -245,12 +256,14 @@ def main():
     p.add_argument("--refresh-index",type=Path)
     p.add_argument("--ledger",type=Path)
     p.add_argument("--source-commit")
+    p.add_argument("--nass-manifest",type=Path)
     args = p.parse_args()
     require(args.write != args.check, "Specify exactly one of --write or --check")
     if args.refresh_index:
         require(args.write and args.ledger and args.source_commit,
                 "Source evidence refresh requires pinned index, ledger and commit")
-        refresh_evidence(Path("."),args.refresh_index,args.ledger,args.source_commit)
+        refresh_evidence(Path("."),args.refresh_index,args.ledger,args.source_commit,
+                         nass_manifest=args.nass_manifest)
     current = README.read_text("utf8")
     desired = render(current,make_table(Path(".")))
     if args.check:
