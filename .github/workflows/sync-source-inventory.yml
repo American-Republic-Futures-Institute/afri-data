@@ -1,0 +1,72 @@
+name: Sync reviewed source-program inventory into README
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '47 13 * * 2'
+  push:
+    branches: [main]
+    paths:
+      - 'catalog/source-programs.json'
+      - 'catalog/source-inventory-evidence.json'
+      - 'tools/source_inventory.py'
+      - 'publication/index.json'
+      - '.github/workflows/sync-source-inventory.yml'
+permissions:
+  contents: write
+  pull-requests: write
+concurrency:
+  group: source-program-readme-inventory
+  cancel-in-progress: false
+jobs:
+  source-inventory:
+    if: github.repository == 'American-Republic-Futures-Institute/afri-data'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Read and verify live rolling source ledger without editing it
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin refs/heads/data/source-library:refs/remotes/origin/data/source-library
+          git worktree add --detach "$RUNNER_TEMP/acquired-source-library" origin/data/source-library
+          (cd "$RUNNER_TEMP/acquired-source-library" && python -m tools.source_freshness --verify)
+          test -f "$RUNNER_TEMP/acquired-source-library/publication/source-library/index.json"
+          test -f "$RUNNER_TEMP/acquired-source-library/publication/source-library/acquisition-ledger.json"
+          if test -f "$RUNNER_TEMP/acquired-source-library/publication/source-library/nass-api/manifest.json"; then
+            (cd "$RUNNER_TEMP/acquired-source-library" && python -m tools.usda_nass_quickstats --verify)
+          fi
+      - name: Render acquisition-linked README status for every reviewed candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          extra=()
+          nass="$RUNNER_TEMP/acquired-source-library/publication/source-library/nass-api/manifest.json"
+          if test -f "$nass"; then extra+=(--nass-manifest "$nass"); fi
+          python -m tools.source_inventory --write \
+            --refresh-index "$RUNNER_TEMP/acquired-source-library/publication/source-library/index.json" \
+            --ledger "$RUNNER_TEMP/acquired-source-library/publication/source-library/acquisition-ledger.json" \
+            --source-commit "$(git rev-parse origin/data/source-library)" "${extra[@]}"
+          python -m tools.source_inventory --check
+      - name: Open bounded tracking PR if inventory changed
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          git add README.md catalog/source-inventory-evidence.json
+          if git diff --cached --quiet; then echo 'README inventory current'; exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          branch="bot/source-status-${GITHUB_RUN_ID}"
+          git switch -c "$branch"
+          git commit -m 'docs: sync official source acquisition and publication status'
+          git push origin "HEAD:refs/heads/$branch"
+          gh pr create --base main --head "$branch" \
+            --title 'docs: refresh source inventory from verified acquisition ledger' \
+            --body 'Automated evidence-only source-program status update. No data transformation or publication.'

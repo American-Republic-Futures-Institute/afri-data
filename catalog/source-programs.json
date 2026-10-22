@@ -924,6 +924,16 @@
       "ingestionApproved": false
     },
     {
+      "id": "ers-farm-finance",
+      "publisherId": "usda-ers",
+      "title": "Farm Income and Wealth Statistics",
+      "domain": "agriculture",
+      "url": "https://www.ers.usda.gov/data-products/farm-income-and-wealth-statistics",
+      "stage": "registered",
+      "sourceType": "publisher-program",
+      "ingestionApproved": false
+    },
+    {
       "id": "ers-food-access",
       "publisherId": "usda-ers",
       "title": "Food Access Research Atlas",
