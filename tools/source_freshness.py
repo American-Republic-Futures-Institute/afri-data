@@ -101,6 +101,26 @@ def source_fingerprint(entry):
                 original_sha + ".csv",
                 "EIA original SEDS CSV missing from acquisition fingerprint")
         payload.append(["original-eia-csv-sha256", original_sha, 0, length])
+    if entry.get("provider") == "noaa-ncei":
+        orig, orig_bytes = entry.get("originalTxtSha256"), entry.get("originalTxtBytes")
+        readme, readme_bytes = entry.get("originalReadmeSha256"), entry.get("originalReadmeBytes")
+        require(type(orig) is str and SHA256.fullmatch(orig) and
+                type(orig_bytes) is int and 100 < orig_bytes <= 8_000_000 and
+                entry.get("originalTxtPath") ==
+                    "publication/source-library/originals/noaa-ncei/sha256/" + orig + ".dat" and
+                type(readme) is str and SHA256.fullmatch(readme) and
+                type(readme_bytes) is int and 100 < readme_bytes <= 65_536 and
+                entry.get("originalReadmeUrl") in (
+                    "https://www.ncei.noaa.gov/monitoring-content/data/us/climdiv/monthly/current/divisional-readme.txt",
+                    "https://www.ncei.noaa.gov/pub/data/cirs/climdiv/divisional-readme.txt") and
+                entry.get("originalReadmePath") ==
+                    "publication/source-library/originals/noaa-ncei/readme/sha256/" + readme + ".txt" and
+                entry.get("publisherPublishedAt") is None and
+                type(entry.get("sourceFilename")) is str and
+                entry.get("endpoint", "").endswith(entry["sourceFilename"]),
+                "NOAA original/readme fingerprints or publication time forged")
+        payload.extend([["original-noaa-text", orig, 0, orig_bytes],
+                        ["original-noaa-readme", readme, 0, readme_bytes]])
     if entry.get("provider") == "usda-ers":
         from tools.usda_ers_source_library import (
             SOURCE_URL, SOURCE_PAGE, RELEASE_DATE, SERIES, MAX_ARCHIVE,
@@ -217,7 +237,7 @@ def report_for(catalog, index, health, prior_index=None, prior_report=None):
         past = previous_rows.get(key, {})
         error = failures.get(key)
         provider = spec.get("provider") or "treasury-fiscaldata"
-        require(provider in ("treasury-fiscaldata", "cdc-places", "bls-qcew", "census-acs5", "epa-airdata", "bea-regional", "usgs-comcat", "eia-seds", "usda-ers"),
+        require(provider in ("treasury-fiscaldata", "cdc-places", "bls-qcew", "census-acs5", "epa-airdata", "bea-regional", "usgs-comcat", "eia-seds", "usda-ers", "noaa-ncei"),
                 "unknown registered provider for source coverage")
         fingerprint = source_fingerprint(current_row) if current_row else None
         old_fp = source_fingerprint(old_row) if old_row else None

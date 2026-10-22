@@ -7,6 +7,7 @@ curations remain distinct evidence categories.
 from __future__ import annotations
 import argparse
 from collections import Counter, defaultdict
+from hashlib import sha1, sha256
 import json
 from pathlib import Path
 
@@ -49,6 +50,7 @@ def mirror_program(source_id):
         "eia-seds-":"eia-state-energy",
         "usgs-comcat-":"usgs-earthquakes",
         "usda-ers-":"ers-farm-finance",
+        "noaa-ncei-climdiv-":"noaa-ncei",
     }
     for prefix, program in prefixes.items():
         if source_id.startswith(prefix):
@@ -233,8 +235,16 @@ def refresh_evidence(root, source_index, ledger_path, commit, nass_manifest=None
     })
     # The original source index blob SHA is updated by GitHub sync itself,
     # not guessed from file bytes or an unverified mutable ref.
-    old.pop("sourceIndexBlobSha",None)
-    old.pop("acquisitionLedgerBlobSha",None)
+    # Preserve source-branch Git blob identities as well as independent SHA-256
+    # receipts. Never silently remove an earlier publisher-evidence binding.
+    source_bytes = Path(source_index).read_bytes()
+    ledger_bytes = Path(ledger_path).read_bytes()
+    def git_blob_sha(blob):
+        return sha1(b"blob " + str(len(blob)).encode("ascii") + b"\0" + blob).hexdigest()
+    old["sourceIndexBlobSha"] = git_blob_sha(source_bytes)
+    old["acquisitionLedgerBlobSha"] = git_blob_sha(ledger_bytes)
+    old["sourceIndexSha256"] = sha256(source_bytes).hexdigest()
+    old["acquisitionLedgerSha256"] = sha256(ledger_bytes).hexdigest()
     if nass_manifest is not None:
         nass = json.loads(Path(nass_manifest).read_text("utf8"))
         require(nass.get("format") == "arfi-nass-original-api-custody-v1" and

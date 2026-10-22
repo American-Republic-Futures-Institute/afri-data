@@ -4,7 +4,7 @@
 
 This is the research-data publication and provenance repository for the proposed ARFI Data Observatory. It is not the authoritative source for the Institute's Plan text or constitutional models; those remain in their own repositories. The purpose is to make public-sector evidence discoverable, reproducible and visualization-ready without introducing a new managed database or paid ETL service.
 
-**Current status (acquisition snapshot, 2026-10-21):** 238 source-native government feeds mirrored across nine publisher families (1,487 historical partitions; 584,785 records); five separately curated releases appear in the publication index. The source library lives on the [rolling acquisition branch](https://github.com/American-Republic-Futures-Institute/afri-data/tree/data/source-library), while reviewed publication metadata lives on `main`. The source-program inventory below tracks both acquired subsets and pending programs. This is not a claim of complete federal coverage, independent scientific review, or custody of every full upstream original. **Never treat test fixtures as real government data.**
+**Current status (acquisition snapshot, 2026-10-22):** 238 source-native government feeds mirrored across nine publisher families (1,487 historical partitions; 584,802 records); five separately curated releases appear in the publication index. The source library lives on the [rolling acquisition branch](https://github.com/American-Republic-Futures-Institute/afri-data/tree/data/source-library), while reviewed publication metadata lives on `main`. The source-program inventory below tracks both acquired subsets and pending programs. This is not a claim of complete federal coverage, independent scientific review, or custody of every full upstream original. **Never treat test fixtures as real government data.**
 
 ## Repository structure
 
@@ -61,7 +61,7 @@ The 2025 Census ALLDATA publication includes annual population estimates for 202
 **Generated from the [reviewed program registry](catalog/source-programs.json), [source evidence snapshot](catalog/source-inventory-evidence.json), and [published release index](publication/index.json).** Never edit the statuses by hand; run `python -m tools.source_inventory --write` after updating the reviewed registry or source receipts.
 
 - **131 targeted source programs**; **238 mirrored source feeds** from the rolling source ledger (across 10 mapped programs); **5 programs** have at least one curated publication.
-- Source mirror evidence: `data/source-library@cb8eaa2eb21b` (last checked `2026-10-21T23:27:15Z`). These are bounded source-native mirrors, not claims that every upstream full original archive was saved byte-for-byte.
+- Source mirror evidence: `data/source-library@e688a8190b98` (last checked `2026-10-22T20:29:38Z`). These are bounded source-native mirrors, not claims that every upstream full original archive was saved byte-for-byte.
 - **Imported** = an acquired source feed in the independently verified rolling source snapshot, or a curated source-backed release when marked *release only*. **Analyzed** = a source-backed curated indicator release exists; this does *not* claim independent methodological review. **Published** = listed in the ARFI publication index. **Pending** = no approved source import, or *expansion* when only a subset of a broad government program is held.
 - Program registration is a *discovery candidate*, not blanket ingestion approval. Source acquisition, statistical analysis and website publication remain separate.
 

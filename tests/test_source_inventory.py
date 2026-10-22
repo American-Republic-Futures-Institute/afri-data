@@ -1,11 +1,13 @@
 """DATA source inventory deterministic renderer, drift and unknown-source tests."""
 import json
+from hashlib import sha1, sha256
 from pathlib import Path
 import tempfile
 import unittest
 from tools.source_inventory import (
     EVIDENCE, PROGRAMS, RELEASES, README, START, END,
     InventoryError, make_table, mirror_program, render, validated_evidence,
+    refresh_evidence,
     validate_programs,
 )
 
@@ -44,6 +46,35 @@ class TestSourceInventory(unittest.TestCase):
         self.assertIn("| Release only | Curated | 1 release | Expansion |", popest)
         qcew = next(line for line in text.splitlines() if "(`bls-qcew`)" in line)
         self.assertIn("| 21 feeds | No | No | Expansion |", qcew)
+
+    def test_refresh_preserves_source_blob_sha_and_sha256_provenance(self):
+        source_data = b'{"datasets":[{"id":"treasury-debt-to-penny"}]}'
+        ledger_data = (
+            b'{"checkedAt":"2026-10-22T21:00:00Z",'
+            b'"totals":{"mirrored":1,"registered":1,"failed":0}}'
+        )
+        index_path = self.root / "source-index.json"
+        ledger_path = self.root / "source-ledger.json"
+        index_path.write_bytes(source_data)
+        ledger_path.write_bytes(ledger_data)
+        commit = "b" * 40
+        refresh_evidence(self.root, index_path, ledger_path, commit)
+        updated = json.loads((self.root / EVIDENCE).read_text())
+        def git_blob(raw):
+            return sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()
+        self.assertEqual(updated["sourceIndexBlobSha"], git_blob(source_data))
+        self.assertEqual(updated["acquisitionLedgerBlobSha"], git_blob(ledger_data))
+        self.assertEqual(updated["sourceIndexSha256"], sha256(source_data).hexdigest())
+        self.assertEqual(updated["acquisitionLedgerSha256"], sha256(ledger_data).hexdigest())
+        self.assertEqual(updated["sourceLibraryCommit"], commit)
+        self.assertEqual(updated["mirroredSourceIds"], ["treasury-debt-to-penny"])
+
+    def test_noaa_climate_source_family_maps_to_approved_program(self):
+        self.assertEqual(mirror_program("noaa-ncei-climdiv-pcpndv"),
+                         "noaa-ncei")
+        self.assertEqual(mirror_program("noaa-ncei-climdiv-tmpcdv"),
+                         "noaa-ncei")
+        self.assertIn("noaa-ncei", {p["id"] for p in self.programs})
 
     def test_unrecognized_mirrored_id_fails_closed(self):
         with self.assertRaises(InventoryError):
