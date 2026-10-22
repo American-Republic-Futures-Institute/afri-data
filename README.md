@@ -4,9 +4,11 @@
 
 This is the research-data publication and provenance repository for the proposed ARFI Data Observatory. It is not the authoritative source for the Institute's Plan text or constitutional models; those remain in their own repositories. The purpose is to make public-sector evidence discoverable, reproducible and visualization-ready without introducing a new managed database or paid ETL service.
 
+**USDA NASS original acquisition:** [DATA-23C credential activation, publisher-response verification, and source-custody acceptance](docs/DATA-23C-NASS-LIVE-ACCEPTANCE.md). The three registered series remain pending until a keyed source response is independently retained and verified.
+
 **Development workflow:** [Short-lived trunk-based PR policy](CONTRIBUTING.md) · [October 2026 branch reconciliation audit](docs/BRANCH-AUDIT-2026-10-22.md). Source artifact branches are not ordinary feature branches.
 
-**Current status (acquisition snapshot, 2026-10-22):** 238 source-native government feeds mirrored across nine publisher families (1,487 historical partitions; 584,802 records); five separately curated releases appear in the publication index. The source library lives on the [rolling acquisition branch](https://github.com/American-Republic-Futures-Institute/afri-data/tree/data/source-library), while reviewed publication metadata lives on `main`. The source-program inventory below tracks both acquired subsets and pending programs. This is not a claim of complete federal coverage, independent scientific review, or custody of every full upstream original. **Never treat test fixtures as real government data.**
+**Current status (acquisition snapshot, 2026-10-22):** 240 source-native government feeds mirrored across ten publisher families (1,751 historical partitions; 679,134 records); five separately curated releases appear in the publication index. The source library lives on the [rolling acquisition branch](https://github.com/American-Republic-Futures-Institute/afri-data/tree/data/source-library), while reviewed publication metadata lives on `main`. The source-program inventory below tracks both acquired subsets and pending programs. This is not a claim of complete federal coverage, independent scientific review, or custody of every full upstream original. **Never treat test fixtures as real government data.**
 
 ## Repository structure
 
@@ -62,8 +64,8 @@ The 2025 Census ALLDATA publication includes annual population estimates for 202
 
 **Generated from the [reviewed program registry](catalog/source-programs.json), [source evidence snapshot](catalog/source-inventory-evidence.json), and [published release index](publication/index.json).** Never edit the statuses by hand; run `python -m tools.source_inventory --write` after updating the reviewed registry or source receipts.
 
-- **131 targeted source programs**; **238 mirrored source feeds** from the rolling source ledger (across 10 mapped programs); **5 programs** have at least one curated publication.
-- Source mirror evidence: `data/source-library@e688a8190b98` (last checked `2026-10-22T20:29:38Z`). These are bounded source-native mirrors, not claims that every upstream full original archive was saved byte-for-byte.
+- **131 targeted source programs**; **240 mirrored source feeds** from the rolling source ledger (across 11 mapped programs); **5 programs** have at least one curated publication.
+- Source mirror evidence: `data/source-library@465202abb79f` (last checked `2026-10-22T21:20:07Z`). These are bounded source-native mirrors, not claims that every upstream full original archive was saved byte-for-byte.
 - **Imported** = an acquired source feed in the independently verified rolling source snapshot, or a curated source-backed release when marked *release only*. **Analyzed** = a source-backed curated indicator release exists; this does *not* claim independent methodological review. **Published** = listed in the ARFI publication index. **Pending** = no approved source import, or *expansion* when only a subset of a broad government program is held.
 - Program registration is a *discovery candidate*, not blanket ingestion approval. Source acquisition, statistical analysis and website publication remain separate.
 
@@ -152,7 +154,7 @@ The 2025 Census ALLDATA publication includes annual population estimates for 202
 
 </details>
 
-<details><summary>Environment — 13 programs; 2 with imported feeds</summary>
+<details><summary>Environment — 13 programs; 3 with imported feeds</summary>
 
 | Target source program | Imported | Analyzed | Published | Pending |
 |---|---|---|---|---|
@@ -164,7 +166,7 @@ The 2025 Census ALLDATA publication includes annual population estimates for 202
 | [NASA Fire Information Resource Management](https://firms.modaps.eosdis.nasa.gov/) (`nasa-firms`) | No | No | No | Yes |
 | [Climate Data Online](https://www.ncei.noaa.gov/cdo-web/) (`noaa-climate-data`) | No | No | No | Yes |
 | [NOAA Digital Coast](https://coast.noaa.gov/digitalcoast/) (`noaa-coastal`) | No | No | No | Yes |
-| [NOAA National Centers for Environmental Information](https://www.ncei.noaa.gov/) (`noaa-ncei`) | No | No | No | Yes |
+| [NOAA National Centers for Environmental Information](https://www.ncei.noaa.gov/) (`noaa-ncei`) | 2 feeds | No | No | Expansion |
 | [NOAA Tides and Currents](https://tidesandcurrents.noaa.gov/) (`noaa-tides`) | No | No | No | Yes |
 | [Earthquake Hazards](https://www.usgs.gov/programs/earthquake-hazards) (`usgs-earthquakes`) | 27 feeds | No | No | Expansion |
 | [National Minerals Information Center](https://www.usgs.gov/centers/national-minerals-information-center) (`usgs-minerals`) | No | No | No | Yes |

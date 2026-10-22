@@ -30,7 +30,10 @@ class TestSourceInventory(unittest.TestCase):
         self.assertEqual(len(self.programs), 131)
         self.assertEqual(text.count("(`"), 131)
         self.assertIn("NASS Quick Stats", text)
-        self.assertIn("238 mirrored source feeds", text)
+        evidence = json.loads((self.root / EVIDENCE).read_text())
+        self.assertIn(f"{evidence['totals']['mirrored']} mirrored source feeds", text)
+        self.assertIn("2 feeds", next(line for line in text.splitlines()
+                                      if "(`noaa-ncei`)" in line))
         self.assertIn("NASS Quick Stats", text)
 
     def test_nass_is_pending_until_original_custody_proved(self):
