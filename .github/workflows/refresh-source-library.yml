@@ -9,10 +9,22 @@ on:
       - '.github/workflows/refresh-source-library.yml'
       - 'catalog/source-library/**'
       - 'tools/source_library.py'
+      - 'tools/source_catalog_pages.py'
+      - 'tools/eia_seds_source_library.py'
+      - 'tools/usda_ers_source_library.py'
+      - 'tests/test_usda_ers_source_library.py'
       - 'tools/source_freshness.py'
       - 'tests/test_source_freshness.py'
+      - 'tests/test_source_catalog_pages.py'
+      - 'tests/test_eia_seds_source_library.py'
       - 'tools/cdc_places_source_library.py'
       - 'tools/bls_qcew_source_library.py'
+      - 'tools/epa_airdata_source_library.py'
+      - 'tools/bea_regional_source_library.py'
+      - 'tools/usgs_comcat_source_library.py'
+      - 'tests/test_usgs_comcat_source_library.py'
+      - 'tests/test_epa_airdata_source_library.py'
+      - 'tests/test_bea_regional_source_library.py'
       - 'tools/census_acs_source_library.py'
       - 'tests/test_census_acs_source_library.py'
       - 'tests/test_bls_qcew_source_library.py'
@@ -42,6 +54,18 @@ jobs:
           python -m unittest discover -s tests -p 'test_cdc_source_library.py' -v
           python -m unittest discover -s tests -p 'test_bls_qcew_source_library.py' -v
           python -m unittest discover -s tests -p 'test_census_acs_source_library.py' -v
+      - name: Verify EPA AirData original ZIP ingestion and absence of reconstructed data
+        run: python -m unittest discover -s tests -p "test_epa_airdata_source_library.py" -v
+      - name: Verify BEA regional ZIP records and SHA-256 revision semantics
+        run: python -m unittest discover -s tests -p "test_bea_regional_source_library.py" -v
+      - name: Verify USGS ComCat annual source CSV, published count and exact-byte retention
+        run: python -m unittest discover -s tests -p "test_usgs_comcat_source_library.py" -v
+      - name: Verify bounded source catalog shards before weekly acquisition
+        run: python -m unittest discover -s tests -p 'test_source_catalog_pages.py' -v
+      - name: Verify EIA SEDS original publisher CSV historical and revision custody
+        run: python -m unittest discover -s tests -p 'test_eia_seds_source_library.py' -v
+      - name: Verify USDA ERS original streaming ZIP CRC and publisher source replay
+        run: python -m unittest discover -s tests -p 'test_usda_ers_source_library.py' -v
       - name: Restore persistent source-library branch and reconcile source code
         shell: bash
         run: |
@@ -56,7 +80,7 @@ jobs:
           else
             git switch -c data/source-library
           fi
-      - name: Fetch authoritative Treasury, CDC, BLS and Census original histories and update partitions
+      - name: Fetch authoritative Treasury, CDC, BLS, Census, EPA, BEA, USGS, EIA and USDA ERS original histories and update partitions
         run: python -m tools.source_library
       - name: Independently verify every retained source partition
         run: python -m tools.source_library --verify
@@ -68,7 +92,7 @@ jobs:
           set -euo pipefail
           git add -- publication/source-library/
           if ! git diff --cached --quiet; then
-            git commit -m "data: refresh Treasury, CDC, BLS and Census official source-library partitions"
+            git commit -m "data: refresh Treasury, CDC, BLS, Census, EPA, BEA and USGS, EIA and USDA ERS official source-library partitions"
           fi
           git push origin HEAD:refs/heads/data/source-library
       - name: Surface publisher failures instead of silently claiming full freshness

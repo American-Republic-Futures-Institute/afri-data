@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "1.0.0",
+  "publisher": "U.S. Energy Information Administration",
+  "sourceFamily": "eia-seds-state-consumption-btu",
+  "publisherPage": "https://www.eia.gov/state/seds/seds-data-complete.php?sid=US",
+  "sourceCsv": "https://www.eia.gov/state/seds/sep_use/total/csv/use_all_btu.csv",
+  "refreshCadence": "weekly",
+  "datasetClass": "source-native-unreviewed",
+  "dataBasis": "eia-seds-annual-reference-year-end-not-publisher-release",
+  "unit": "billion Btu",
+  "series": [
+    {
+      "id": "eia-seds-total-consumption",
+      "title": "EIA SEDS — Total energy consumption",
+      "description": "Original EIA annual SEDS total state energy consumption values, in billion Btu, without ARFI-created aggregates or annual rates.",
+      "msn": "TETCB"
+    },
+    {
+      "id": "eia-seds-residential-consumption",
+      "title": "EIA SEDS — Residential energy consumption",
+      "description": "Original EIA annual SEDS residential state energy consumption values, in billion Btu, without ARFI-created estimates.",
+      "msn": "TERCB"
+    },
+    {
+      "id": "eia-seds-commercial-consumption",
+      "title": "EIA SEDS — Commercial energy consumption",
+      "description": "Original EIA annual SEDS commercial state energy consumption values, in billion Btu, without ARFI-created estimates.",
+      "msn": "TECCB"
+    },
+    {
+      "id": "eia-seds-industrial-consumption",
+      "title": "EIA SEDS — Industrial energy consumption",
+      "description": "Original EIA annual SEDS industrial state energy consumption values, in billion Btu, without ARFI-created estimates.",
+      "msn": "TEICB"
+    },
+    {
+      "id": "eia-seds-transportation-consumption",
+      "title": "EIA SEDS — Transportation energy consumption",
+      "description": "Original EIA annual SEDS transportation state energy consumption values, in billion Btu, without ARFI-created estimates.",
+      "msn": "TEACB"
+    }
+  ]
+}
