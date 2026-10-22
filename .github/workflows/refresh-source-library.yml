@@ -13,6 +13,8 @@ on:
       - 'tools/eia_seds_source_library.py'
       - 'tools/noaa_ncei_source_library.py'
       - 'tests/test_noaa_ncei_source_library.py'
+      - 'tools/usda_ers_source_library.py'
+      - 'tests/test_usda_ers_source_library.py'
       - 'tools/source_freshness.py'
       - 'tests/test_source_freshness.py'
       - 'tests/test_source_catalog_pages.py'
@@ -66,6 +68,8 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_eia_seds_source_library.py' -v
       - name: Verify NOAA divisional originals, publisher README and full-history replay
         run: python -m unittest discover -s tests -p 'test_noaa_ncei_source_library.py' -v
+      - name: Verify USDA ERS original streaming ZIP CRC and publisher source replay
+        run: python -m unittest discover -s tests -p 'test_usda_ers_source_library.py' -v
       - name: Restore persistent source-library branch and reconcile source code
         shell: bash
         run: |
@@ -80,7 +84,7 @@ jobs:
           else
             git switch -c data/source-library
           fi
-      - name: Fetch authoritative Treasury, CDC, BLS, Census, EPA, BEA, USGS, EIA and NOAA original histories and update partitions
+      - name: Fetch authoritative Treasury, CDC, BLS, Census, EPA, BEA, USGS, EIA and USDA ERS and NOAA original histories and update partitions
         run: python -m tools.source_library
       - name: Independently verify every retained source partition
         run: python -m tools.source_library --verify
@@ -92,7 +96,7 @@ jobs:
           set -euo pipefail
           git add -- publication/source-library/
           if ! git diff --cached --quiet; then
-            git commit -m "data: refresh Treasury, CDC, BLS, Census, EPA, BEA and USGS, EIA and NOAA official source-library partitions"
+            git commit -m "data: refresh Treasury, CDC, BLS, Census, EPA, BEA and USGS, EIA and USDA ERS and NOAA official source-library partitions"
           fi
           git push origin HEAD:refs/heads/data/source-library
       - name: Surface publisher failures instead of silently claiming full freshness

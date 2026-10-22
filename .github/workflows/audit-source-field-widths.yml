@@ -1,0 +1,65 @@
+name: DATA-22 signed original source width inventory
+on:
+  pull_request:
+    paths:
+      - 'tools/audit_source_field_widths.py'
+      - 'tests/test_source_field_width_inventory.py'
+      - '.github/workflows/audit-source-field-widths.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit-signed-archive:
+    if: github.repository == 'American-Republic-Futures-Institute/afri-data'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate original source width inventory and SHA failure tests
+        run: python -m unittest discover -s tests -p 'test_source_field_width_inventory.py' -v
+      - name: Checkout entire latest signed government source archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --depth=1 origin refs/heads/data/source-library
+          git worktree add --detach "$RUNNER_TEMP/arfi-signed-sources" FETCH_HEAD
+          test -f "$RUNNER_TEMP/arfi-signed-sources/publication/source-library/index.json"
+      - name: Measure every signed source partition, retaining original field names
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m tools.audit_source_field_widths \
+            --root "$RUNNER_TEMP/arfi-signed-sources" > data22-field-width-inventory.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report=json.loads(Path("data22-field-width-inventory.json").read_text())
+          assert report["originalDatasets"]>=238
+          assert report["shaVerifiedPartitions"]>=1487
+          assert report["originalRecords"]>=584785
+          print("DATA-22 ORIGINAL WIDTH",json.dumps({
+            "sourceLedgerCheckedAt":report["sourceLedgerCheckedAt"],
+            "originalDatasets":report["originalDatasets"],
+            "shaVerifiedPartitions":report["shaVerifiedPartitions"],
+            "originalRecords":report["originalRecords"],
+            "maxObservedFields":report["maxObservedFields"],
+            "rowsWithMoreThan160Fields":report["rowsWithMoreThan160Fields"],
+            "publisherFamilies":report["publisherFamilies"],
+            "widestSourceDatasets":report["widestSourceDatasets"][:14],
+            "rowFieldDistribution":report["rowFieldDistribution"]
+          },sort_keys=True))
+          PY
+      - name: Save signed original row-width inventory as evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: data22-original-signed-widths
+          path: data22-field-width-inventory.json
+          if-no-files-found: warn
+          retention-days: 30
