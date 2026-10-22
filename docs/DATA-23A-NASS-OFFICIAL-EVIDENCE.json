@@ -1,0 +1,50 @@
+{
+  "format": "arfi-data23a-official-source-provenance-v1",
+  "checkedAtDate": "2026-10-22",
+  "publisher": "USDA NASS",
+  "noDataRegistered": true,
+  "noDataPublished": true,
+  "originalsRetained": false,
+  "archives": [
+    {
+      "kind": "crops",
+      "url": "https://www.nass.usda.gov/datasets/qs.crops_20261022.txt.gz",
+      "headStatus": 200,
+      "contentType": "application/x-gzip",
+      "contentLength": 1130851010,
+      "lastModified": "Thu, 22 Oct 2026 07:14:04 GMT",
+      "etag": "\"43676ac2-65e689bd1a978\"",
+      "rangeStatus": 206,
+      "contentRange": "bytes 0-65535/1130851010",
+      "compressedPrefixBytes": 65536,
+      "compressedPrefixSha256": "7e60793f10d7f536f2e2baa5cb932ed1300eb83f39f534a621e8a00daf2f38d6",
+      "decompressedPrefixBytes": 466163,
+      "observedColumns": 39,
+      "previewCompleteRows": 1360,
+      "firstRow": {
+        "SOURCE_DESC": "SURVEY",
+        "COMMODITY_DESC": "SOYBEANS",
+        "STATISTICCAT_DESC": "YIELD",
+        "UNIT_DESC": "BU / ACRE",
+        "AGG_LEVEL_DESC": "COUNTY",
+        "STATE_ALPHA": "MI",
+        "YEAR": "1972",
+        "VALUE": "23.1"
+      },
+      "fullFileHashVerified": false,
+      "fullGzipCRCVerified": false
+    },
+    {
+      "kind": "animals_products",
+      "url": "https://www.nass.usda.gov/datasets/qs.animals_products_20261022.txt.gz",
+      "headStatus": 200,
+      "contentType": "application/x-gzip",
+      "contentLength": 463929589,
+      "lastModified": "Thu, 22 Oct 2026 07:08:37 GMT",
+      "etag": "\"1ba700f5-65e688861e9f3\"",
+      "bodyInspected": false,
+      "fullFileHashVerified": false,
+      "fullGzipCRCVerified": false
+    }
+  ]
+}
