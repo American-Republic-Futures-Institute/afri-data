@@ -2,8 +2,6 @@
   "schemaVersion": "1.0.0",
   "sourceLibraryRef": "data/source-library",
   "sourceLibraryCommit": "cb8eaa2eb21b95f71ade8644e2a0a1c0389eba22",
-  "sourceIndexBlobSha": "2abf545973d582a74ed17d3a823024ad63e9eaa2",
-  "acquisitionLedgerBlobSha": "122335d408d4fe92b9386969580dbd4bb5ca5d39",
   "checkedAt": "2026-10-21T23:27:15Z",
   "totals": {
     "attempted": 238,
