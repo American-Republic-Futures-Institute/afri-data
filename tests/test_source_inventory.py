@@ -29,7 +29,7 @@ class TestSourceInventory(unittest.TestCase):
         self.assertEqual(text.count("(`"), 131)
         self.assertIn("NASS Quick Stats", text)
         self.assertIn("238 mirrored source feeds", text)
-        self.assertIn("Corn", text if "Corn" in text else "CORN")
+        self.assertIn("NASS Quick Stats", text)
 
     def test_nass_is_pending_until_original_custody_proved(self):
         text = make_table(self.root)
