@@ -4,6 +4,8 @@
 
 This is the research-data publication and provenance repository for the proposed ARFI Data Observatory. It is not the authoritative source for the Institute's Plan text or constitutional models; those remain in their own repositories. The purpose is to make public-sector evidence discoverable, reproducible and visualization-ready without introducing a new managed database or paid ETL service.
 
+**Development workflow:** [Short-lived trunk-based PR policy](CONTRIBUTING.md) · [October 2026 branch reconciliation audit](docs/BRANCH-AUDIT-2026-10-22.md). Source artifact branches are not ordinary feature branches.
+
 **Current status (acquisition snapshot, 2026-10-22):** 238 source-native government feeds mirrored across nine publisher families (1,487 historical partitions; 584,802 records); five separately curated releases appear in the publication index. The source library lives on the [rolling acquisition branch](https://github.com/American-Republic-Futures-Institute/afri-data/tree/data/source-library), while reviewed publication metadata lives on `main`. The source-program inventory below tracks both acquired subsets and pending programs. This is not a claim of complete federal coverage, independent scientific review, or custody of every full upstream original. **Never treat test fixtures as real government data.**
 
 ## Repository structure
