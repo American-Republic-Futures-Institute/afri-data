@@ -1,6 +1,11 @@
 name: Sync reviewed source-program inventory into README
 on:
   workflow_dispatch:
+  # Synchronize README immediately after independently verified NASS source admission.
+  # GitHub Actions workflow_run events are eligible even when the prior run used GITHUB_TOKEN.
+  workflow_run:
+    workflows: ['DATA-23B acquire verified USDA NASS Quick Stats originals']
+    types: [completed]
   schedule:
     - cron: '47 13 * * 2'
   push:
@@ -19,7 +24,11 @@ concurrency:
   cancel-in-progress: false
 jobs:
   source-inventory:
-    if: github.repository == 'American-Republic-Futures-Institute/afri-data'
+    if: >-
+      github.repository == 'American-Republic-Futures-Institute/afri-data' &&
+      (github.event_name != 'workflow_run' ||
+       (github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.head_branch == 'main'))
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
