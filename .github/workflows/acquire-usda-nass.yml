@@ -1,6 +1,12 @@
 name: DATA-23B acquire verified USDA NASS Quick Stats originals
 on:
   workflow_dispatch:
+  # One bounded activation on merge of this workflow to main; subsequent runs
+  # remain owner-initiated. Never expose NASS_API_KEY to pull_request jobs.
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/acquire-usda-nass.yml'
 permissions:
   contents: write
 concurrency:
@@ -63,6 +69,14 @@ jobs:
             git commit -m 'data: acquire NASS original API responses with count and revision receipts'
           fi
           git push origin HEAD:refs/heads/data/source-library
+      - name: Independently replay exact pushed data branch and its immutable NASS receipts
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin refs/heads/data/source-library
+          test "$(git rev-parse HEAD)" = "$(git rev-parse FETCH_HEAD)"
+          python -m tools.usda_nass_quickstats --verify
+          git diff --exit-code -- publication/source-library/nass-api/manifest.json
       - name: Retain source manifest evidence
         if: always()
         uses: actions/upload-artifact@v4
