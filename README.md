@@ -65,7 +65,7 @@ The 2025 Census ALLDATA publication includes annual population estimates for 202
 **Generated from the [reviewed program registry](catalog/source-programs.json), [source evidence snapshot](catalog/source-inventory-evidence.json), and [published release index](publication/index.json).** Never edit the statuses by hand; run `python -m tools.source_inventory --write` after updating the reviewed registry or source receipts.
 
 - **131 targeted source programs**; **240 mirrored source feeds** from the rolling source ledger (across 11 mapped programs); **5 programs** have at least one curated publication.
-- Source mirror evidence: `data/source-library@465202abb79f` (last checked `2026-10-22T21:20:07Z`). These are bounded source-native mirrors, not claims that every upstream full original archive was saved byte-for-byte.
+- Source mirror evidence: `data/source-library@09056ef74760` (last checked `2026-10-26T17:19:02Z`). These are bounded source-native mirrors, not claims that every upstream full original archive was saved byte-for-byte.
 - **Imported** = an acquired source feed in the independently verified rolling source snapshot, or a curated source-backed release when marked *release only*. **Analyzed** = a source-backed curated indicator release exists; this does *not* claim independent methodological review. **Published** = listed in the ARFI publication index. **Pending** = no approved source import, or *expansion* when only a subset of a broad government program is held.
 - Program registration is a *discovery candidate*, not blanket ingestion approval. Source acquisition, statistical analysis and website publication remain separate.
 

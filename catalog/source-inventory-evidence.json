@@ -1,20 +1,20 @@
 {
   "schemaVersion": "1.0.0",
   "sourceLibraryRef": "data/source-library",
-  "sourceLibraryCommit": "465202abb79f21b5d518bab07708aa46ca14e4d4",
-  "checkedAt": "2026-10-22T21:20:07Z",
+  "sourceLibraryCommit": "09056ef74760749d48fafc5e2afc9a69866820dc",
+  "checkedAt": "2026-10-26T17:19:02Z",
   "totals": {
     "attempted": 240,
-    "changedMirroredAtThisRefresh": 1,
-    "failed": 0,
+    "changedMirroredAtThisRefresh": 7,
+    "failed": 4,
     "mirrored": 240,
-    "newlyMirroredAtThisRefresh": 2,
+    "newlyMirroredAtThisRefresh": 0,
     "registered": 240,
     "registeredNotAcquired": 0,
-    "retainedAfterFailure": 0,
+    "retainedAfterFailure": 4,
     "sourcePartitions": 1751,
-    "sourceRecords": 679134,
-    "succeeded": 240
+    "sourceRecords": 679154,
+    "succeeded": 236
   },
   "mirroredSourceIds": [
     "bea-state-gdp-nominal",
@@ -259,8 +259,8 @@
     "usgs-comcat-m6-2026"
   ],
   "custodyMeaning": "Listed sources are mirrored source-native repository projections. This inventory does not assert exact full upstream original bytes are present for every source.",
-  "sourceIndexBlobSha": "05cbb682f512239c42c02386d282557fa6f01cf5",
-  "acquisitionLedgerBlobSha": "26977eded410ea55e2149aa00ed8834248869100",
-  "sourceIndexSha256": "febb4f0562f6de1c2c9086b6fec1ae1a0e7a52dfdfe00774e90ad72cd148888b",
-  "acquisitionLedgerSha256": "44e2d465b8d6844053f5017b144b5240cdcfabc42ce2859db32ee0ba3ea0ee49"
+  "sourceIndexBlobSha": "cfc1192f97d044b67989dd1dd3d3366e3bc6c906",
+  "acquisitionLedgerBlobSha": "23a048f22c3019692e536fc5bafb4be862a53766",
+  "sourceIndexSha256": "5ab484669e83e3265543d506cc8cda182abb3655894742e721e097390103b1e7",
+  "acquisitionLedgerSha256": "2359dac8cc3cda9b9e35222be503e3b848467c783648e898e089ffe30bb454a5"
 }
