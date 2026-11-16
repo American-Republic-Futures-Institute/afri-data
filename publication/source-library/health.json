@@ -1,1 +1,1 @@
-{"attempted":240,"checkedAt":"2026-11-09T21:25:57Z","discoveryWarnings":{},"failed":{},"nextExpectedCheck":"within 7 days of last successful scheduled run","schemaVersion":"1.0.0","succeeded":240}
+{"attempted":240,"checkedAt":"2026-11-16T20:57:38Z","discoveryWarnings":{},"failed":{"treasury-income-tax-refunds-issued":"Treasury API returned incomplete history"},"nextExpectedCheck":"within 7 days of last successful scheduled run","schemaVersion":"1.0.0","succeeded":239}
