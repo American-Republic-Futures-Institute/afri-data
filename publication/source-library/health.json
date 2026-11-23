@@ -1,1 +1,1 @@
-{"attempted":240,"checkedAt":"2026-11-16T20:57:38Z","discoveryWarnings":{},"failed":{"treasury-income-tax-refunds-issued":"Treasury API returned incomplete history"},"nextExpectedCheck":"within 7 days of last successful scheduled run","schemaVersion":"1.0.0","succeeded":239}
+{"attempted":240,"checkedAt":"2026-11-23T22:35:24Z","discoveryWarnings":{"census-acs5":"Census official publisher availability check failed"},"failed":{},"nextExpectedCheck":"within 7 days of last successful scheduled run","schemaVersion":"1.0.0","succeeded":240}
